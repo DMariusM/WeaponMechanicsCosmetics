@@ -1,0 +1,14 @@
+# Minecraft Particles are highly unintuitive, so there will be HEAVY amounts of
+# serializer validation to make sure everything is happening as expected. We
+# should also use XParticle for cross version support.
+
+Particle:
+  Type: <FLAME/CRIT/WHATEVER>
+  Color: <ColorSerializer> # Can be used with REDSTONE, MOB_SPELL, DUST_COLOR_TRANSITION
+  Fade_Color: <ColorSerializer> # Can only be used with DUST_COLOR_TRANSITION particles
+  Size: <Float> # Can be used with REDSTONE, or DUST_COLOR_TRANSITION
+  Count: <Integer> # usually the player should not define this
+  Noise: <x-y-z>
+  Velocity: <x-y-z, scalar (inherit velocity * scalar)>
+  Material_Data: <ItemSerializer>
+

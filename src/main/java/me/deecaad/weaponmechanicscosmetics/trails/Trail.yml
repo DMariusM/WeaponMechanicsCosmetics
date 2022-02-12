@@ -1,0 +1,12 @@
+  Trail:
+    Distance_Between_Particles: <Blocks>
+    Particle_Chooser: <STOP/CLAMP, RANDOM, LOOP>
+    Particles:
+      0: <Particle Serializer>
+      1: <Particle Serializer>
+      2: <Particle Serializer>
+
+    Shape: <NONE, SPIRAL, LIGHTNING>
+    Shape_Data:
+      Radius: <Blocks>
+      Points: <How many particles per spiral loop>

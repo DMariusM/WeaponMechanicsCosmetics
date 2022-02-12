@@ -8,5 +8,6 @@
 
     Shape: <NONE, SPIRAL, LIGHTNING>
     Shape_Data:
+      Spirals: <Integer>
       Radius: <Blocks>
       Points: <How many particles per spiral loop>

@@ -34,8 +34,8 @@ dependencies {
     api("org.spigotmc:spigot-api:1.18-R0.1-SNAPSHOT")
     implementation("co.aikar:minecraft-timings:1.0.4")
 
-    compileOnly(files(file("libs/MechanicsCore-1.0.1-BETA.jar")))
-    compileOnly(files(file("libs/WeaponMechanics-1.0.1-BETA.jar")))
+    compileOnly(files(file("libs/MechanicsCore-1.0.2-BETA.jar")))
+    compileOnly(files(file("libs/WeaponMechanics-1.1.2-BETA.jar")))
 }
 
 java {

@@ -12,7 +12,6 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.World;
-import org.bukkit.block.data.BlockData;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.material.MaterialData;
 import org.bukkit.util.Vector;
@@ -63,6 +62,7 @@ public class ParticleSerializer implements Serializer<ParticleSerializer> {
 
         Particle particle = data.of("Type").assertExists().getEnum(Particle.class);
         int count = data.of("Count").assertPositive().getInt(-1);
+        double extra = 0.0;
         Vector offset = new Vector();
         Object options = null;
 
@@ -106,6 +106,8 @@ public class ParticleSerializer implements Serializer<ParticleSerializer> {
                 noFade(particle, data);
                 noBlock(particle, data);
 
+                count = 0;
+                extra = 1.0;
                 offset = new Vector(color.getRed() / 255.0, color.getGreen() / 255.0, color.getBlue() / 255.0);
                 break;
             }

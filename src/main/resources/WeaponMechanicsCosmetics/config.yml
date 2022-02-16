@@ -1,0 +1,15 @@
+# Global Explosion Effect configuration. Applies to every gun that uses
+# explosion, unless you add that gun to the 'Weapon_Blacklist'.
+Explosion_Effects:
+  Falling_Block_Effects: true
+  Async_Explosion_Chance: 0.1    # Additional 10% chance to show a particle 1 tick later (adds noise)
+  Explosion_Particle_Chance: 0.3
+  Explosion_Particle:
+    Type: EXPLOSION_LARGE
+    Noise: 1.0-1.0-1.0
+  Smoke_Particle_Chance: 0.5
+  Smoke_Particle:
+    Type: SMOKE
+    Velocity: 1.0
+  Weapon_Blacklist:
+    - my-gun

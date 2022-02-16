@@ -1,8 +1,11 @@
-package me.deecaad.weaponmechanicscosmetics.trails;
+package me.deecaad.weaponmechanicscosmetics;
 
 import me.deecaad.weaponmechanics.weapon.projectile.AProjectile;
 import me.deecaad.weaponmechanics.weapon.projectile.ProjectileScript;
 import me.deecaad.weaponmechanics.weapon.projectile.ProjectileScriptManager;
+import me.deecaad.weaponmechanicscosmetics.trails.ParticleSerializer;
+import me.deecaad.weaponmechanicscosmetics.trails.Trail;
+import me.deecaad.weaponmechanicscosmetics.trails.TrailScript;
 import me.deecaad.weaponmechanicscosmetics.trails.shape.Spiral;
 import org.bukkit.Color;
 import org.bukkit.Particle;

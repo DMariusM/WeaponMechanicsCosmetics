@@ -1,11 +1,23 @@
 package me.deecaad.weaponmechanicscosmetics.trails;
 
+import me.deecaad.core.file.SerializeData;
+import me.deecaad.core.file.Serializer;
+import me.deecaad.core.file.SerializerException;
 import me.deecaad.core.utils.NumberUtil;
 import me.deecaad.weaponmechanicscosmetics.trails.shape.Shape;
+import me.deecaad.weaponmechanicscosmetics.trails.shape.ShapeFactory;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.MemorySection;
+import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
 
-public class Trail {
+public class Trail implements Serializer<Trail> {
 
     private double delta;
     private ListChooser chooser;
@@ -62,6 +74,46 @@ public class Trail {
             default:
                 throw new RuntimeException("unreachable code");
         }
+    }
+
+    @NotNull
+    @Override
+    public Trail serialize(SerializeData data) throws SerializerException {
+
+        double delta = data.of("Distance_Between_Particles").assertExists().assertPositive().getDouble();
+        ListChooser selector = data.of("Particle_Chooser").getEnum(ListChooser.class, ListChooser.LOOP);
+
+        // We need to serialize a list of ParticleSerializers. The user should
+        // always define at least 1 particle.
+        ConfigurationSection section = data.config.getConfigurationSection(data.key + ".Particles");
+        if (section == null)
+            throw data.exception("Particles", "Your trail needs to have at least 1 particle!");
+
+        // Particles are generally stored like 'Particle_1', 'Particle_2', but
+        // in reality, we don't care what they name it, as long as they use the
+        // particle serializer correctly.
+        List<ParticleSerializer> particles = new ArrayList<>();
+        for (String key : section.getKeys(false)) {
+            SerializeData relative = data.move("Particles." + key);
+            particles.add(new ParticleSerializer().serialize(relative));
+        }
+
+        String shapeInput = data.of("Shape").get("LINE").trim().toUpperCase(Locale.ROOT);
+        ConfigurationSection shapeConfig = data.config.getConfigurationSection(data.key + ".Shape_Data");
+        if (shapeConfig == null)
+            throw data.exception("Shape_Data", "Missing data for shape " + shapeInput);
+
+        Map<String, Object> shapeData = shapeConfig.getValues(false);
+
+        Shape shape;
+        try {
+            shape = ShapeFactory.getInstance().get(shapeInput, shapeData);
+        } catch (SerializerException e) {
+            e.setLocation(data.of("Shape_Data").getLocation());
+            throw e;
+        }
+
+        return new Trail(delta, selector, particles, shape);
     }
 
     public enum ListChooser {

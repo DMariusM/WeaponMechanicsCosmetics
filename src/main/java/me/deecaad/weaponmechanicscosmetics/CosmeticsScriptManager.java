@@ -24,6 +24,11 @@ public class CosmeticsScriptManager extends ProjectileScriptManager {
 
     @Override
     public void attach(@NotNull AProjectile aProjectile) {
+        if (aProjectile.getIntTag("explosion-falling-block") == 1) {
+            FallingBlockScript script = new FallingBlockScript(getPlugin(), aProjectile);
+            aProjectile.addProjectileScript(script);
+        }
+
         List<ParticleSerializer> list = Arrays.asList(
                 new ParticleSerializer(Particle.DUST_COLOR_TRANSITION, 1, 1.0f, new Vector(), new Particle.DustTransition(Color.RED, Color.WHITE, 1.0f)),
                 new ParticleSerializer(Particle.DUST_COLOR_TRANSITION, 1, 1.0f, new Vector(), new Particle.DustTransition(Color.WHITE, Color.BLUE, 1.0f)),

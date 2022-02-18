@@ -37,6 +37,8 @@ dependencies {
 
     compileOnly(files(file("libs/MechanicsCore-1.0.2-BETA.jar")))
     compileOnly(files(file("libs/WeaponMechanics-1.1.2-BETA.jar")))
+
+    implementation("org.mariuszgromada.math:MathParser.org-mXparser:4.4.2")
 }
 
 java {
@@ -67,8 +69,11 @@ tasks.named<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar>("shadowJ
     configurations = listOf(project.configurations["shadeOnly"], project.configurations["runtimeClasspath"])
 
     dependencies {
-        relocate ("co.aikar.timings.lib", "me.deecaad.weaponmechanicscosmetics.timingslib") {
+        relocate ("co.aikar.timings.lib", "me.deecaad.weaponmechanicscosmetics.libs.timings") {
             include(dependency("co.aikar:minecraft-timings"))
+        }
+        relocate ("org.mariuszgromada.math", "me.deecaad.weaponmechanicscosmetics.libs.math") {
+            include(dependency("org.mariuszgromada.math:MathParser.org-mXparser"))
         }
     }
 }

@@ -1,71 +1,31 @@
 package me.deecaad.weaponmechanicscosmetics.trails.shape;
 
-import me.deecaad.core.utils.ReflectionUtil;
-import me.deecaad.weaponmechanicscosmetics.WeaponMechanicsCosmetics;
-
-import javax.tools.JavaCompiler;
-import javax.tools.ToolProvider;
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
+import org.mariuszgromada.math.mxparser.Argument;
+import org.mariuszgromada.math.mxparser.Expression;
 
 public class StringFunctionShape extends FunctionShape {
 
-    private DoubleFunction function;
+    private final Expression expression;
+    private final Argument theta;
 
-    public StringFunctionShape(int points, int loops, String func) throws IOException, ClassNotFoundException {
-        this(points, loops, func, WeaponMechanicsCosmetics.getInstance().getPlugin().getDataFolder());
-    }
-
-    public StringFunctionShape(int points, int loops, String func, File root) throws IOException, ClassNotFoundException {
+    /**
+     * Uses <a>https://en.wikipedia.org/wiki/Mxparser</a> to evaluate the given
+     * function.
+     *
+     * @param points
+     * @param loops
+     * @param function
+     */
+    public StringFunctionShape(int points, int loops, String function) {
         super(points, loops);
 
-        String code =
-                "package me.deecaad.weaponmechanicscosmetics.trails.shape;\n" +
-                "\n" +
-                "import me.deecaad.weaponmechanicscosmetics.trails.shape.StringFunctionShape;\n" +
-                "import static java.lang.Math.*;\n" +
-                "\n" +
-                "public class ImplFunc implements StringFunctionShape.DoubleFunction {\n" +
-                "\n" +
-                "   @Override\n" +
-                "   public double function(double theta) {\n" +
-                "       return " + func + ";\n" +
-                "   }\n" +
-                "}\n";
-
-        File sourceFile = new File(root, "ImplFunc.java");
-        sourceFile.getParentFile().mkdirs();
-        Files.write(sourceFile.toPath(), code.getBytes(StandardCharsets.UTF_8));
-
-        JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
-        compiler.run(null, null, null, sourceFile.getPath());
-
-        URLClassLoader classLoader = URLClassLoader.newInstance(new URL[]{root.toURI().toURL()});
-        // noinspection unchecked
-        Class<? extends DoubleFunction> cls = (Class<DoubleFunction>) Class.forName("me.deecaad.weaponmechanicscosmetics.trails.shape.ImplFunc", true, classLoader);
-        this.function = ReflectionUtil.newInstance(cls);
-    }
-
-    public DoubleFunction getFunction() {
-        return function;
-    }
-
-    public void setFunction(DoubleFunction function) {
-        this.function = function;
+        this.theta = new Argument("theta", 0.0);
+        this.expression = new Expression(function, theta);
     }
 
     @Override
     public double radiusFunction(double theta) {
-        return function.function(theta);
-    }
-
-
-    @FunctionalInterface
-    public interface DoubleFunction {
-        double function(double theta);
+        this.theta.setArgumentValue(theta);
+        return expression.calculate();
     }
 }

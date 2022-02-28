@@ -3,6 +3,7 @@ package me.deecaad.weaponmechanicscosmetics;
 import me.deecaad.core.file.SerializeData;
 import me.deecaad.core.file.Serializer;
 import me.deecaad.core.file.SerializerException;
+import me.deecaad.core.utils.StringUtil;
 import me.deecaad.weaponmechanics.WeaponMechanics;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -37,8 +38,8 @@ public class Timer implements Serializer<Timer> {
 
     public String message(int ticks, int totalTicks) {
 
-        // By splitting the message "Reloading... {!time}s {!bar} {!time}s"
-        // into an array ["Reloading... ", "{!time}", "s ", "{!bar}", "s ", "{!time}"],
+        // By splitting the message "Reloading... %time%s %bar% %time%s"
+        // into an array ["Reloading... ", "%time%", "s ", "%bar%", "s ", "%time%"],
         // we save on performance since we don't need to iterate through
         // the entire message every time to replace the variables. We further
         // save on string concatenation performance by using a StringBuilder.
@@ -47,12 +48,12 @@ public class Timer implements Serializer<Timer> {
 
         for (String str : messages) {
             switch (str) {
-                case "{!time}":
+                case "%time%":
                     if (timeCache == null)
                         timeCache = new BigDecimal((double) ticks / totalTicks, ROUND).toString();
                     builder.append(timeCache);
                     break;
-                case "{!bar}":
+                case "%bar%":
                     bar.append(builder, ticks, totalTicks);
                     break;
                 default:
@@ -81,7 +82,7 @@ public class Timer implements Serializer<Timer> {
     public Timer serialize(SerializeData data) throws SerializerException {
         String message = data.of("Message").assertExists().assertType(String.class).get();
 
-        Matcher matcher = Pattern.compile("\\{!.+?}").matcher(message);
+        Matcher matcher = Pattern.compile("%.+?%").matcher(message);
         List<String> matches = new ArrayList<>();
         String match;
         while ((match = matcher.group()) != null)
@@ -90,7 +91,7 @@ public class Timer implements Serializer<Timer> {
         boolean usesBar = false;
 
         List<String> messages = new ArrayList<>();
-        String[] split = message.split("\\{!.+?}");
+        String[] split = message.split("%.+?%");
         for (int i = 0; i < split.length; i++) {
             String str = split[i];
 
@@ -99,7 +100,7 @@ public class Timer implements Serializer<Timer> {
             if (!str.isEmpty())
                 messages.add(str);
 
-            // If the user wants to use the {!bar} variable, then we should
+            // If the user wants to use the %bar% variable, then we should
             // validate that the bar options exist.
             String var = matches.get(i).toLowerCase(Locale.ROOT);
             if (var.equals("{!bar}"))
@@ -160,6 +161,14 @@ public class Timer implements Serializer<Timer> {
             String rightColor = data.of("Right_Color").assertExists().get().toString();
             String rightSymbol = data.of("Right_Symbol").get((Object) leftSymbol).toString();
             int symbolAmount = data.of("Symbol_Amount").assertExists().assertRange(1, 100).getInt();
+
+            if (!leftColor.startsWith("&"))
+                leftColor = "&" + leftColor;
+            if (!rightColor.startsWith("&"))
+                rightColor = "&" + rightColor;
+
+            leftColor = StringUtil.color(leftColor);
+            rightColor = StringUtil.color(rightColor);
 
             return new BarData(leftColor, rightColor, leftSymbol, rightSymbol, symbolAmount);
 

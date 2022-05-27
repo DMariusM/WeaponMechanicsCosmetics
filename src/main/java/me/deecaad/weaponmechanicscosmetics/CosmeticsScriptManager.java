@@ -1,7 +1,11 @@
-package me.deecaad.weaponmechanicscosmetics.trails;
+package me.deecaad.weaponmechanicscosmetics;
 
 import me.deecaad.weaponmechanics.weapon.projectile.AProjectile;
 import me.deecaad.weaponmechanics.weapon.projectile.ProjectileScriptManager;
+import me.deecaad.weaponmechanicscosmetics.trails.ParticleSerializer;
+import me.deecaad.weaponmechanicscosmetics.trails.Trail;
+import me.deecaad.weaponmechanicscosmetics.trails.TrailScript;
+import me.deecaad.weaponmechanicscosmetics.trails.shape.Spiral;
 import me.deecaad.weaponmechanicscosmetics.trails.shape.FunctionShape;
 import me.deecaad.weaponmechanicscosmetics.trails.shape.Shape;
 import org.bukkit.Color;
@@ -21,6 +25,11 @@ public class CosmeticsScriptManager extends ProjectileScriptManager {
 
     @Override
     public void attach(@NotNull AProjectile aProjectile) {
+        if (aProjectile.getIntTag("explosion-falling-block") == 1) {
+            FallingBlockScript script = new FallingBlockScript(getPlugin(), aProjectile);
+            aProjectile.addProjectileScript(script);
+        }
+
         List<ParticleSerializer> list = Arrays.asList(
                 new ParticleSerializer(Particle.DUST_COLOR_TRANSITION, 1, 1.0f, new Vector(), new Particle.DustTransition(Color.RED, Color.WHITE, 0.25f)),
                 new ParticleSerializer(Particle.DUST_COLOR_TRANSITION, 1, 1.0f, new Vector(), new Particle.DustTransition(Color.WHITE, Color.BLUE, 0.25f)),

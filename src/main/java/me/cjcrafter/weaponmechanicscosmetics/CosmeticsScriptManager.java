@@ -1,13 +1,12 @@
-package me.deecaad.weaponmechanicscosmetics;
+package me.cjcrafter.weaponmechanicscosmetics;
 
 import me.deecaad.weaponmechanics.weapon.projectile.AProjectile;
 import me.deecaad.weaponmechanics.weapon.projectile.ProjectileScriptManager;
-import me.deecaad.weaponmechanicscosmetics.trails.ParticleSerializer;
-import me.deecaad.weaponmechanicscosmetics.trails.Trail;
-import me.deecaad.weaponmechanicscosmetics.trails.TrailScript;
-import me.deecaad.weaponmechanicscosmetics.trails.shape.Spiral;
-import me.deecaad.weaponmechanicscosmetics.trails.shape.FunctionShape;
-import me.deecaad.weaponmechanicscosmetics.trails.shape.Shape;
+import me.cjcrafter.weaponmechanicscosmetics.trails.ParticleSerializer;
+import me.cjcrafter.weaponmechanicscosmetics.trails.Trail;
+import me.cjcrafter.weaponmechanicscosmetics.trails.TrailScript;
+import me.cjcrafter.weaponmechanicscosmetics.trails.shape.FunctionShape;
+import me.cjcrafter.weaponmechanicscosmetics.trails.shape.Shape;
 import org.bukkit.Color;
 import org.bukkit.Particle;
 import org.bukkit.plugin.Plugin;

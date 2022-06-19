@@ -1,4 +1,4 @@
-package me.deecaad.weaponmechanicscosmetics.listeners;
+package me.cjcrafter.weaponmechanicscosmetics.listeners;
 
 import me.deecaad.core.utils.NumberUtil;
 import me.deecaad.weaponmechanics.weapon.weaponevents.ProjectileExplodeEvent;

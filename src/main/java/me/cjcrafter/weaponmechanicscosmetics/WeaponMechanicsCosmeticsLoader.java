@@ -1,4 +1,4 @@
-package me.deecaad.weaponmechanicscosmetics;
+package me.cjcrafter.weaponmechanicscosmetics;
 
 import me.deecaad.core.MechanicsCore;
 import org.bukkit.plugin.java.JavaPlugin;

@@ -1,4 +1,4 @@
-package me.deecaad.weaponmechanicscosmetics.trails.shape;
+package me.cjcrafter.weaponmechanicscosmetics.trails.shape;
 
 import org.junit.jupiter.api.Test;
 

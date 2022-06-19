@@ -1,4 +1,4 @@
-package me.deecaad.weaponmechanicscosmetics;
+package me.cjcrafter.weaponmechanicscosmetics;
 
 public class WeaponMechanicsCosmetics {
 

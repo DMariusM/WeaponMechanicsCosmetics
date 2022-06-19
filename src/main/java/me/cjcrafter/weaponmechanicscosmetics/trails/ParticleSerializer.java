@@ -1,4 +1,4 @@
-package me.deecaad.weaponmechanicscosmetics.trails;
+package me.cjcrafter.weaponmechanicscosmetics.trails;
 
 import me.deecaad.core.file.SerializeData;
 import me.deecaad.core.file.Serializer;

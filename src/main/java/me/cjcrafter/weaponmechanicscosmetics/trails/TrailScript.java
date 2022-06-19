@@ -1,9 +1,9 @@
-package me.deecaad.weaponmechanicscosmetics.trails;
+package me.cjcrafter.weaponmechanicscosmetics.trails;
 
 import me.deecaad.core.utils.VectorUtil;
 import me.deecaad.weaponmechanics.weapon.projectile.AProjectile;
 import me.deecaad.weaponmechanics.weapon.projectile.ProjectileScript;
-import me.deecaad.weaponmechanicscosmetics.trails.shape.Vec2;
+import me.cjcrafter.weaponmechanicscosmetics.trails.shape.Vec2;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;

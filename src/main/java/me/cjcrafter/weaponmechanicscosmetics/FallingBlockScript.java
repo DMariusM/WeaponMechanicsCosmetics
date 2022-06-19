@@ -1,4 +1,4 @@
-package me.deecaad.weaponmechanicscosmetics;
+package me.cjcrafter.weaponmechanicscosmetics;
 
 import me.deecaad.core.utils.ReflectionUtil;
 import me.deecaad.weaponmechanics.weapon.projectile.AProjectile;

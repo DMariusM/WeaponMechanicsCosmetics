@@ -1,21 +1,18 @@
-package me.deecaad.weaponmechanicscosmetics.trails;
+package me.cjcrafter.weaponmechanicscosmetics.trails;
 
 import me.deecaad.core.file.SerializeData;
 import me.deecaad.core.file.Serializer;
 import me.deecaad.core.file.SerializerException;
 import me.deecaad.core.utils.NumberUtil;
-import me.deecaad.weaponmechanicscosmetics.trails.shape.Shape;
-import me.deecaad.weaponmechanicscosmetics.trails.shape.ShapeFactory;
+import me.cjcrafter.weaponmechanicscosmetics.trails.shape.Shape;
+import me.cjcrafter.weaponmechanicscosmetics.trails.shape.ShapeFactory;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.MemorySection;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Optional;
 
 public class Trail implements Serializer<Trail> {
 

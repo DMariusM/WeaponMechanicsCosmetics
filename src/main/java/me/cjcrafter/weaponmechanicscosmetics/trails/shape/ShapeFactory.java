@@ -1,6 +1,6 @@
-package me.deecaad.weaponmechanicscosmetics.trails.shape;
+package me.cjcrafter.weaponmechanicscosmetics.trails.shape;
 
-import me.deecaad.weaponmechanics.weapon.explode.Factory;
+import me.deecaad.weaponmechanics.utils.Factory;
 
 public final class ShapeFactory extends Factory<Shape> {
 

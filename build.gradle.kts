@@ -1,3 +1,6 @@
+group = "me.cjcrafter"
+version = "1.0.0"
+
 plugins {
     `java-library`
     id("com.github.johnrengelman.shadow") version "7.1.0"
@@ -26,6 +29,15 @@ repositories {
     maven {
         url = uri("https://repo.aikar.co/content/groups/aikar/")
     }
+
+    maven {
+        name = "GitHubPackages"
+        url = uri("https://maven.pkg.github.com/WeaponMechanics/MechanicsMain")
+        credentials {
+            username = "CJCrafter"
+            password = "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" // this is a public token created in CJCrafter's name which will never expire
+        }
+    }
 }
 
 dependencies {
@@ -35,10 +47,10 @@ dependencies {
     implementation("co.aikar:minecraft-timings:1.0.4")
     testImplementation("org.junit.jupiter:junit-jupiter:5.8.2")
 
-    compileOnly(files(file("libs/MechanicsCore-1.0.2-BETA.jar")))
-    compileOnly(files(file("libs/WeaponMechanics-1.1.2-BETA.jar")))
+    compileOnly("me.deecaad:mechanicscore:+") // consider replacing with the latest version
+    compileOnly("me.deecaad:weaponmechanics:+") // consider replacing with the latest version
 
-    implementation("org.mariuszgromada.math:MathParser.org-mXparser:4.4.2")
+    implementation("org.mariuszgromada.math:MathParser.org-mXparser:5.0.6")
 }
 
 java {
@@ -66,6 +78,7 @@ tasks.test {
 
 tasks.named<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar>("shadowJar") {
     classifier = null;
+    archiveFileName.set("WeaponMechanicsCosmetics-${project.version}.jar")
     configurations = listOf(project.configurations["shadeOnly"], project.configurations["runtimeClasspath"])
 
     dependencies {
@@ -78,14 +91,15 @@ tasks.named<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar>("shadowJ
     }
 }
 
+tasks.named("assemble").configure {
+    dependsOn("shadowJar")
+}
+
 bukkit {
     main = "me.deecaad.weaponmechanicscosmetics.WeaponMechanicsCosmeticsLoader"
     name = "WeaponMechanicsCosmetics"
     apiVersion = "1.13"
 
-    authors = listOf("DeeCaaD", "CJCrafter")
+    authors = listOf("CJCrafter", "DeeCaaD")
     softDepend = listOf("MechanicsCore", "WeaponMechanics")
 }
-
-group = "me.deecaad"
-version = "1.0.0"

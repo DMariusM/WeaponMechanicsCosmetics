@@ -1,5 +1,6 @@
-package me.deecaad.weaponmechanicscosmetics.trails.shape;
+package me.cjcrafter.weaponmechanicscosmetics.trails.shape;
 
+import me.cjcrafter.weaponmechanicscosmetics.trails.Trail;
 import me.deecaad.core.utils.VectorUtil;
 
 import java.util.ArrayList;
@@ -87,7 +88,7 @@ public abstract class FunctionShape implements Shape {
     /**
      * Use {@link #cache()} or {@link #deleteCache()} after calling this
      * method. Otherwise, your changes may not be reflected in the actual
-     * {@link me.deecaad.weaponmechanicscosmetics.trails.Trail}.
+     * {@link Trail}.
      *
      * @param points The number of points in the period.
      */
@@ -102,7 +103,7 @@ public abstract class FunctionShape implements Shape {
     /**
      * Use {@link #cache()} or {@link #deleteCache()} after calling this
      * method. Otherwise, your changes may not be reflected in the actual
-     * {@link me.deecaad.weaponmechanicscosmetics.trails.Trail}.
+     * {@link Trail}.
      *
      * @param loops The number of particles to show per point.
      */

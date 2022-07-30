@@ -1,8 +1,0 @@
-Timer:
-  Message: "&7Reloading {!bar} {!time}&7s"
-  Bar:
-    Left_Color: "&6"
-    Right_Color: "&7"
-    Left_Symbol: "|"
-    Right_Symbol: "|"
-    Symbol_Amount: 9

@@ -27,6 +27,7 @@ public class CosmeticsScriptManager extends ProjectileScriptManager {
         if (aProjectile.getIntTag("explosion-falling-block") == 1) {
             FallingBlockScript script = new FallingBlockScript(getPlugin(), aProjectile);
             aProjectile.addProjectileScript(script);
+            return;
         }
 
         List<ParticleSerializer> list = Arrays.asList(

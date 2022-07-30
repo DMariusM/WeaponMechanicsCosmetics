@@ -1,0 +1,17 @@
+Timer:
+  Item_Cooldown: <true/false>
+  Action_Bar: "&7Reloading %bar% %time%&7s"
+  Action_Bar_Complete: "&7Reload Complete"
+  Title: "<message>"
+  Subtitle: "<message>"
+  Boss_Bar:
+    Message: "<message>"
+    Bar_Color: BossBar.Color
+    Bar_Style: BossBar.Overlay
+  Exp: <true/false>
+  Bar:
+    Left_Color: "&6"
+    Right_Color: "&7"
+    Left_Symbol: "|"
+    Right_Symbol: "|"
+    Symbol_Amount: 9

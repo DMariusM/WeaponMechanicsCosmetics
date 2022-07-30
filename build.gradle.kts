@@ -14,7 +14,7 @@ configurations {
 }
 
 bukkit {
-    main = "me.deecaad.weaponmechanicscosmetics.WeaponMechanicsCosmeticsLoader"
+    main = "me.cjcrafter.weaponmechanicscosmetics.WeaponMechanicsCosmeticsLoader"
     name = "WeaponMechanicsCosmetics"
     apiVersion = "1.13"
 
@@ -81,14 +81,17 @@ tasks.named<ShadowJar>("shadowJar") {
     configurations = listOf(project.configurations["shadeOnly"], project.configurations["runtimeClasspath"])
 
     dependencies {
-        relocate ("me.cjcrafter.auto", "me.cjcrafter.weaponmechanicscosmetics.libs.auto") {
+        relocate ("me.cjcrafter.auto", "me.cjcrafter.weaponmechanicscosmetics.lib.auto") {
             include(dependency("me.cjcrafter:mechanicsautodownload"))
         }
-        relocate ("co.aikar.timings.lib", "me.cjcrafter.weaponmechanicscosmetics.libs.timings") {
+        relocate ("co.aikar.timings.lib", "me.cjcrafter.weaponmechanicscosmetics.lib.timings") {
             include(dependency("co.aikar:minecraft-timings"))
         }
-        relocate ("org.mariuszgromada.math", "me.cjcrafter.weaponmechanicscosmetics.libs.math") {
+        relocate ("org.mariuszgromada.math", "me.cjcrafter.weaponmechanicscosmetics.lib.math") {
             include(dependency("org.mariuszgromada.math:MathParser.org-mXparser"))
+        }
+        relocate ("org.bstats", "me.cjcrafter.weaponmechanicscosmetics.lib.bstats") {
+            include(dependency("org.bstats:"))
         }
     }
 }

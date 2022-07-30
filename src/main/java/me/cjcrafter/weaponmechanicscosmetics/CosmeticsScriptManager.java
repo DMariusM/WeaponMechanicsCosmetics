@@ -1,5 +1,7 @@
 package me.cjcrafter.weaponmechanicscosmetics;
 
+import me.deecaad.core.file.Configuration;
+import me.deecaad.weaponmechanics.WeaponMechanics;
 import me.deecaad.weaponmechanics.weapon.projectile.AProjectile;
 import me.deecaad.weaponmechanics.weapon.projectile.ProjectileScriptManager;
 import me.cjcrafter.weaponmechanicscosmetics.trails.ParticleSerializer;
@@ -7,6 +9,7 @@ import me.cjcrafter.weaponmechanicscosmetics.trails.Trail;
 import me.cjcrafter.weaponmechanicscosmetics.trails.TrailScript;
 import me.cjcrafter.weaponmechanicscosmetics.trails.shape.FunctionShape;
 import me.cjcrafter.weaponmechanicscosmetics.trails.shape.Shape;
+import me.deecaad.weaponmechanics.weapon.projectile.weaponprojectile.WeaponProjectile;
 import org.bukkit.Color;
 import org.bukkit.Particle;
 import org.bukkit.plugin.Plugin;
@@ -29,6 +32,20 @@ public class CosmeticsScriptManager extends ProjectileScriptManager {
             aProjectile.addProjectileScript(script);
             return;
         }
+
+        Configuration config = WeaponMechanics.getConfigurations();
+
+        if (aProjectile instanceof WeaponProjectile) {
+            WeaponProjectile projectile = (WeaponProjectile) aProjectile;
+            Trail trail = config.getObject(projectile.getWeaponTitle() + ".Trail", Trail.class);
+
+            if (trail != null)
+                projectile.addProjectileScript(new TrailScript(getPlugin(), projectile, trail));
+        }
+
+        if (true)
+            return;
+
 
         List<ParticleSerializer> list = Arrays.asList(
                 new ParticleSerializer(Particle.DUST_COLOR_TRANSITION, 1, 1.0f, new Vector(), new Particle.DustTransition(Color.RED, Color.WHITE, 0.25f)),

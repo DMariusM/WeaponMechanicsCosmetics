@@ -2,21 +2,15 @@ package me.cjcrafter.weaponmechanicscosmetics;
 
 import me.cjcrafter.weaponmechanicscosmetics.listeners.ExplosionEffectSpawner;
 import me.cjcrafter.weaponmechanicscosmetics.listeners.MuzzleFlashSpawner;
-import me.cjcrafter.weaponmechanicscosmetics.listeners.TimerSpawner;
+import me.cjcrafter.weaponmechanicscosmetics.timer.TimerSpawner;
 import me.cjcrafter.weaponmechanicscosmetics.listeners.WeaponMechanicsSerializerListener;
-import me.deecaad.core.MechanicsCore;
-import me.deecaad.core.events.QueueSerializerEvent;
 import me.deecaad.core.utils.Debugger;
 import me.deecaad.core.utils.FileUtil;
-import me.deecaad.weaponmechanics.WeaponMechanics;
 import org.bstats.bukkit.Metrics;
-import org.bstats.charts.SimplePie;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.PluginManager;
 
 import java.io.File;
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.logging.Logger;
 
 public class WeaponMechanicsCosmetics {
@@ -53,8 +47,6 @@ public class WeaponMechanicsCosmetics {
         pm.registerEvents(new MuzzleFlashSpawner(), plugin);
         pm.registerEvents(new TimerSpawner(), plugin);
         pm.registerEvents(new WeaponMechanicsSerializerListener(), plugin);
-
-        new CosmeticsScriptManager(plugin).register();
 
         registerBStats();
     }

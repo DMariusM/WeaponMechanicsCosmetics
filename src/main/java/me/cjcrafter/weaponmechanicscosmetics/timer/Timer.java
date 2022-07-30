@@ -275,10 +275,10 @@ public class Timer implements Serializer<Timer>{
         @NotNull
         @Override
         public StringBar serialize(SerializeData data) throws SerializerException {
-            String leftColor = data.of("Left_Color").assertExists().get();
-            String rightColor = data.of("Right_Color").assertExists().get();
-            String leftSymbol = data.of("Left_Symbol").assertExists().get();
-            String rightSymbol = data.of("Right_Symbol").get(leftSymbol);
+            String leftColor = data.of("Left_Color").assertExists().getAdventure();
+            String rightColor = data.of("Right_Color").assertExists().getAdventure();
+            String leftSymbol = data.of("Left_Symbol").assertExists().getAdventure();
+            String rightSymbol = data.of("Right_Symbol").getAdventure(leftSymbol);
             int symbolAmount = data.of("Symbol_Amount").assertExists().assertPositive().getInt();
 
             return new StringBar(leftColor, rightColor, leftSymbol, rightSymbol, symbolAmount);

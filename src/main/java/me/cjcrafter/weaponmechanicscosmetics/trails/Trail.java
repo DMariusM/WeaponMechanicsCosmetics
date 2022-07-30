@@ -9,10 +9,7 @@ import me.cjcrafter.weaponmechanicscosmetics.trails.shape.ShapeFactory;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
 public class Trail implements Serializer<Trail> {
 
@@ -20,6 +17,12 @@ public class Trail implements Serializer<Trail> {
     private ListChooser chooser;
     private List<ParticleSerializer> particles;
     private Shape shape;
+
+    /**
+     * Default constructor for serializer
+     */
+    public Trail() {
+    }
 
     public Trail(double delta, ListChooser chooser, List<ParticleSerializer> particles, Shape shape) {
         this.delta = delta;
@@ -73,6 +76,11 @@ public class Trail implements Serializer<Trail> {
         }
     }
 
+    @Override
+    public String getKeyword() {
+        return "Trail";
+    }
+
     @NotNull
     @Override
     public Trail serialize(SerializeData data) throws SerializerException {
@@ -96,11 +104,9 @@ public class Trail implements Serializer<Trail> {
         }
 
         String shapeInput = data.of("Shape").get("LINE").trim().toUpperCase(Locale.ROOT);
-        ConfigurationSection shapeConfig = data.config.getConfigurationSection(data.key + ".Shape_Data");
-        if (shapeConfig == null)
-            throw data.exception("Shape_Data", "Missing data for shape " + shapeInput);
+        ConfigurationSection shapeConfig = data.of("Shape_Data").assertType(ConfigurationSection.class).assertExists(!shapeInput.equalsIgnoreCase("LINE")).get(null);
 
-        Map<String, Object> shapeData = shapeConfig.getValues(false);
+        Map<String, Object> shapeData = shapeConfig == null ? new HashMap<>() : shapeConfig.getValues(false);
 
         Shape shape;
         try {

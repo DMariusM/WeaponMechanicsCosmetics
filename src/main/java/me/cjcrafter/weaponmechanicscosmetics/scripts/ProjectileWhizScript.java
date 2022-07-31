@@ -1,4 +1,4 @@
-package me.cjcrafter.weaponmechanicscosmetics;
+package me.cjcrafter.weaponmechanicscosmetics.scripts;
 
 import me.deecaad.core.file.Configuration;
 import me.deecaad.weaponmechanics.WeaponMechanics;

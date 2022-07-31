@@ -1,23 +1,18 @@
 package me.cjcrafter.weaponmechanicscosmetics;
 
+import me.cjcrafter.weaponmechanicscosmetics.scripts.FallingBlockScript;
+import me.cjcrafter.weaponmechanicscosmetics.scripts.ProjectileBlockSoundScript;
+import me.cjcrafter.weaponmechanicscosmetics.scripts.ProjectileSplashScript;
 import me.deecaad.core.file.Configuration;
 import me.deecaad.weaponmechanics.WeaponMechanics;
 import me.deecaad.weaponmechanics.weapon.projectile.AProjectile;
 import me.deecaad.weaponmechanics.weapon.projectile.ProjectileScriptManager;
-import me.cjcrafter.weaponmechanicscosmetics.trails.ParticleSerializer;
 import me.cjcrafter.weaponmechanicscosmetics.trails.Trail;
 import me.cjcrafter.weaponmechanicscosmetics.trails.TrailScript;
-import me.cjcrafter.weaponmechanicscosmetics.trails.shape.FunctionShape;
-import me.cjcrafter.weaponmechanicscosmetics.trails.shape.Shape;
 import me.deecaad.weaponmechanics.weapon.projectile.weaponprojectile.WeaponProjectile;
-import org.bukkit.Color;
-import org.bukkit.Particle;
 import org.bukkit.plugin.Plugin;
-import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Arrays;
-import java.util.List;
 
 public class CosmeticsScriptManager extends ProjectileScriptManager {
 
@@ -36,30 +31,16 @@ public class CosmeticsScriptManager extends ProjectileScriptManager {
         Configuration config = WeaponMechanics.getConfigurations();
 
         if (aProjectile instanceof WeaponProjectile) {
+
             WeaponProjectile projectile = (WeaponProjectile) aProjectile;
             Trail trail = config.getObject(projectile.getWeaponTitle() + ".Trail", Trail.class);
 
             if (trail != null)
                 projectile.addProjectileScript(new TrailScript(getPlugin(), projectile, trail));
+
+            // More generalized weapon scripts
+            projectile.addProjectileScript(new ProjectileSplashScript(getPlugin(), projectile));
+            projectile.addProjectileScript(new ProjectileBlockSoundScript(getPlugin(), projectile));
         }
-
-        if (true)
-            return;
-
-
-        List<ParticleSerializer> list = Arrays.asList(
-                new ParticleSerializer(Particle.DUST_COLOR_TRANSITION, 1, 1.0f, new Vector(), new Particle.DustTransition(Color.RED, Color.WHITE, 0.25f)),
-                new ParticleSerializer(Particle.DUST_COLOR_TRANSITION, 1, 1.0f, new Vector(), new Particle.DustTransition(Color.WHITE, Color.BLUE, 0.25f)),
-                new ParticleSerializer(Particle.DUST_COLOR_TRANSITION, 1, 1.0f, new Vector(), new Particle.DustTransition(Color.BLUE, Color.RED, 0.25f))
-        );
-
-        Shape shape = new FunctionShape(32, 32) {
-            @Override
-            public double radiusFunction(double theta) {
-                return 2 * Math.cos(2 * theta);
-            }
-        };
-        Trail trail = new Trail(0.2, Trail.ListChooser.LOOP, list, shape);
-        aProjectile.addProjectileScript(new TrailScript(getPlugin(), aProjectile, trail));
     }
 }

@@ -1,6 +1,6 @@
 package me.cjcrafter.weaponmechanicscosmetics.listeners;
 
-import me.cjcrafter.weaponmechanicscosmetics.CosmeticsScriptManager;
+import me.cjcrafter.weaponmechanicscosmetics.GeneralCosmeticsValidator;
 import me.cjcrafter.weaponmechanicscosmetics.WeaponMechanicsCosmetics;
 import me.cjcrafter.weaponmechanicscosmetics.timer.TimerValidator;
 import me.cjcrafter.weaponmechanicscosmetics.trails.Trail;
@@ -16,7 +16,11 @@ public class WeaponMechanicsSerializerListener implements Listener {
             return;
 
         event.addValidators(new TimerValidator());
+        event.addValidators(new GeneralCosmeticsValidator());
         event.addSerializers(new Trail());
-        new CosmeticsScriptManager(WeaponMechanicsCosmetics.getInstance().getPlugin()).register();
+
+        // Whenever WeaponMechanics reloads, we should also reload
+        // WeaponMechanicsCosmetics. TODO Move this to a proper location.
+        WeaponMechanicsCosmetics.getInstance().reloadConfig();
     }
 }

@@ -13,6 +13,11 @@ import java.util.List;
 public class TimerValidator implements IValidator {
 
     @Override
+    public boolean denyKeys() {
+        return true;
+    }
+
+    @Override
     public String getKeyword() {
         return "Timer";
     }

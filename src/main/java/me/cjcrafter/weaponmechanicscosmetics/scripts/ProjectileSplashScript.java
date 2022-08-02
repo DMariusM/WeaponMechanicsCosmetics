@@ -1,14 +1,20 @@
 package me.cjcrafter.weaponmechanicscosmetics.scripts;
 
+import me.deecaad.core.file.Configuration;
+import me.deecaad.weaponmechanics.WeaponMechanics;
+import me.deecaad.weaponmechanics.mechanics.CastData;
+import me.deecaad.weaponmechanics.mechanics.Mechanics;
 import me.deecaad.weaponmechanics.weapon.projectile.ProjectileScript;
 import me.deecaad.weaponmechanics.weapon.projectile.weaponprojectile.WeaponProjectile;
-import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.concurrent.ThreadLocalRandom;
-
+/**
+ * This script checks if the projectile enters water every tick. When the
+ * projectile enters water, Mechanics are used. This is useful for splash
+ * particles, and a splash sound effect.
+ */
 public class ProjectileSplashScript extends ProjectileScript<WeaponProjectile> {
 
     private boolean wasInWater;
@@ -22,10 +28,12 @@ public class ProjectileSplashScript extends ProjectileScript<WeaponProjectile> {
         boolean isInWater = isInWater();
 
         if (isInWater && !wasInWater) {
-            World world = projectile.getWorld();
-            Location loc = projectile.getLocation().toLocation(world);
-            world.playSound(loc, Sound.ENTITY_GENERIC_SPLASH, 1.0f, 1.7f + ThreadLocalRandom.current().nextFloat(0.0f, 0.3f));
-            world.spawnParticle(Particle.WATER_SPLASH, loc, 25, 0.2, 0.2, 0.2);
+
+            Configuration config = WeaponMechanics.getConfigurations();
+            CastData castData = new CastData(projectile);
+            Mechanics splashMechanics = config.getObject(projectile.getWeaponTitle() + ".Cosmetics.Splash_Mechanics", Mechanics.class);
+            if (splashMechanics != null)
+                splashMechanics.use(castData);
         }
 
         wasInWater = isInWater;
@@ -33,6 +41,8 @@ public class ProjectileSplashScript extends ProjectileScript<WeaponProjectile> {
 
     public boolean isInWater() {
         Block block = projectile.getWorld().getBlockAt((int) projectile.getX(), (int) projectile.getY(), (int) projectile.getZ());
+
+        // Weird water check for version compatibility... "STATIONARY_WATER"
         return block.isLiquid() && block.getType().name().endsWith("WATER");
     }
 }

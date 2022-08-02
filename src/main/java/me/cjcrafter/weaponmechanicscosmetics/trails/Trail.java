@@ -90,17 +90,14 @@ public class Trail implements Serializer<Trail> {
 
         // We need to serialize a list of ParticleSerializers. The user should
         // always define at least 1 particle.
-        ConfigurationSection section = data.config.getConfigurationSection(data.key + ".Particles");
-        if (section == null)
-            throw data.exception("Particles", "Your trail needs to have at least 1 particle!");
+        ConfigurationSection section = data.of("Particles").assertType(ConfigurationSection.class).assertExists().get();
 
         // Particles are generally stored like 'Particle_1', 'Particle_2', but
         // in reality, we don't care what they name it, as long as they use the
         // particle serializer correctly.
         List<ParticleSerializer> particles = new ArrayList<>();
         for (String key : section.getKeys(false)) {
-            SerializeData relative = data.move("Particles." + key);
-            particles.add(new ParticleSerializer().serialize(relative));
+            particles.add(data.of("Particles." + key).assertExists().serialize(ParticleSerializer.class));
         }
 
         String shapeInput = data.of("Shape").get("LINE").trim().toUpperCase(Locale.ROOT);

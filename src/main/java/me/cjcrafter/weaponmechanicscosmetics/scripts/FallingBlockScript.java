@@ -1,7 +1,9 @@
 package me.cjcrafter.weaponmechanicscosmetics.scripts;
 
+import me.cjcrafter.weaponmechanicscosmetics.WeaponMechanicsCosmetics;
 import me.deecaad.core.compatibility.CompatibilityAPI;
 import me.deecaad.core.compatibility.block.BlockCompatibility;
+import me.deecaad.core.file.Configuration;
 import me.deecaad.core.utils.ReflectionUtil;
 import me.deecaad.weaponmechanics.weapon.projectile.AProjectile;
 import me.deecaad.weaponmechanics.weapon.projectile.ProjectileScript;
@@ -43,21 +45,37 @@ public class FallingBlockScript extends ProjectileScript<AProjectile> {
 
     @Override
     public void onTickEnd() {
-        World world = projectile.getWorld();
-        Location location = projectile.getLocation().toLocation(world);
-        world.spawnParticle(Particle.FALLING_DUST, location, 1, 0.3, 0.3, 0.3, data);
+        Configuration config = WeaponMechanicsCosmetics.getInstance().getConfiguration();
+        int amount = config.getInt("Explosion_Effects.Falling_Block_Dust.Amount");
+        double spread = config.getDouble("Explosion_Effects.Falling_Block_Dust.Spread");
+
+        if (amount != 0) {
+            World world = projectile.getWorld();
+            Location location = projectile.getLocation().toLocation(world);
+            world.spawnParticle(Particle.FALLING_DUST, location, amount, spread, spread, spread, data);
+        }
     }
 
     @Override
     public void onEnd() {
+        Configuration config = WeaponMechanicsCosmetics.getInstance().getConfiguration();
+        int amount = config.getInt("Explosion_Effects.Falling_Block_Break.Amount");
+        double spread = config.getDouble("Explosion_Effects.Falling_Block_Break.Spread");
+        boolean playSound = config.getBool("Explosion_Effects.Falling_Block_Break.Play_Break_Sound");
+
         World world = projectile.getWorld();
         Location location = projectile.getLocation().toLocation(world);
-        world.spawnParticle(Particle.BLOCK_CRACK, location, 20, 0.35, 0.35, 0.35, data);
 
-        BlockCompatibility.SoundData sound = CompatibilityAPI.getBlockCompatibility().getBlockSound(data, BlockCompatibility.SoundType.BREAK);
-        if (ReflectionUtil.getMCVersion() >= 11)
-            world.playSound(location, sound.sound, SoundCategory.BLOCKS, sound.volume, sound.pitch);
-        else
-            world.playSound(location, sound.sound, sound.volume, sound.pitch);
+        if (amount != 0) {
+            world.spawnParticle(Particle.BLOCK_CRACK, location, amount, spread, spread, spread, data);
+        }
+
+        if (playSound) {
+            BlockCompatibility.SoundData sound = CompatibilityAPI.getBlockCompatibility().getBlockSound(data, BlockCompatibility.SoundType.BREAK);
+            if (ReflectionUtil.getMCVersion() >= 11)
+                world.playSound(location, sound.sound, SoundCategory.BLOCKS, sound.volume, sound.pitch);
+            else
+                world.playSound(location, sound.sound, sound.volume, sound.pitch);
+        }
     }
 }

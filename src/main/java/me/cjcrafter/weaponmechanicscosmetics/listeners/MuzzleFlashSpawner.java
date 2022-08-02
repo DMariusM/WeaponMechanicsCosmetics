@@ -23,7 +23,7 @@ public class MuzzleFlashSpawner implements Listener {
     @EventHandler
     public void onShoot(WeaponShootEvent event) {
         Configuration config = WeaponMechanics.getConfigurations();
-        if (false && !config.getBool(event.getWeaponTitle() + ".Shoot.Muzzle_Flash"))
+        if (!config.getBool(event.getWeaponTitle() + ".Cosmetics.Muzzle_Flash"))
             return;
 
         FakeEntity entity = CompatibilityAPI.getEntityCompatibility().generateFakeEntity(event.getShooter().getEyeLocation(), torch);
@@ -35,6 +35,6 @@ public class MuzzleFlashSpawner implements Listener {
             public void run() {
                 entity.remove();
             }
-        }.runTaskAsynchronously(WeaponMechanicsCosmetics.getInstance().getPlugin());
+        }.runTaskLaterAsynchronously(WeaponMechanicsCosmetics.getInstance().getPlugin(), 10);
     }
 }

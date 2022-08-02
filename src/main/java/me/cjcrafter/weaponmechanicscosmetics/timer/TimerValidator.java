@@ -31,7 +31,9 @@ public class TimerValidator implements IValidator {
         for (String key : keys) {
             SerializeData data = new SerializeData(new Timer(), file, s + "." + key, config);
             Timer timer = data.of().serialize(new Timer());
-            configuration.set(s + "." + key, timer);
+
+            if (timer != null)
+                configuration.set(s + "." + key, timer);
         }
     }
 }

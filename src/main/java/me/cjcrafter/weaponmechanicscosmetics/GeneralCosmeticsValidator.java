@@ -1,7 +1,9 @@
 package me.cjcrafter.weaponmechanicscosmetics;
 
+import me.cjcrafter.weaponmechanicscosmetics.general.PerPlayerSoundMechanic;
 import me.deecaad.core.file.*;
 import me.deecaad.weaponmechanics.mechanics.Mechanics;
+import me.deecaad.weaponmechanics.mechanics.defaultmechanics.SoundMechanic;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 
@@ -47,7 +49,7 @@ public class GeneralCosmeticsValidator implements IValidator {
         // Value should be less than 8 for good results, but we'll *allow*
         // larger values for experimentation.
         configuration.set(key + ".Bullet_Zip.Maximum_Distance", data.of("Bullet_Zip.Maximum_Distance").assertRange(0.0, 16.0).getDouble(0.0));
-        Mechanics zipMechanics = data.of("Bullet_Zip.Mechanics").serialize(new Mechanics());
-        configuration.set(key + ".Bullet_Zip.Mechanics", zipMechanics);
+        SoundMechanic zipMechanics = data.of("Bullet_Zip.Sounds").serializeNonStandardSerializer(new PerPlayerSoundMechanic());
+        configuration.set(key + ".Bullet_Zip.Sounds", zipMechanics);
     }
 }

@@ -11,6 +11,7 @@ import me.deecaad.weaponmechanics.mechanics.Mechanics;
 import me.deecaad.weaponmechanics.mechanics.defaultmechanics.SoundMechanic;
 import me.deecaad.weaponmechanics.weapon.projectile.ProjectileScript;
 import me.deecaad.weaponmechanics.weapon.projectile.weaponprojectile.WeaponProjectile;
+import me.deecaad.weaponmechanics.wrappers.EntityWrapper;
 import org.bukkit.Chunk;
 import org.bukkit.Color;
 import org.bukkit.Particle;
@@ -30,7 +31,7 @@ import java.util.LinkedList;
 public class ProjectileZipScript extends ProjectileScript<WeaponProjectile> {
 
     private final double distanceSquared;
-    private final Mechanics mechanics;
+    private final SoundMechanic mechanics;
 
     public ProjectileZipScript(@NotNull Plugin owner, @NotNull WeaponProjectile projectile) {
         super(owner, projectile);
@@ -38,7 +39,7 @@ public class ProjectileZipScript extends ProjectileScript<WeaponProjectile> {
         Configuration config = WeaponMechanics.getConfigurations();
         double distance = config.getDouble(projectile.getWeaponTitle() + ".Cosmetics.Bullet_Zip.Maximum_Distance", -1.0);
         this.distanceSquared = distance * distance;
-        this.mechanics = config.getObject(projectile.getWeaponTitle() + ".Cosmetics.Bullet_Zip.Mechanics", Mechanics.class);
+        this.mechanics = config.getObject(projectile.getWeaponTitle() + ".Cosmetics.Bullet_Zip.Sounds", SoundMechanic.class);
 
         if (distance == -1.0 || mechanics == null)
             throw new IllegalArgumentException("todo");
@@ -85,13 +86,15 @@ public class ProjectileZipScript extends ProjectileScript<WeaponProjectile> {
             //    debugRay(world, point, a, closeEnough ? Color.GREEN : Color.RED);
             //}
 
-            if (closeEnough)
-                mechanics.use(new CastData(point.toLocation(world)));
+            if (closeEnough) {
+                EntityWrapper wrapper = WeaponMechanics.getEntityWrapper(player);
+                mechanics.use(new CastData(wrapper, point.toLocation(world), projectile.getWeaponTitle(), projectile.getWeaponStack()));
+            }
         }
     }
 
-    private static Collection<LivingEntity> getPlayers(World world, Vector min, Vector max) {
-        Collection<LivingEntity> temp = new LinkedList<>();
+    private static Collection<Player> getPlayers(World world, Vector min, Vector max) {
+        Collection<Player> temp = new LinkedList<>();
 
         int minX = floor(min.getX() - 1.0D) >> 4;
         int maxX = floor(max.getX() + 1.0D) >> 4;
@@ -103,8 +106,8 @@ public class ProjectileZipScript extends ProjectileScript<WeaponProjectile> {
                 Chunk chunk = world.getChunkAt(x, z);
 
                 for (Entity entity : chunk.getEntities()) {
-                    if (entity.getType().isAlive())
-                        temp.add((LivingEntity) entity);
+                    if (entity.getType() == EntityType.PLAYER)
+                        temp.add((Player) entity);
                 }
             }
         }

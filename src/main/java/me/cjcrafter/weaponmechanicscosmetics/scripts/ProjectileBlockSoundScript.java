@@ -1,8 +1,10 @@
 package me.cjcrafter.weaponmechanicscosmetics.scripts;
 
+import me.cjcrafter.weaponmechanicscosmetics.WeaponMechanicsCosmetics;
 import me.deecaad.core.compatibility.CompatibilityAPI;
 import me.deecaad.core.compatibility.block.BlockCompatibility;
 import me.deecaad.core.file.*;
+import me.deecaad.core.utils.Debugger;
 import me.deecaad.core.utils.EnumUtil;
 import me.deecaad.core.utils.NumberUtil;
 import me.deecaad.core.utils.ReflectionUtil;
@@ -16,7 +18,6 @@ import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
-import java.util.concurrent.ThreadLocalRandom;
 
 public class ProjectileBlockSoundScript extends ProjectileScript<WeaponProjectile> {
 
@@ -26,13 +27,20 @@ public class ProjectileBlockSoundScript extends ProjectileScript<WeaponProjectil
 
     @Override
     public void onCollide(@NotNull Block block) {
-        Object data = ReflectionUtil.getMCVersion() < 13 ? new MaterialData(block.getType(), block.getData()) : block.getBlockData();
-        BlockCompatibility.SoundData sound = CompatibilityAPI.getBlockCompatibility().getBlockSound(data, BlockCompatibility.SoundType.PLACE);
-        World world = projectile.getWorld();
-        Location location = projectile.getLocation().toLocation(world);
-        world.playSound(location, sound.sound, sound.volume, sound.pitch + (float) ThreadLocalRandom.current().nextDouble(-0.1, 0.0));
-    }
+        Configuration config = WeaponMechanicsCosmetics.getInstance().getConfiguration();
+        BlockSound sound = config.getObject("Block_Sounds", BlockSound.class);
 
+        if (sound == null) {
+            Debugger debug = WeaponMechanicsCosmetics.getInstance().getDebug();
+            debug.error("Did you delete in the 'Block_Sounds' section in config.yml?",
+                    "You probably want to check the main config wiki",
+                    "You can regenerate your config by deleting the config.yml file");
+
+            return;
+        }
+
+        sound.play(projectile, block);
+    }
 
 
     public static class BlockSound implements Serializer<BlockSound> {

@@ -5,7 +5,7 @@ import me.cjcrafter.weaponmechanicscosmetics.listeners.MuzzleFlashSpawner;
 import me.cjcrafter.weaponmechanicscosmetics.scripts.ProjectileBlockSoundScript;
 import me.cjcrafter.weaponmechanicscosmetics.timer.TimerSpawner;
 import me.cjcrafter.weaponmechanicscosmetics.listeners.WeaponMechanicsSerializerListener;
-import me.cjcrafter.weaponmechanicscosmetics.trails.ParticleMechanic;
+import me.cjcrafter.weaponmechanicscosmetics.general.ParticleMechanic;
 import me.deecaad.core.file.Configuration;
 import me.deecaad.core.file.FileReader;
 import me.deecaad.core.file.IValidator;

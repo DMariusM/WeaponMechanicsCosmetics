@@ -1,5 +1,6 @@
-package me.cjcrafter.weaponmechanicscosmetics.trails;
+package me.cjcrafter.weaponmechanicscosmetics.general;
 
+import me.cjcrafter.weaponmechanicscosmetics.trails.ParticleSerializer;
 import me.deecaad.core.file.SerializeData;
 import me.deecaad.core.file.SerializerException;
 import me.deecaad.weaponmechanics.mechanics.CastData;

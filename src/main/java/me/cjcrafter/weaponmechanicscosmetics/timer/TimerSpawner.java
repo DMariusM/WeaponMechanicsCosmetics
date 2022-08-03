@@ -15,7 +15,7 @@ import java.util.Map;
 
 public class TimerSpawner implements Listener {
 
-    private final Map<Player, Integer> tasks;
+    private final Map<Player, TimerData> tasks;
 
     public TimerSpawner() {
         tasks = new HashMap<>();
@@ -47,23 +47,32 @@ public class TimerSpawner implements Listener {
             return;
 
         Configuration config = WeaponMechanics.getConfigurations();
-        Timer timer = config.getObject(event.getWeaponTitle() + ".Timer.Reload_Timer", Timer.class);
+        Timer timer = config.getObject(event.getWeaponTitle() + ".Show_Time.Reload", Timer.class);
         if (timer == null)
             return;
 
         Player player = (Player) event.getShooter();
         int delay = event.getReloadCompleteTime();
-        int task = timer.play(player, event.getWeaponStack(), delay);
+        TimerData task = timer.play(player, event.getWeaponStack(), delay);
         tasks.put(player, task);
     }
 
     @EventHandler
     public void onReloadCancel(WeaponReloadCancelEvent event) {
-        int task = tasks.getOrDefault(event.getEntity(), -1);
-        if (task == -1)
+        if (event.getEntity().getType() != EntityType.PLAYER)
             return;
 
-        Bukkit.getScheduler().cancelTask(task);
+        Player player = (Player) event.getEntity();
+        TimerData task = tasks.get(player);
+        if (task == null)
+            return;
+
+        Bukkit.getScheduler().cancelTask(task.taskId);
+
+        // We also have to alert the timer of the cancel
+        Configuration config = WeaponMechanics.getConfigurations();
+        Timer timer = config.getObject(event.getWeaponTitle() + ".Show_Time.Reload", Timer.class);
+        timer.cancel(player, event.getWeaponStack(), event.getElapsedTime(), task.totalTicks);
     }
 
     @EventHandler

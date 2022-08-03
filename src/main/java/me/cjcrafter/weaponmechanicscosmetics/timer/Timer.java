@@ -22,12 +22,15 @@ import java.lang.reflect.Constructor;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
+import java.text.DecimalFormat;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Timer implements Serializer<Timer>{
 
-    public static final MathContext ROUND = new MathContext(1, RoundingMode.HALF_UP);
-    public static final int DEFAULT_TICK_RATE = 2; // 0.1 seconds between updates
-    public static final Title.Times TITLE_TIMES = Title.Times.times(Ticks.duration(0), Ticks.duration(1), Ticks.duration(5));
+    public static final DecimalFormat ROUND = new DecimalFormat("0.0");
+    public static final int DEFAULT_TICK_RATE = 1; // 0.1 seconds between updates
+    public static final Title.Times TITLE_TIMES = Title.Times.times(Ticks.duration(0), Ticks.duration(2), Ticks.duration(5));
 
     private static Constructor<?> packetPlayOutExperienceConstructor;
 
@@ -73,18 +76,18 @@ public class Timer implements Serializer<Timer>{
         this.bar = bar;
     }
 
-    public int play(Player player, ItemStack weapon, int totalTicks) {
+    public TimerData play(Player player, ItemStack weapon, int totalTicks) {
         if (showItemCooldown)
             CompatibilityAPI.getEntityCompatibility().setCooldown(player, weapon.getType(), totalTicks);
 
         send(player, 0, totalTicks);
 
-        return new BukkitRunnable() {
+        int taskId = new BukkitRunnable() {
             int ticks = 0;
 
             @Override
             public void run() {
-                if ((ticks += 2) >= totalTicks) {
+                if ((ticks += DEFAULT_TICK_RATE) >= totalTicks) {
                     cancel();
                 }
 
@@ -95,35 +98,42 @@ public class Timer implements Serializer<Timer>{
             public void cancel() {
                 super.cancel();
 
-                Audience audience = MechanicsCore.getPlugin().adventure.player(player);
-
-                // Remove any cooldown if the player still has one (*should*
-                // only happen when the event is cancelled).
-                if (CompatibilityAPI.getEntityCompatibility().hasCooldown(player, weapon.getType()))
-                    CompatibilityAPI.getEntityCompatibility().setCooldown(player, weapon.getType(), 0);
-
-                // Make sure player experience is set to their old exp value
-                sendExp(player, Float.NaN);
-
-                // If the event was cancelled BEFORE it was completed...
-                if (ticks > totalTicks && actionBarCancelled != null) {
-                    audience.sendActionBar(actionBarCancelled);
-                }
-
-                // If the event was completed successfully
-                else if (ticks <= totalTicks && actionBarComplete != null) {
-                    audience.sendActionBar(actionBarComplete);
-                }
+                Timer.this.cancel(player, weapon, ticks, totalTicks);
             }
         }.runTaskTimerAsynchronously(WeaponMechanicsCosmetics.getInstance().getPlugin(), 0, DEFAULT_TICK_RATE).getTaskId();
+
+        return new TimerData(taskId, totalTicks);
+    }
+
+    public void cancel(Player player, ItemStack weapon, int ticks, int totalTicks) {
+        Audience audience = MechanicsCore.getPlugin().adventure.player(player);
+
+        // Remove any cooldown if the player still has one (*should*
+        // only happen when the event is cancelled).
+        if (CompatibilityAPI.getEntityCompatibility().hasCooldown(player, weapon.getType()))
+            CompatibilityAPI.getEntityCompatibility().setCooldown(player, weapon.getType(), 0);
+
+        // Make sure player experience is set to their old exp value
+        sendExp(player, Float.NaN);
+
+        // If the event was cancelled BEFORE it was completed...
+        if (ticks < totalTicks && actionBarCancelled != null) {
+            audience.sendActionBar(actionBarCancelled);
+        }
+
+        // If the event was completed successfully
+        else if (ticks >= totalTicks && actionBarComplete != null) {
+            audience.sendActionBar(actionBarComplete);
+        }
     }
 
     public void send(Player player, int ticks, int totalTicks) {
         Audience audience = MechanicsCore.getPlugin().adventure.player(player);
         String barCache = bar == null ? null : bar.evaluate(ticks, totalTicks);
-        String timeCache = new BigDecimal((double) ticks / totalTicks, ROUND).toString();
+        String timeCache = ROUND.format((totalTicks - ticks) / 20.0);
 
-        if (actionBar != null) audience.sendActionBar(substitute(actionBar, barCache, timeCache));
+        if (actionBar != null)
+            audience.sendActionBar(substitute(actionBar, barCache, timeCache));
 
         // Handle showing the title. The title disappears on its own, we don't
         // need to handle its removal.
@@ -134,14 +144,15 @@ public class Timer implements Serializer<Timer>{
 
         // Handle showing the bossbar. Since the bossbar doesn't disappear on
         // its own, we have to schedule a task to remove it 1 tick later.
-        float progress = (float) ticks / totalTicks;
+        float progress = NumberUtil.minMax(0.0f, (float) ticks / totalTicks, 1.0f);
         BossBar bossComponent = BossBar.bossBar(substitute(bossBar, barCache, timeCache), progress, color, style);
+        audience.showBossBar(bossComponent);
         new BukkitRunnable() {
             @Override
             public void run() {
                 audience.hideBossBar(bossComponent);
             }
-        }.runTaskAsynchronously(WeaponMechanicsCosmetics.getInstance().getPlugin());
+        }.runTaskLaterAsynchronously(WeaponMechanicsCosmetics.getInstance().getPlugin(), 1);
 
         // Handle showing experience
         sendExp(player, progress);

@@ -19,14 +19,14 @@ public class TimerValidator implements IValidator {
 
     @Override
     public String getKeyword() {
-        return "Timer";
+        return "Show_Time";
     }
 
     @Override
     public void validate(Configuration configuration, File file, ConfigurationSection config, String s) throws SerializerException {
 
-        List<String> keys = Arrays.asList("Delay_Between_Shots", "Shoot_Delay_After_Scope", "Weapon_Equip_Delay", "Reload_Time",
-                "Firearms_Actions_Time", "Melee_Hit_Delay", "Melee_Miss_Delay");
+        List<String> keys = Arrays.asList("Delay_Between_Shots", "Shoot_Delay_After_Scope", "Weapon_Equip_Delay", "Reload",
+                "Firearm_Actions", "Melee_Hit_Delay", "Melee_Miss_Delay");
 
         for (String key : keys) {
             SerializeData data = new SerializeData(new Timer(), file, s + "." + key, config);

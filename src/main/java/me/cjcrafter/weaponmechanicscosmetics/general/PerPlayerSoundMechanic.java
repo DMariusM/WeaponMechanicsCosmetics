@@ -2,7 +2,6 @@ package me.cjcrafter.weaponmechanicscosmetics.general;
 
 import me.deecaad.core.compatibility.CompatibilityAPI;
 import me.deecaad.core.file.SerializeData;
-import me.deecaad.core.file.Serializer;
 import me.deecaad.core.file.SerializerEnumException;
 import me.deecaad.core.file.SerializerException;
 import me.deecaad.weaponmechanics.mechanics.CastData;
@@ -16,6 +15,12 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * This mechanic is important for the
+ * {@link me.cjcrafter.weaponmechanicscosmetics.scripts.ProjectileZipScript}.
+ * Players need to hear the sound from a specific direction and distance, so
+ * this is used to ensure that only 1 player hears the sound.
+ */
 public class PerPlayerSoundMechanic extends SoundMechanic {
 
     public PerPlayerSoundMechanic() {
@@ -29,11 +34,11 @@ public class PerPlayerSoundMechanic extends SoundMechanic {
     @Override
     public PerPlayerSoundMechanic serialize(SerializeData data) throws SerializerException {
         List<String[]> stringSoundList = data.ofList().addArgument(Sound.class, true, true).addArgument(Double.TYPE, true).assertArgumentPositive().addArgument(Double.TYPE, false).assertArgumentRange(0.5, 2.0).addArgument(Integer.TYPE, false).assertArgumentPositive().addArgument(Double.TYPE, false).assertArgumentRange(0.0, 1.0).assertList().assertExists().get();
-        List<SoundMechanicData> soundList = new ArrayList();
+        List<SoundMechanicData> soundList = new ArrayList<>();
         int delayedCounter = 0;
 
         for(int i = 0; i < stringSoundList.size(); ++i) {
-            String[] split = (String[])stringSoundList.get(i);
+            String[] split = stringSoundList.get(i);
             float volume = Float.parseFloat(split[1]);
             float pitch = split.length > 2 ? Float.parseFloat(split[2]) : 1.0F;
             int delay = split.length > 3 ? Integer.parseInt(split[3]) : 0;

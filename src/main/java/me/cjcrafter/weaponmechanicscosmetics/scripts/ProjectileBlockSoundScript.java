@@ -19,6 +19,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
+/**
+ * Adds hit-block sounds for projectiles.
+ */
 public class ProjectileBlockSoundScript extends ProjectileScript<WeaponProjectile> {
 
     public ProjectileBlockSoundScript(@NotNull Plugin owner, @NotNull WeaponProjectile projectile) {

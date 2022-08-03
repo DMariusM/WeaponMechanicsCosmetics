@@ -17,6 +17,11 @@ import org.bukkit.material.MaterialData;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * Adds special effects for falling blocks spawned by an
+ * {@link me.deecaad.weaponmechanics.weapon.explode.Explosion}, including
+ * particles and sounds.
+ */
 public class FallingBlockScript extends ProjectileScript<AProjectile> {
 
     private Object data; // either BlockData (1.13+) or MaterialData (1.12-)

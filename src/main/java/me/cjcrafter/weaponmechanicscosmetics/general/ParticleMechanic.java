@@ -11,6 +11,10 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Adds particles to the {@link me.deecaad.weaponmechanics.mechanics.Mechanics}
+ * serializer. Basically just a simple way to add particle effects.
+ */
 public class ParticleMechanic implements IMechanic<ParticleMechanic> {
 
     List<ParticleSerializer> particles;

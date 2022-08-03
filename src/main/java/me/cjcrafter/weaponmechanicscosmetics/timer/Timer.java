@@ -26,6 +26,11 @@ import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Shows a timer in the item cool down, actionbar, title, boss bar, or
+ * experience. This is useful for showing a cool down or some other kind of
+ * count down.
+ */
 public class Timer implements Serializer<Timer>{
 
     public static final DecimalFormat ROUND = new DecimalFormat("0.0");
@@ -42,7 +47,6 @@ public class Timer implements Serializer<Timer>{
 
     private boolean showItemCooldown;
     private String actionBar;
-    private Component actionBarComplete;
     private Component actionBarCancelled;
     private String title;
     private String subtitle;
@@ -50,22 +54,19 @@ public class Timer implements Serializer<Timer>{
     private BossBar.Color color;
     private BossBar.Overlay style;
     private boolean showExp;
-    private boolean showLevel;
     private StringBar bar;
 
     /**
-     * Default constructor for serializer
+     * Default constructor for serializer.
      */
     public Timer() {
     }
 
-    public Timer(boolean showItemCooldown, String actionBar, Component actionBarComplete, Component actionBarCancelled,
-                 String title, String subtitle, String bossBar, BossBar.Color color, BossBar.Overlay style,
-                 boolean showExp, StringBar bar) {
+    public Timer(boolean showItemCooldown, String actionBar, Component actionBarCancelled, String title, String subtitle,
+                 String bossBar, BossBar.Color color, BossBar.Overlay style, boolean showExp, StringBar bar) {
 
         this.showItemCooldown = showItemCooldown;
         this.actionBar = actionBar;
-        this.actionBarComplete = actionBarComplete;
         this.actionBarCancelled = actionBarCancelled;
         this.title = title;
         this.subtitle = subtitle;
@@ -76,8 +77,20 @@ public class Timer implements Serializer<Timer>{
         this.bar = bar;
     }
 
+    /**
+     * Plays the timer effects for the given player. The returned value
+     * contains the task id for {@link org.bukkit.scheduler.BukkitScheduler#cancelTask(int)},
+     * as well as the value of <code>totalTicks</code>. This is useful if you
+     * want to call the {@link #cancel(Player, ItemStack, int, int)} method to
+     * end the timer early.
+     *
+     * @param player     The non-null player to show the messages.
+     * @param weapon     The nullable item that has the cool-down.
+     * @param totalTicks The amount of time to show the timer for.
+     * @return The non-null task id and expected time to complete.
+     */
     public TimerData play(Player player, ItemStack weapon, int totalTicks) {
-        if (showItemCooldown)
+        if (showItemCooldown && weapon != null)
             CompatibilityAPI.getEntityCompatibility().setCooldown(player, weapon.getType(), totalTicks);
 
         send(player, 0, totalTicks);
@@ -105,12 +118,22 @@ public class Timer implements Serializer<Timer>{
         return new TimerData(taskId, totalTicks);
     }
 
+    /**
+     * Takes away the "leftover" effects from cancelling a timer early. If you
+     * cancel the task via {@link org.bukkit.scheduler.BukkitScheduler#cancelTask(int)},
+     * then you <b>MUST, IN ADDITION</b> call this method.
+     *
+     * @param player     The non-null player to see the messages.
+     * @param weapon     The item that has a cool-down (or null).
+     * @param ticks      How many ticks elapsed before the timer was cancelled.
+     * @param totalTicks How many ticks the timer was expected to run for.
+     */
     public void cancel(Player player, ItemStack weapon, int ticks, int totalTicks) {
         Audience audience = MechanicsCore.getPlugin().adventure.player(player);
 
         // Remove any cooldown if the player still has one (*should*
         // only happen when the event is cancelled).
-        if (CompatibilityAPI.getEntityCompatibility().hasCooldown(player, weapon.getType()))
+        if (weapon != null && CompatibilityAPI.getEntityCompatibility().hasCooldown(player, weapon.getType()))
             CompatibilityAPI.getEntityCompatibility().setCooldown(player, weapon.getType(), 0);
 
         // Make sure player experience is set to their old exp value
@@ -119,11 +142,6 @@ public class Timer implements Serializer<Timer>{
         // If the event was cancelled BEFORE it was completed...
         if (ticks < totalTicks && actionBarCancelled != null) {
             audience.sendActionBar(actionBarCancelled);
-        }
-
-        // If the event was completed successfully
-        else if (ticks >= totalTicks && actionBarComplete != null) {
-            audience.sendActionBar(actionBarComplete);
         }
     }
 
@@ -155,9 +173,18 @@ public class Timer implements Serializer<Timer>{
         }.runTaskLaterAsynchronously(WeaponMechanicsCosmetics.getInstance().getPlugin(), 1);
 
         // Handle showing experience
-        sendExp(player, progress);
+        if (showExp)
+            sendExp(player, progress);
     }
 
+    /**
+     * Sends an experience packet to the given <code>player</code>. The
+     * progress can be [0.0, 1.0], or <code>Float.NaN</code> (Which is treated
+     * as the player's actual experience value).
+     *
+     * @param player   The non-null player to send the packet to.
+     * @param progress The [0.0, 1.0] percentage of experience.
+     */
     public void sendExp(Player player, float progress) {
         if (Float.isNaN(progress))
             progress = player.getExp();
@@ -193,13 +220,11 @@ public class Timer implements Serializer<Timer>{
     public Timer serialize(SerializeData data) throws SerializerException {
 
         String actionBar = data.of("Action_Bar").getAdventure(null);
-        String actionBarCompleteStr = data.of("Action_Bar_Complete").getAdventure(null);
         String actionBarCancelledStr = data.of("Action_Bar_Cancelled").getAdventure(null);
         String title = data.of("Title").getAdventure(null);
         String subTitle = data.of("Subtitle").getAdventure(null);
 
         // actionBarComplete is the only message we can actually cache
-        Component actionBarComplete = actionBarCompleteStr == null ? null : MechanicsCore.getPlugin().message.deserialize(actionBarCompleteStr);
         Component actionBarCancelled = actionBarCancelledStr == null ? null : MechanicsCore.getPlugin().message.deserialize(actionBarCancelledStr);
 
         // Bossbar stuff... Set to null first, so we can do assertExists ONLY
@@ -230,7 +255,7 @@ public class Timer implements Serializer<Timer>{
         boolean showItemCooldown = data.of("Item_Cooldown").getBool(false);
         boolean showExp = data.of("Exp").getBool(false);
 
-        return new Timer(showItemCooldown, actionBar, actionBarComplete, actionBarCancelled, title, subTitle, bossBar, color, style, showExp, bar);
+        return new Timer(showItemCooldown, actionBar, actionBarCancelled, title, subTitle, bossBar, color, style, showExp, bar);
     }
 
     private boolean check(String str) {

@@ -28,6 +28,10 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Collection;
 import java.util.LinkedList;
 
+/**
+ * Plays a {@link me.cjcrafter.weaponmechanicscosmetics.general.PerPlayerSoundMechanic}
+ * for a player when a projectile zips close by.
+ */
 public class ProjectileZipScript extends ProjectileScript<WeaponProjectile> {
 
     private final double distanceSquared;
@@ -42,7 +46,7 @@ public class ProjectileZipScript extends ProjectileScript<WeaponProjectile> {
         this.mechanics = config.getObject(projectile.getWeaponTitle() + ".Cosmetics.Bullet_Zip.Sounds", SoundMechanic.class);
 
         if (distance == -1.0 || mechanics == null)
-            throw new IllegalArgumentException("todo");
+            throw new IllegalArgumentException('.' + projectile.getWeaponTitle() + ".Cosmetics.Bullet_Zip' is incomplete");
     }
 
     @Override

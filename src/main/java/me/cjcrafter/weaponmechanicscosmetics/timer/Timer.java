@@ -99,6 +99,7 @@ public class Timer implements Serializer<Timer>{
             public void run() {
                 if ((ticks += DEFAULT_TICK_RATE) >= totalTicks) {
                     cancel();
+                    return;
                 }
 
                 send(player, ticks, totalTicks);
@@ -155,7 +156,7 @@ public class Timer implements Serializer<Timer>{
 
     public void send(Player player, int ticks, int totalTicks) {
         Audience audience = MechanicsCore.getPlugin().adventure.player(player);
-        String barCache = bar == null ? null : bar.evaluate(ticks, totalTicks);
+        String barCache = bar == null ? "N/A" : bar.evaluate(ticks, totalTicks);
         String timeCache = ROUND.format((totalTicks - ticks) / 20.0);
 
         if (actionBar != null)

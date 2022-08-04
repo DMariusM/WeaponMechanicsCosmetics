@@ -6,6 +6,7 @@ import me.deecaad.core.compatibility.CompatibilityAPI;
 import me.deecaad.core.file.SerializeData;
 import me.deecaad.core.file.Serializer;
 import me.deecaad.core.file.SerializerException;
+import me.deecaad.core.file.TaskChain;
 import me.deecaad.core.lib.adventure.audience.Audience;
 import me.deecaad.core.lib.adventure.bossbar.BossBar;
 import me.deecaad.core.lib.adventure.text.Component;
@@ -13,18 +14,14 @@ import me.deecaad.core.lib.adventure.title.Title;
 import me.deecaad.core.lib.adventure.util.Ticks;
 import me.deecaad.core.utils.NumberUtil;
 import me.deecaad.core.utils.ReflectionUtil;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Constructor;
-import java.math.BigDecimal;
-import java.math.MathContext;
-import java.math.RoundingMode;
 import java.text.DecimalFormat;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Shows a timer in the item cool down, actionbar, title, boss bar, or
@@ -133,8 +130,19 @@ public class Timer implements Serializer<Timer>{
 
         // Remove any cooldown if the player still has one (*should*
         // only happen when the event is cancelled).
-        if (weapon != null && CompatibilityAPI.getEntityCompatibility().hasCooldown(player, weapon.getType()))
-            CompatibilityAPI.getEntityCompatibility().setCooldown(player, weapon.getType(), 0);
+        if (weapon != null && CompatibilityAPI.getEntityCompatibility().hasCooldown(player, weapon.getType())) {
+
+            if (Bukkit.isPrimaryThread()) {
+                CompatibilityAPI.getEntityCompatibility().setCooldown(player, weapon.getType(), 0);
+            } else {
+                new BukkitRunnable() {
+                    @Override
+                    public void run() {
+                        CompatibilityAPI.getEntityCompatibility().setCooldown(player, weapon.getType(), 0);
+                    }
+                }.runTask(WeaponMechanicsCosmetics.getInstance().getPlugin());
+            }
+        }
 
         // Make sure player experience is set to their old exp value
         sendExp(player, Float.NaN);
@@ -163,14 +171,16 @@ public class Timer implements Serializer<Timer>{
         // Handle showing the bossbar. Since the bossbar doesn't disappear on
         // its own, we have to schedule a task to remove it 1 tick later.
         float progress = NumberUtil.minMax(0.0f, (float) ticks / totalTicks, 1.0f);
-        BossBar bossComponent = BossBar.bossBar(substitute(bossBar, barCache, timeCache), progress, color, style);
-        audience.showBossBar(bossComponent);
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                audience.hideBossBar(bossComponent);
-            }
-        }.runTaskLaterAsynchronously(WeaponMechanicsCosmetics.getInstance().getPlugin(), 1);
+        if (bossBar != null) {
+            BossBar bossComponent = BossBar.bossBar(substitute(bossBar, barCache, timeCache), progress, color, style);
+            audience.showBossBar(bossComponent);
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    audience.hideBossBar(bossComponent);
+                }
+            }.runTaskLaterAsynchronously(WeaponMechanicsCosmetics.getInstance().getPlugin(), 1);
+        }
 
         // Handle showing experience
         if (showExp)

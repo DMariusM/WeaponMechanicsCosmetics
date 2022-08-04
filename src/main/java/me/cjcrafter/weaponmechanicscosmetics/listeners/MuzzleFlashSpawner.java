@@ -14,10 +14,10 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 public class MuzzleFlashSpawner implements Listener {
 
-    private final ItemStack torch;
+    private final ItemStack light;
 
     public MuzzleFlashSpawner() {
-        torch = new ItemStack(Material.TORCH);
+        light = new ItemStack(Material.TORCH);
     }
 
     @EventHandler
@@ -26,8 +26,8 @@ public class MuzzleFlashSpawner implements Listener {
         if (!config.getBool(event.getWeaponTitle() + ".Cosmetics.Muzzle_Flash"))
             return;
 
-        FakeEntity entity = CompatibilityAPI.getEntityCompatibility().generateFakeEntity(event.getShooter().getEyeLocation(), torch);
-        entity.setInvisible(true);
+        FakeEntity entity = CompatibilityAPI.getEntityCompatibility().generateFakeEntity(event.getShooter().getLocation(), light);
+        entity.setInvisible(true); // this doesn't actually work for items, even with optifine
         entity.show();
 
         new BukkitRunnable() {
@@ -35,6 +35,6 @@ public class MuzzleFlashSpawner implements Listener {
             public void run() {
                 entity.remove();
             }
-        }.runTaskLaterAsynchronously(WeaponMechanicsCosmetics.getInstance().getPlugin(), 10);
+        }.runTaskAsynchronously(WeaponMechanicsCosmetics.getInstance().getPlugin());
     }
 }

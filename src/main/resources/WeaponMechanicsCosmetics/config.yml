@@ -18,7 +18,7 @@ Explosion_Effects:
 # Block sounds are played whenever a projectile hits a block.
 # Note that water "splash" effects are handled by each gun in their own file.
 Block_Sounds:
-  Type: <BREAK, STEP, PLACE, HIT, FALL>
+  Type: BREAK    # <BREAK, STEP, PLACE, HIT, FALL>
   Default_Randomness: 0.02
   Activate_Warden: true
 
@@ -41,6 +41,9 @@ Block_Sounds:
 
   # Weapon_Blacklist is used whenever you want a specific gun to not make any
   # sound when it's projectile hits a block... Imagine a flamethrower for example.
-  Weapon_Blacklist: []
-    #- SquirtGun
-    #- Flamethrower
+  Weapon_Blacklist:
+    - Airstrike
+    - Cluster_Grenade
+    - Flashbang
+    - Grenade
+    - Semtex

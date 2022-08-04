@@ -186,8 +186,9 @@ public class ProjectileBlockSoundScript extends ProjectileScript<WeaponProjectil
             for (int i = 0; i < temp.size(); i++) {
                 String[] split = temp.get(i);
 
-                if (!weaponOptions.contains(split[0]))
-                    throw new SerializerOptionsException(this, "Weapon", weaponOptions, split[0], data.ofList("Weapon_Blacklist").getLocation(i));
+                // TODO cannot check weapons yet since they haven't been serialized!
+                //if (!weaponOptions.contains(split[0]))
+                //    throw new SerializerOptionsException(this, "Weapon", weaponOptions, split[0], data.ofList("Weapon_Blacklist").getLocation(i));
 
                 weaponBlacklist.add(split[0]);
             }

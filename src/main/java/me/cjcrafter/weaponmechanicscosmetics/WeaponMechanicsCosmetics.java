@@ -65,6 +65,11 @@ public class WeaponMechanicsCosmetics {
     public void reloadConfig() {
 
         // Make sure config.yml exists
+        if (!getDataFolder().exists() || getDataFolder().listFiles() == null || getDataFolder().listFiles().length == 0) {
+            debug.info("Copying files from jar (This process may take up to 30 seconds during the first load!)");
+            FileUtil.copyResourcesTo(getClassLoader().getResource("WeaponMechanicsCosmetics"), getDataFolder().toPath());
+        }
+
         File file = new File(getDataFolder(), "config.yml");
         if (!file.exists()) {
             FileUtil.copyResourcesTo(getClassLoader().getResource("WeaponMechanicsCosmetics/config.yml"), file.toPath());

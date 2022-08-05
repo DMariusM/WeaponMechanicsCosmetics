@@ -113,7 +113,17 @@ public class Timer implements Serializer<Timer>{
             }
         }.runTaskTimerAsynchronously(WeaponMechanicsCosmetics.getInstance().getPlugin(), 0, DEFAULT_TICK_RATE).getTaskId();
 
-        return new TimerData(taskId, totalTicks);
+        return new TimerData(this, player, weapon, taskId, totalTicks);
+    }
+
+    /**
+     * Shorthand for {@link #cancel(Player, ItemStack, int, int)}.
+     *
+     * @param data The non-null data.
+     * @see #play(Player, ItemStack, int).
+     */
+    public void cancel(TimerData data) {
+        cancel(data.player, data.weapon, data.getElapsedTime(), data.totalTicks);
     }
 
     /**

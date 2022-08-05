@@ -65,10 +65,10 @@ dependencies {
 
     api("org.spigotmc:spigot-api:1.18-R0.1-SNAPSHOT")
     implementation("co.aikar:minecraft-timings:1.0.4")
-    testImplementation("org.junit.jupiter:junit-jupiter:5.8.2")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.9.0")
 
-    compileOnly("me.deecaad:mechanicscore:1.4.2-DEV3")
-    compileOnly("me.deecaad:weaponmechanics:1.9.2-DEV3")
+    compileOnly("me.deecaad:mechanicscore:1.4.2-DEV5")
+    compileOnly("me.deecaad:weaponmechanics:1.9.2-DEV5")
     implementation("org.bstats:bstats-bukkit:3.0.0")
     implementation("me.cjcrafter:mechanicsautodownload:1.0.2")
 

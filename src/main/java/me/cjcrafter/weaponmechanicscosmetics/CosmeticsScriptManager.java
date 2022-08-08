@@ -1,10 +1,8 @@
 package me.cjcrafter.weaponmechanicscosmetics;
 
-import me.cjcrafter.weaponmechanicscosmetics.scripts.FallingBlockScript;
-import me.cjcrafter.weaponmechanicscosmetics.scripts.ProjectileBlockSoundScript;
-import me.cjcrafter.weaponmechanicscosmetics.scripts.ProjectileSplashScript;
-import me.cjcrafter.weaponmechanicscosmetics.scripts.ProjectileZipScript;
+import me.cjcrafter.weaponmechanicscosmetics.scripts.*;
 import me.deecaad.core.file.Configuration;
+import me.deecaad.core.utils.Debugger;
 import me.deecaad.weaponmechanics.WeaponMechanics;
 import me.deecaad.weaponmechanics.weapon.projectile.AProjectile;
 import me.deecaad.weaponmechanics.weapon.projectile.ProjectileScriptManager;
@@ -45,6 +43,7 @@ public class CosmeticsScriptManager extends ProjectileScriptManager {
             // More generalized weapon scripts
             projectile.addProjectileScript(new ProjectileSplashScript(getPlugin(), projectile));
             projectile.addProjectileScript(new ProjectileBlockSoundScript(getPlugin(), projectile));
+            projectile.addProjectileScript(new BlockCrackScript(getPlugin(), projectile));
         }
     }
 }

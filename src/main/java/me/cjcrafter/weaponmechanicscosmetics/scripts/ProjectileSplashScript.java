@@ -17,10 +17,19 @@ import org.jetbrains.annotations.NotNull;
  */
 public class ProjectileSplashScript extends ProjectileScript<WeaponProjectile> {
 
+    private Mechanics mechanics;
     private boolean wasInWater;
 
     public ProjectileSplashScript(@NotNull Plugin owner, @NotNull WeaponProjectile projectile) {
         super(owner, projectile);
+
+        Configuration config = WeaponMechanics.getConfigurations();
+        mechanics = config.getObject(projectile.getWeaponTitle() + ".Cosmetics.Splash_Mechanics", Mechanics.class);
+    }
+
+    public ProjectileSplashScript(@NotNull Plugin owner, @NotNull WeaponProjectile projectile, Mechanics mechanics) {
+        super(owner, projectile);
+        this.mechanics = mechanics;
     }
 
     @Override
@@ -29,11 +38,9 @@ public class ProjectileSplashScript extends ProjectileScript<WeaponProjectile> {
 
         if (isInWater && !wasInWater) {
 
-            Configuration config = WeaponMechanics.getConfigurations();
             CastData castData = new CastData(projectile);
-            Mechanics splashMechanics = config.getObject(projectile.getWeaponTitle() + ".Cosmetics.Splash_Mechanics", Mechanics.class);
-            if (splashMechanics != null)
-                splashMechanics.use(castData);
+            if (mechanics != null)
+                mechanics.use(castData);
         }
 
         wasInWater = isInWater;

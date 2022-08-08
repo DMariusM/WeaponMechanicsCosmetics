@@ -49,6 +49,13 @@ public class ProjectileZipScript extends ProjectileScript<WeaponProjectile> {
             throw new IllegalArgumentException('.' + projectile.getWeaponTitle() + ".Cosmetics.Bullet_Zip' is incomplete");
     }
 
+    public ProjectileZipScript(@NotNull Plugin owner, @NotNull WeaponProjectile projectile, double distanceSquared, SoundMechanic mechanics) {
+        super(owner, projectile);
+
+        this.distanceSquared = distanceSquared;
+        this.mechanics = mechanics;
+    }
+
     @Override
     public void onTickEnd() {
         Debugger debug = WeaponMechanicsCosmetics.getInstance().getDebug();

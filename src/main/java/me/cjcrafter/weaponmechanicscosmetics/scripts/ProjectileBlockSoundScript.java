@@ -24,24 +24,30 @@ import java.util.*;
  */
 public class ProjectileBlockSoundScript extends ProjectileScript<WeaponProjectile> {
 
+    private BlockSound sound;
+
     public ProjectileBlockSoundScript(@NotNull Plugin owner, @NotNull WeaponProjectile projectile) {
         super(owner, projectile);
+
+        Configuration config = WeaponMechanicsCosmetics.getInstance().getConfiguration();
+        Debugger debug = WeaponMechanicsCosmetics.getInstance().getDebug();
+        sound = config.getObject("Block_Sounds", ProjectileBlockSoundScript.BlockSound.class);
+        if (sound == null) {
+            debug.error("Did you delete in the 'Block_Sounds' section in config.yml?",
+                    "You probably want to check the main config wiki",
+                    "You can regenerate your config by deleting the config.yml file");
+            return;
+        }
+    }
+
+    public ProjectileBlockSoundScript(@NotNull Plugin owner, @NotNull WeaponProjectile projectile, BlockSound sound) {
+        super(owner, projectile);
+
+        this.sound = sound;
     }
 
     @Override
     public void onCollide(@NotNull Block block) {
-        Configuration config = WeaponMechanicsCosmetics.getInstance().getConfiguration();
-        BlockSound sound = config.getObject("Block_Sounds", BlockSound.class);
-
-        if (sound == null) {
-            Debugger debug = WeaponMechanicsCosmetics.getInstance().getDebug();
-            debug.error("Did you delete in the 'Block_Sounds' section in config.yml?",
-                    "You probably want to check the main config wiki",
-                    "You can regenerate your config by deleting the config.yml file");
-
-            return;
-        }
-
         sound.play(projectile, block);
     }
 

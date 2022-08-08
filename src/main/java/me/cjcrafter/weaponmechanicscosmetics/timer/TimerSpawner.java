@@ -18,18 +18,10 @@ import java.util.Map;
 public class TimerSpawner implements Listener {
 
     // TODO test usage of IdentityHashMap for potential performance boost
-    private final Map<Player, TimerData> equipTasks;
-    private final Map<Player, TimerData> scopeTasks;
-    private final Map<Player, TimerData> meleeHitTasks;
-    private final Map<Player, TimerData> meleeMissTasks;
-    private final Map<Player, TimerData> reloadTasks;
+    private final Map<Player, TimerData> tasks;
 
     public TimerSpawner() {
-        equipTasks = new HashMap<>();
-        scopeTasks = new HashMap<>();
-        meleeHitTasks = new HashMap<>();
-        meleeMissTasks = new HashMap<>();
-        reloadTasks = new HashMap<>();
+        tasks = new HashMap<>();
     }
 
     @EventHandler
@@ -45,7 +37,7 @@ public class TimerSpawner implements Listener {
         Player player = (Player) event.getShooter();
         int delay = config.getInt(event.getWeaponTitle() + ".Info.Weapon_Equip_Delay") / 50;
         TimerData task = timer.play(player, event.getWeaponStack(), delay);
-        emplace(player, equipTasks, task);
+        emplace(task);
     }
 
     @EventHandler (priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -61,7 +53,7 @@ public class TimerSpawner implements Listener {
         Player player = (Player) event.getShooter();
         int delay = event.getMeleeHitDelay();
         TimerData task = timer.play(player, event.getWeaponStack(), delay);
-        emplace(player, meleeHitTasks, task);
+        emplace(task);
     }
 
     @EventHandler (priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -77,7 +69,7 @@ public class TimerSpawner implements Listener {
         Player player = (Player) event.getShooter();
         int delay = event.getMeleeMissDelay();
         TimerData task = timer.play(player, event.getWeaponStack(), delay);
-        emplace(player, meleeMissTasks, task);
+        emplace(task);
     }
 
     @EventHandler (priority = EventPriority.MONITOR)
@@ -93,20 +85,7 @@ public class TimerSpawner implements Listener {
         Player player = (Player) event.getShooter();
         int delay = event.getReloadCompleteTime();
         TimerData task = timer.play(player, event.getWeaponStack(), delay);
-        reloadTasks.put(player, task);
-    }
-
-    @EventHandler
-    public void onReloadCancel(WeaponReloadCancelEvent event) {
-        if (event.getEntity().getType() != EntityType.PLAYER)
-            return;
-
-        Player player = (Player) event.getEntity();
-        TimerData task = reloadTasks.get(player);
-        if (task == null)
-            return;
-
-        task.cancel();
+        emplace(task);
     }
 
     @EventHandler (priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -115,19 +94,47 @@ public class TimerSpawner implements Listener {
             return;
 
         Configuration config = WeaponMechanics.getConfigurations();
-        Timer timer = config.getObject(event.getWeaponTitle() + ".Timer.Shoot_Delay_After_Scope", Timer.class);
+        Timer timer = config.getObject(event.getWeaponTitle() + ".Show_Time.Shoot_Delay_After_Scope", Timer.class);
         if (timer == null)
             return;
 
         int delay = config.getInt(event.getWeaponTitle() + ".Scope.Shoot_Delay_After_Scope") / 50;
-        timer.play((Player) event.getShooter(), event.getWeaponStack(), delay);
+        TimerData task = timer.play((Player) event.getShooter(), event.getWeaponStack(), delay);
+        emplace(task);
     }
 
-    //@EventHandler
-    //public void onFirearm() {}
+    @EventHandler (priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onFirearm(WeaponFirearmEvent event) {
+        if (event.getShooter().getType() != EntityType.PLAYER)
+            return;
 
-    //@EventHandler
-    //public void onShoot() {}
+        Configuration config = WeaponMechanics.getConfigurations();
+        Timer timer = config.getObject(event.getWeaponTitle() + ".Show_Time.Firearm_Actions", Timer.class);
+        if (timer == null)
+            return;
+
+        TimerData task = timer.play((Player) event.getShooter(), event.getWeaponStack(), event.getTime());
+        emplace(task);
+    }
+
+    @EventHandler
+    public void onShoot(WeaponPostShootEvent event) {
+        if (event.getShooter().getType() != EntityType.PLAYER)
+            return;
+
+        // Extra check... when weaponStack is null, it was shot through the API
+        if (event.getWeaponStack() == null)
+            return;
+
+        Configuration config = WeaponMechanics.getConfigurations();
+        Timer timer = config.getObject(event.getWeaponTitle() + ".Show_Time.Delay_Between_Shots", Timer.class);
+        if (timer == null)
+            return;
+
+        int delay = config.getInt(event.getWeaponTitle() + ".Shoot.Delay_Between_Shots") / 50;
+        TimerData task = timer.play((Player) event.getShooter(), event.getWeaponStack(), delay);
+        emplace(task);
+    }
 
 
 
@@ -138,8 +145,21 @@ public class TimerSpawner implements Listener {
     // stops it (Via swapping hands, for example).
 
     @EventHandler
+    public void onReloadCancel(WeaponReloadCancelEvent event) {
+        if (event.getEntity().getType() != EntityType.PLAYER)
+            return;
+
+        Player player = (Player) event.getEntity();
+        TimerData task = tasks.get(player);
+        if (task == null)
+            return;
+
+        task.cancel();
+    }
+
+    @EventHandler
     public void onReloadComplete(WeaponReloadCompleteEvent event) {
-        reloadTasks.remove(event.getEntity());
+        tasks.remove(event.getEntity());
     }
 
     @EventHandler
@@ -148,7 +168,7 @@ public class TimerSpawner implements Listener {
             return;
 
         Player player = (Player) event.getEntity();
-        TimerData task = equipTasks.get(player);
+        TimerData task = tasks.remove(player);
         if (task == null)
             return;
 
@@ -160,28 +180,15 @@ public class TimerSpawner implements Listener {
         if (ReflectionUtil.getMCVersion() > 10)
             return;
 
-        TimerData task = equipTasks.get(event.getPlayer());
+        TimerData task = tasks.remove(event.getPlayer());
         if (task == null)
             return;
 
         task.cancel();
     }
 
-    public void cancel(Player player) {
-        cancel(player, equipTasks);
-        cancel(player, scopeTasks);
-        cancel(player, meleeHitTasks);
-        cancel(player, meleeMissTasks);
-    }
-
-    private static void cancel(Player player, Map<Player, TimerData> map) {
-        TimerData timer = map.remove(player);
-        if (timer != null)
-            timer.cancel();
-    }
-
-    private static void emplace(Player player, Map<Player, TimerData> map, TimerData replacement) {
-        TimerData old = map.put(player, replacement);
+    private void emplace(TimerData replacement) {
+        TimerData old = tasks.put(replacement.player, replacement);
         if (old != null)
             old.cancel();
     }

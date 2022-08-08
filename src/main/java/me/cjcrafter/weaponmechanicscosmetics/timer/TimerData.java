@@ -37,6 +37,10 @@ public class TimerData {
     }
 
     public void cancel() {
+        // First check if the event is cancelled already
+        if (!Bukkit.getScheduler().isQueued(taskId))
+            return;
+
         Bukkit.getScheduler().cancelTask(taskId);
         timer.cancel(this);
     }

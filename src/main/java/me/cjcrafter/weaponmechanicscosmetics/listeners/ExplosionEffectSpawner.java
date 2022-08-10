@@ -49,8 +49,8 @@ public class ExplosionEffectSpawner implements Listener {
             }
 
             if (NumberUtil.chance(smokeDensity)) {
-                Vector between = reuse.toVector().subtract(event.getLocation().toVector()).normalize();
-                world.spawnParticle(Particle.SMOKE_LARGE, reuse, 0, between.getX(), between.getY(), between.getZ());
+                Vector between = reuse.toVector().subtract(event.getLocation().toVector()).normalize().multiply(NumberUtil.random(0.01, 0.1));
+                world.spawnParticle(Particle.SMOKE_NORMAL, reuse, 0, between.getX(), between.getY(), between.getZ());
             }
         }
     }

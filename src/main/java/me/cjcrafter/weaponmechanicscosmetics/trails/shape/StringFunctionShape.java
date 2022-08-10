@@ -8,14 +8,6 @@ public class StringFunctionShape extends FunctionShape {
     private final Expression expression;
     private final Argument theta;
 
-    /**
-     * Uses <a>https://en.wikipedia.org/wiki/Mxparser</a> to evaluate the given
-     * function.
-     *
-     * @param points
-     * @param loops
-     * @param function
-     */
     public StringFunctionShape(int points, int loops, String function) {
         super(points, loops);
 

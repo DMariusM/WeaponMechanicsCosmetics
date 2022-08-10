@@ -2,17 +2,18 @@ package me.cjcrafter.weaponmechanicscosmetics.trails.shape;
 
 import java.util.List;
 
+/**
+ * Represents a 2D shape that can be drawn out over time.
+ */
 public interface Shape {
 
     /**
-     * Returns a list of 2D vectors which contain the (horizontal, vertical)
-     * displacement (from the projectile's frame of reference) from the
-     * projectile. 1 particle will be spawned for each element in the returned
-     * list. The returned method should be treated as immutable (do not modify
-     * the returned list! The trail is allowed to keep and return a cache!)
+     * Returns a list of points in 2D space. These points are offset by the
+     * projectile's velocity's rotation matrix to be placed in 3D space. In
+     * simpler terms, the points will be wrapped around the projectile.
      *
-     * <p>If the given index > {@link #getPoints()}, the parameter is
-     * automatically wrapped to a valid index.
+     * <p>DO NOT MODIFY THE RETURNED LIST!!! Shapes CAN and WILL cache the
+     * points, so they don't have to repeat calculations.
      *
      * @param index The non-negative current index.
      * @return A non-null, non-empty list of offsets.
@@ -21,9 +22,8 @@ public interface Shape {
 
     /**
      * Returns the maximum number of points contained by this shape.
-     * @return
+     *
+     * @return A non-negative number representing the total amount of points.
      */
     int getPoints();
-
-
 }

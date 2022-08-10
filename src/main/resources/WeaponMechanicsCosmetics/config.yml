@@ -3,7 +3,7 @@
 Explosion_Effects:
   Explosion_Particle_Density: 0.25
   Explosion_Particle_Spread: 1.0
-  Smoke_Particle_Density: 0.5
+  Smoke_Particle_Density: 0.45
   Weapon_Blacklist: []
     #- mygun
 
@@ -36,8 +36,8 @@ Block_Sounds:
 
   # Material_Blacklist is used whenever you want a certain block to not make
   # any sound when hit.
-  Material_Blacklist: []
-    #- bedrock
+  Material_Blacklist:
+    - $wool
 
   # Weapon_Blacklist is used whenever you want a specific gun to not make any
   # sound when it's projectile hits a block... Imagine a flamethrower for example.

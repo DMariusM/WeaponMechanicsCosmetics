@@ -6,10 +6,7 @@ import me.cjcrafter.weaponmechanicscosmetics.scripts.ProjectileBlockSoundScript;
 import me.cjcrafter.weaponmechanicscosmetics.timer.TimerSpawner;
 import me.cjcrafter.weaponmechanicscosmetics.listeners.WeaponMechanicsSerializerListener;
 import me.cjcrafter.weaponmechanicscosmetics.general.ParticleMechanic;
-import me.deecaad.core.file.Configuration;
-import me.deecaad.core.file.FileReader;
-import me.deecaad.core.file.IValidator;
-import me.deecaad.core.file.Serializer;
+import me.deecaad.core.file.*;
 import me.deecaad.core.utils.Debugger;
 import me.deecaad.core.utils.FileUtil;
 import me.deecaad.weaponmechanics.WeaponMechanics;
@@ -26,6 +23,7 @@ import java.util.logging.Logger;
 public class WeaponMechanicsCosmetics {
 
     private static WeaponMechanicsCosmetics INSTANCE;
+
     private WeaponMechanicsCosmeticsLoader plugin;
     private Metrics metrics;
     private Debugger debug;
@@ -62,31 +60,37 @@ public class WeaponMechanicsCosmetics {
         registerBStats();
     }
 
-    public void reloadConfig() {
+    public TaskChain reloadConfig() {
+        return new TaskChain(plugin)
+                .thenRunAsync(() -> {
 
-        // Make sure config.yml exists
-        if (!getDataFolder().exists() || getDataFolder().listFiles() == null || getDataFolder().listFiles().length == 0) {
-            debug.info("Copying files from jar (This process may take up to 30 seconds during the first load!)");
-            FileUtil.copyResourcesTo(getClassLoader().getResource("WeaponMechanicsCosmetics"), getDataFolder().toPath());
-        }
+                    // Make sure config.yml exists
+                    if (!getDataFolder().exists() || getDataFolder().listFiles() == null || getDataFolder().listFiles().length == 0) {
+                        debug.info("Copying files from jar (This process may take up to 30 seconds during the first load!)");
+                        FileUtil.copyResourcesTo(getClassLoader().getResource("WeaponMechanicsCosmetics"), getDataFolder().toPath());
+                    }
 
-        File file = new File(getDataFolder(), "config.yml");
-        if (!file.exists()) {
-            FileUtil.copyResourcesTo(getClassLoader().getResource("WeaponMechanicsCosmetics/config.yml"), file.toPath());
-        }
+                    File file = new File(getDataFolder(), "config.yml");
+                    if (!file.exists()) {
+                        FileUtil.copyResourcesTo(getClassLoader().getResource("WeaponMechanicsCosmetics/config.yml"), file.toPath());
+                    }
+                })
+                .thenRunSync(() -> {
 
-        // Read config
-        List<Serializer<?>> serializers = new ArrayList<>();
-        serializers.add(new ProjectileBlockSoundScript.BlockSound());
+                    // Read config
+                    List<Serializer<?>> serializers = new ArrayList<>();
+                    serializers.add(new ProjectileBlockSoundScript.BlockSound());
 
-        List<IValidator> validators = new ArrayList<>();
-        validators.add(new ExplosionEffectSpawner.ExplosionEffectValidator());
+                    List<IValidator> validators = new ArrayList<>();
+                    validators.add(new ExplosionEffectSpawner.ExplosionEffectValidator());
 
-        FileReader reader = new FileReader(debug, serializers, validators);
-        config = reader.fillOneFile(file);
-        reader.usePathToSerializersAndValidators(config);
+                    FileReader reader = new FileReader(debug, serializers, validators);
+                    File file = new File(getDataFolder(), "config.yml");
+                    config = reader.fillOneFile(file);
+                    reader.usePathToSerializersAndValidators(config);
 
-        WeaponMechanics.getProjectilesRunnable().addScriptManager(new CosmeticsScriptManager(plugin));
+                    WeaponMechanics.getProjectilesRunnable().addScriptManager(new CosmeticsScriptManager(plugin));
+                });
     }
 
     public void onDisable() {

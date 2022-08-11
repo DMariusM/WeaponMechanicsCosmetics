@@ -10,6 +10,7 @@ import me.deecaad.core.utils.NumberUtil;
 import me.deecaad.core.utils.ReflectionUtil;
 import me.deecaad.weaponmechanics.WeaponMechanics;
 import me.deecaad.weaponmechanics.weapon.projectile.ProjectileScript;
+import me.deecaad.weaponmechanics.weapon.projectile.weaponprojectile.RayTraceResult;
 import me.deecaad.weaponmechanics.weapon.projectile.weaponprojectile.WeaponProjectile;
 import org.bukkit.*;
 import org.bukkit.block.Block;
@@ -47,8 +48,11 @@ public class ProjectileBlockSoundScript extends ProjectileScript<WeaponProjectil
     }
 
     @Override
-    public void onCollide(@NotNull Block block) {
-        sound.play(projectile, block);
+    public void onCollide(@NotNull RayTraceResult hit) {
+        if (!hit.isBlock())
+            return;
+
+        sound.play(projectile, hit.getBlock());
     }
 
 

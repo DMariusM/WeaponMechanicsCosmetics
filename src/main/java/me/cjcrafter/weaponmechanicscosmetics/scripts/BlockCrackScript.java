@@ -6,8 +6,8 @@ import me.deecaad.weaponmechanics.WeaponMechanics;
 import me.deecaad.weaponmechanics.weapon.damage.BlockDamageData;
 import me.deecaad.weaponmechanics.weapon.explode.BlockDamage;
 import me.deecaad.weaponmechanics.weapon.projectile.ProjectileScript;
+import me.deecaad.weaponmechanics.weapon.projectile.weaponprojectile.RayTraceResult;
 import me.deecaad.weaponmechanics.weapon.projectile.weaponprojectile.WeaponProjectile;
-import org.bukkit.block.Block;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
@@ -49,11 +49,11 @@ public class BlockCrackScript extends ProjectileScript<WeaponProjectile> {
     }
 
     @Override
-    public void onCollide(@NotNull Block block) {
-        if (damage == null)
+    public void onCollide(@NotNull RayTraceResult hit) {
+        if (!hit.isBlock() || damage == null)
             return;
 
-        BlockDamageData.DamageData data = damage.damage(block);
+        BlockDamageData.DamageData data = damage.damage(hit.getBlock());
 
         // Didn't damage block
         if (data == null)

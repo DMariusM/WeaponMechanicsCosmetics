@@ -1,9 +1,11 @@
 package me.cjcrafter.weaponmechanicscosmetics;
 
+import me.cjcrafter.auto.AutoMechanicsDownload;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
+import java.util.logging.Level;
 
 /**
  * The entire goal of this class is to manually download and run
@@ -20,9 +22,18 @@ public class WeaponMechanicsCosmeticsLoader extends JavaPlugin {
     @Override
     public void onLoad() {
 
-        if (Bukkit.getPluginManager().getPlugin("MechanicsCore") == null) {
-            return;
+        // Attempt to automatically download MechanicsCore and WeaponMechanics.
+        if (getConfig().getBoolean("Auto_Download.Enabled")) {
+            AutoMechanicsDownload auto = new AutoMechanicsDownload(getConfig());
+            auto.MECHANICS_CORE.install();
+            auto.WEAPON_MECHANICS.install();
         }
+
+        // Don't enable the plugin if either dependencies are absent
+        if (Bukkit.getPluginManager().getPlugin("MechanicsCore") == null)
+            return;
+        if (Bukkit.getPluginManager().getPlugin("WeaponMechanics") == null)
+            return;
 
         plugin = new WeaponMechanicsCosmetics(this);
         plugin.onLoad();
@@ -31,6 +42,14 @@ public class WeaponMechanicsCosmeticsLoader extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        if (!success) {
+            getLogger().log(Level.SEVERE, "");
+            getLogger().log(Level.SEVERE, " !!! MechanicsCore and/or WeaponMechanics was missing");
+            getLogger().log(Level.SEVERE, " !!! Download them here: https://www.spigotmc.org/resources/99913/");
+            getLogger().log(Level.SEVERE, "");
+            return;
+        }
+
         plugin.onEnable();
     }
 

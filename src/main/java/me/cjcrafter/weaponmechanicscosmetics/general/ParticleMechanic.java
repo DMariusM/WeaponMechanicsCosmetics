@@ -17,7 +17,7 @@ import java.util.List;
  */
 public class ParticleMechanic implements IMechanic<ParticleMechanic> {
 
-    List<ParticleSerializer> particles;
+    private List<ParticleSerializer> particles;
 
     /**
      * Default constructor for serializers.

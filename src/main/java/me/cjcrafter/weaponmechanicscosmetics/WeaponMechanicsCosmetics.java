@@ -1,5 +1,7 @@
 package me.cjcrafter.weaponmechanicscosmetics;
 
+import me.cjcrafter.auto.UpdateChecker;
+import me.cjcrafter.auto.UpdateInfo;
 import me.cjcrafter.weaponmechanicscosmetics.listeners.ExplosionEffectSpawner;
 import me.cjcrafter.weaponmechanicscosmetics.listeners.MuzzleFlashSpawner;
 import me.cjcrafter.weaponmechanicscosmetics.scripts.ProjectileBlockSoundScript;
@@ -12,7 +14,12 @@ import me.deecaad.core.utils.FileUtil;
 import me.deecaad.weaponmechanics.WeaponMechanics;
 import me.deecaad.weaponmechanics.mechanics.Mechanics;
 import org.bstats.bukkit.Metrics;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.PluginManager;
 
 import java.io.File;
@@ -25,6 +32,7 @@ public class WeaponMechanicsCosmetics {
     private static WeaponMechanicsCosmetics INSTANCE;
 
     private WeaponMechanicsCosmeticsLoader plugin;
+    private UpdateChecker update;
     private Metrics metrics;
     private Debugger debug;
     private Configuration config;
@@ -58,6 +66,7 @@ public class WeaponMechanicsCosmetics {
         Mechanics.registerMechanic(plugin, new ParticleMechanic());
 
         registerBStats();
+        // TODO add after release registerUpdateChecker();
     }
 
     public TaskChain reloadConfig() {
@@ -118,6 +127,28 @@ public class WeaponMechanicsCosmetics {
 
     public Configuration getConfiguration() {
         return config;
+    }
+
+    private void registerUpdateChecker() {
+        update = new UpdateChecker(plugin, UpdateChecker.spigot(-1, "WeaponMechanicsCosmetics"));
+        Listener listener = new Listener() {
+            @EventHandler
+            public void onJoin(PlayerJoinEvent event) {
+                if (event.getPlayer().isOp()) {
+                    new TaskChain(plugin)
+                            .thenRunAsync((callback) -> update.hasUpdate())
+                            .thenRunSync((callback) -> {
+                                UpdateInfo update = (UpdateInfo) callback;
+                                if (callback != null)
+                                    event.getPlayer().sendMessage(ChatColor.RED + "WeaponMechanicsCosmetics is out of date! " + update.current + " -> " + update.newest);
+
+                                return null;
+                            });
+                }
+            }
+        };
+
+        Bukkit.getPluginManager().registerEvents(listener, plugin);
     }
 
     private void registerBStats() {

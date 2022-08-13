@@ -34,7 +34,7 @@ public class CosmeticsScriptManager extends ProjectileScriptManager {
 
             projectile.addProjectileScript(new BlockSoundScript(getPlugin(), projectile));
 
-            if (config.containsKey(projectile + ".Trail"))
+            if (config.containsKey(projectile.getWeaponTitle() + ".Trail"))
                 projectile.addProjectileScript(new TrailScript(getPlugin(), projectile));
 
             if (config.containsKey(projectile.getWeaponTitle() + ".Cosmetics.Bullet_Zip"))

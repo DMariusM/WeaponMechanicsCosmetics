@@ -17,6 +17,7 @@ import org.bukkit.material.MaterialData;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
+import java.sql.Ref;
 import java.util.regex.Pattern;
 
 public class ParticleSerializer implements Serializer<ParticleSerializer> {
@@ -28,6 +29,9 @@ public class ParticleSerializer implements Serializer<ParticleSerializer> {
     private Object options;
     private boolean force;
 
+    /**
+     * Default constructor for serializer
+     */
     public ParticleSerializer() {
     }
 
@@ -37,6 +41,7 @@ public class ParticleSerializer implements Serializer<ParticleSerializer> {
         this.extra = extra;
         this.offset = offset;
         this.options = options;
+        this.force = force;
     }
 
     public void display(Location location) {
@@ -51,7 +56,10 @@ public class ParticleSerializer implements Serializer<ParticleSerializer> {
         if (world == null)
             throw new IllegalArgumentException("World cannot be null");
 
-        world.spawnParticle(particle, x, y, z, count, offset.getX(), offset.getY(), offset.getZ(), extra, options, force);
+        if (ReflectionUtil.getMCVersion() < 13)
+            world.spawnParticle(particle, x, y, z, count, offset.getX(), offset.getY(), offset.getZ(), extra, options);
+        else
+            world.spawnParticle(particle, x, y, z, count, offset.getX(), offset.getY(), offset.getZ(), extra, options, force);
     }
 
     @NotNull
@@ -69,6 +77,10 @@ public class ParticleSerializer implements Serializer<ParticleSerializer> {
         Vector offset = new Vector();
         Object options = null;
         boolean force = data.of("Always_Show").getBool(true);
+
+        // TODO Actually, using multiple packets we can fix this
+        if (data.has("Velocity") && data.has("Noise"))
+            throw data.exception(null, "Cannot use both 'Velocity' and 'Noise' at the same time!");
 
         // Dust transition was added in 1.17, which accompanies the skulk
         // sensor. It can fade from one color to another color. Can also
@@ -158,31 +170,43 @@ public class ParticleSerializer implements Serializer<ParticleSerializer> {
 
             // All of these particles can be directional by setting count=0.
             // This means that instead of using offset, we should use velocity.
-            case "EXPLOSION_NORMAL":
-            case "FIREWORKS_SPARK":
-            case "WATER_BUBBLE":
-            case "WATER_WAKE":
+            case "BUBBLE_COLUMN_UP":
+            case "BUBBLE_POP":
+            case "CAMPFIRE_COZY_SMOKE":
+            case "CAMPFIRE_SIGNAL_SMOKE":
+            case "CLOUD":
             case "CRIT":
             case "CRIT_MAGIC":
-            case "SMOKE_NORMAL":
-            case "SMOKE_LARGE":
-            case "PORTAL":
-            case "ENCHANTMENT_TABLE":
-            case "FLAME":
-            case "CLOUD":
-            case "DRAGON_BREATH":
-            case "END_ROD":
             case "DAMAGE_INDICATOR":
-            case "TOTEM":
+            case "DRAGON_BREATH":
+            case "ELECTRIC_SPARK":
+            case "ENCHANTMENT_TABLE":
+            case "END_ROD":
+            case "EXPLOSION_NORMAL":
+            case "FIREWORKS_SPARK":
+            case "FLAME":
+            case "NAUTILUS":
+            case "PORTAL":
+            case "REVERSE_PORTAL":
+            case "SCRAPE":
+            case "SCULK_CHARGE":
+            case "SCULK_CHARGE_POP":
+            case "SCULK_SOUL":
+            case "SMALL_FLAME":
+            case "SMOKE_LARGE":
+            case "SMOKE_NORMAL":
+            case "SOUL":
+            case "SOUL_FIRE_FLAME":
             case "SPIT":
             case "SQUID_INK":
-            case "BUBBLE_POP":
+            case "TOTEM":
+            case "WATER_BUBBLE":
+            case "WATER_WAKE":
+            case "WAX_OFF":
+            case "WAX_ON":
                 noBlock(particle, data);
                 noColor(particle, data);
                 noFade(particle, data);
-
-                if (data.has("Velocity") && data.has("Noise"))
-                    throw data.exception(null, "Cannot use both 'Velocity' and 'Noise' at the same time!");
 
                 // When the user doesn't define a count, we will define it for
                 // them. 0 for velocity, 1 for offset.
@@ -201,6 +225,7 @@ public class ParticleSerializer implements Serializer<ParticleSerializer> {
 
                 if (count == 0) {
                     offset = parseVector(data, "Velocity");
+                    extra = offset.length();
                 } else {
                     offset = parseVector(data, "Noise");
                 }
@@ -213,6 +238,11 @@ public class ParticleSerializer implements Serializer<ParticleSerializer> {
                 noBlock(particle, data);
                 noColor(particle, data);
                 noFade(particle, data);
+
+                if (count == 0)
+                    throw data.exception("Count", "Cannot use Count=0 for '" + particle + "'");
+
+                offset = parseVector(data, "Noise");
                 break;
         }
 
@@ -259,16 +289,14 @@ public class ParticleSerializer implements Serializer<ParticleSerializer> {
 
         String raw = data.of(relative).assertExists().get();
 
-        boolean matches = Pattern.compile("\\d+.?\\d*[~ -]\\d+.?\\d*[~ -]\\d+.?\\d*").matcher(raw.trim()).matches();
-        if (matches) {
-            String[] split = StringUtil.split(raw.trim());
-            double x = Double.parseDouble(split[0]); // these should be safe since we checked regex
+        //boolean matches = Pattern.compile("\\d+.?\\d*[~ -]\\d+.?\\d*[~ -]\\d+.?\\d*").matcher(raw.trim()).matches();
+        String[] split = StringUtil.split(raw);
+        try {
+            double x = Double.parseDouble(split[0]);
             double y = Double.parseDouble(split[1]);
             double z = Double.parseDouble(split[2]);
-
             return new Vector(x, y, z);
-        }
-        else {
+        } catch (NumberFormatException ex) {
             throw data.exception(relative, "Failed to find 3 numbers while making Particle Vector",
                     SerializerException.forValue(raw),
                     "Make sure your numbers are in 'x.x y.y z.z' format");

@@ -33,6 +33,14 @@ public class SplashScript extends ProjectileScript<WeaponProjectile> {
         this.mechanics = mechanics;
     }
 
+    public Mechanics getMechanics() {
+        return mechanics;
+    }
+
+    public void setMechanics(Mechanics mechanics) {
+        this.mechanics = mechanics;
+    }
+
     @Override
     public void onTickEnd() {
         wasInWater = isInWater();

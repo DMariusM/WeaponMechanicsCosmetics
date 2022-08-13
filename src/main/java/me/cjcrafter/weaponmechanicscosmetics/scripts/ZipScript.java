@@ -32,8 +32,8 @@ import java.util.LinkedList;
  */
 public class ZipScript extends ProjectileScript<WeaponProjectile> {
 
-    private final double distanceSquared;
-    private final SoundMechanic mechanics;
+    private double distanceSquared;
+    private SoundMechanic mechanics;
 
     public ZipScript(@NotNull Plugin owner, @NotNull WeaponProjectile projectile) {
         super(owner, projectile);
@@ -54,9 +54,25 @@ public class ZipScript extends ProjectileScript<WeaponProjectile> {
         this.mechanics = mechanics;
     }
 
+    public double getDistanceSquared() {
+        return distanceSquared;
+    }
+
+    public void setDistanceSquared(double distanceSquared) {
+        this.distanceSquared = distanceSquared;
+    }
+
+    public SoundMechanic getMechanics() {
+        return mechanics;
+    }
+
+    public void setMechanics(SoundMechanic mechanics) {
+        this.mechanics = mechanics;
+    }
+
     @Override
     public void onTickEnd() {
-        Debugger debug = WeaponMechanicsCosmetics.getInstance().getDebug();
+        //Debugger debug = WeaponMechanicsCosmetics.getInstance().getDebug();
         World world = projectile.getWorld();
 
         // https://math.stackexchange.com/questions/1905533/find-perpendicular-distance-from-point-to-line-in-3d

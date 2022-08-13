@@ -47,6 +47,14 @@ public class BlockSoundScript extends ProjectileScript<WeaponProjectile> {
         this.sound = sound;
     }
 
+    public BlockSound getSound() {
+        return sound;
+    }
+
+    public void setSound(BlockSound sound) {
+        this.sound = sound;
+    }
+
     @Override
     public void onCollide(@NotNull RayTraceResult hit) {
         if (!hit.isBlock())
@@ -70,8 +78,8 @@ public class BlockSoundScript extends ProjectileScript<WeaponProjectile> {
         public BlockSound() {
         }
 
-        public BlockSound(BlockCompatibility.SoundType type, float randomness,
-                          Map<Material, SoundConfig> overrides, Map<Material, Object> materialBlacklist, Set<String> weaponBlacklist) {
+        public BlockSound(BlockCompatibility.SoundType type, float randomness, Map<Material, SoundConfig> overrides,
+                          Map<Material, Object> materialBlacklist, Set<String> weaponBlacklist) {
             this.type = type;
             this.randomness = randomness;
             this.overrides = overrides;

@@ -38,7 +38,6 @@ Explosion_Effects:
 Block_Sounds:
   Type: BREAK    # <BREAK, STEP, PLACE, HIT, FALL>
   Default_Randomness: 0.02
-  Activate_Warden: true
 
   # In this section, you can override the sound a block makes when a projectile
   # hits it. For the most case, the default sound is good enough to give players

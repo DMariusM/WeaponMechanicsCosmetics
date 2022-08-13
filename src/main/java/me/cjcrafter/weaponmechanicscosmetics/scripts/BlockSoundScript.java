@@ -60,7 +60,6 @@ public class BlockSoundScript extends ProjectileScript<WeaponProjectile> {
 
         private BlockCompatibility.SoundType type;
         private float randomness;
-        private boolean alertWarden;
         private Map<Material, SoundConfig> overrides;
         private Map<Material, Object> materialBlacklist;
         private Set<String> weaponBlacklist;
@@ -71,11 +70,10 @@ public class BlockSoundScript extends ProjectileScript<WeaponProjectile> {
         public BlockSound() {
         }
 
-        public BlockSound(BlockCompatibility.SoundType type, float randomness, boolean alertWarden,
+        public BlockSound(BlockCompatibility.SoundType type, float randomness,
                           Map<Material, SoundConfig> overrides, Map<Material, Object> materialBlacklist, Set<String> weaponBlacklist) {
             this.type = type;
             this.randomness = randomness;
-            this.alertWarden = alertWarden;
             this.overrides = overrides;
             this.materialBlacklist = materialBlacklist;
             this.weaponBlacklist = weaponBlacklist;
@@ -129,7 +127,6 @@ public class BlockSoundScript extends ProjectileScript<WeaponProjectile> {
         public BlockSound serialize(SerializeData data) throws SerializerException {
             BlockCompatibility.SoundType type = data.of("Type").assertExists().getEnum(BlockCompatibility.SoundType.class);
             float randomness = (float) data.of("Default_Randomness").assertExists().assertRange(0.0, 1.0).getDouble();
-            boolean alertWarden = data.of("Activate_Warden").assertExists().getBool();
 
             // Construct a list of overrides to use in case the default block
             // sounds are not good enough. Also supports playing custom sounds
@@ -203,7 +200,7 @@ public class BlockSoundScript extends ProjectileScript<WeaponProjectile> {
                 weaponBlacklist.add(split[0]);
             }
 
-            return new BlockSound(type, randomness, alertWarden, overrides, materialBlacklist, weaponBlacklist);
+            return new BlockSound(type, randomness, overrides, materialBlacklist, weaponBlacklist);
         }
 
         @Override

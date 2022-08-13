@@ -2,8 +2,8 @@ package me.cjcrafter.weaponmechanicscosmetics;
 
 import me.cjcrafter.weaponmechanicscosmetics.scripts.*;
 import me.deecaad.core.file.Configuration;
-import me.deecaad.core.utils.Debugger;
 import me.deecaad.weaponmechanics.WeaponMechanics;
+import me.deecaad.weaponmechanics.weapon.explode.BlockDamage;
 import me.deecaad.weaponmechanics.weapon.projectile.AProjectile;
 import me.deecaad.weaponmechanics.weapon.projectile.ProjectileScriptManager;
 import me.cjcrafter.weaponmechanicscosmetics.trails.Trail;
@@ -30,20 +30,23 @@ public class CosmeticsScriptManager extends ProjectileScriptManager {
         Configuration config = WeaponMechanics.getConfigurations();
 
         if (aProjectile instanceof WeaponProjectile) {
-
             WeaponProjectile projectile = (WeaponProjectile) aProjectile;
-            Trail trail = config.getObject(projectile.getWeaponTitle() + ".Trail", Trail.class);
 
-            if (trail != null)
-                projectile.addProjectileScript(new TrailScript(getPlugin(), projectile, trail));
+            projectile.addProjectileScript(new BlockSoundScript(getPlugin(), projectile));
+
+            if (config.containsKey(projectile + ".Trail"))
+                projectile.addProjectileScript(new TrailScript(getPlugin(), projectile));
 
             if (config.containsKey(projectile.getWeaponTitle() + ".Cosmetics.Bullet_Zip"))
-                projectile.addProjectileScript(new ProjectileZipScript(getPlugin(), projectile));
+                projectile.addProjectileScript(new ZipScript(getPlugin(), projectile));
 
-            // More generalized weapon scripts
-            projectile.addProjectileScript(new ProjectileSplashScript(getPlugin(), projectile));
-            projectile.addProjectileScript(new ProjectileBlockSoundScript(getPlugin(), projectile));
-            projectile.addProjectileScript(new BlockCrackScript(getPlugin(), projectile));
+            if (config.containsKey(projectile.getWeaponTitle() + ".Cosmetics.Block_Damage"))
+                projectile.addProjectileScript(new BlockCrackScript(getPlugin(), projectile));
+
+            // If the projectile has a disguise, then there is no need to show
+            // splash effects (entities have splash effects in vanilla mc)
+            if (projectile.getDisguise() == null )
+                projectile.addProjectileScript(new SplashScript(getPlugin(), projectile));
         }
     }
 }

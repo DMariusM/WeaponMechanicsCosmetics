@@ -5,26 +5,14 @@ import me.deecaad.core.file.*;
 import me.deecaad.weaponmechanics.mechanics.Mechanics;
 import me.deecaad.weaponmechanics.mechanics.defaultmechanics.SoundMechanic;
 import me.deecaad.weaponmechanics.weapon.explode.BlockDamage;
-import org.bukkit.configuration.ConfigurationSection;
-import org.jetbrains.annotations.NotNull;
-
-import java.io.File;
 
 public class GeneralCosmeticsValidator implements IValidator {
 
-    public static final Serializer<?> DUMMY = new Serializer<Object>() {
-        @Override
-        public String getKeyword() {
-            return "Cosmetics";
-        }
-
-        @NotNull
-        @Override
-        public Object serialize(SerializeData serializeData) {
-            throw new RuntimeException("Unreachable code");
-        }
-    };
-
+    /**
+     * Default constructor for validator
+     */
+    public GeneralCosmeticsValidator() {
+    }
 
     @Override
     public boolean denyKeys() {
@@ -37,8 +25,8 @@ public class GeneralCosmeticsValidator implements IValidator {
     }
 
     @Override
-    public void validate(Configuration configuration, File file, ConfigurationSection config, String key) throws SerializerException {
-        SerializeData data = new SerializeData(DUMMY, file, key, config);
+    public void validate(Configuration configuration, SerializeData data) throws SerializerException {
+        String key = data.key;
 
         // Just check datatype
         configuration.set(key + ".Muzzle_Flash", data.of("Muzzle_Flash").getBool(false));

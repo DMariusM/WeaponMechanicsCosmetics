@@ -23,16 +23,16 @@ import java.util.*;
 /**
  * Adds hit-block sounds for projectiles.
  */
-public class ProjectileBlockSoundScript extends ProjectileScript<WeaponProjectile> {
+public class BlockSoundScript extends ProjectileScript<WeaponProjectile> {
 
     private BlockSound sound;
 
-    public ProjectileBlockSoundScript(@NotNull Plugin owner, @NotNull WeaponProjectile projectile) {
+    public BlockSoundScript(@NotNull Plugin owner, @NotNull WeaponProjectile projectile) {
         super(owner, projectile);
 
         Configuration config = WeaponMechanicsCosmetics.getInstance().getConfiguration();
         Debugger debug = WeaponMechanicsCosmetics.getInstance().getDebug();
-        sound = config.getObject("Block_Sounds", ProjectileBlockSoundScript.BlockSound.class);
+        sound = config.getObject("Block_Sounds", BlockSoundScript.BlockSound.class);
         if (sound == null) {
             debug.error("Did you delete in the 'Block_Sounds' section in config.yml?",
                     "You probably want to check the main config wiki",
@@ -41,7 +41,7 @@ public class ProjectileBlockSoundScript extends ProjectileScript<WeaponProjectil
         }
     }
 
-    public ProjectileBlockSoundScript(@NotNull Plugin owner, @NotNull WeaponProjectile projectile, BlockSound sound) {
+    public BlockSoundScript(@NotNull Plugin owner, @NotNull WeaponProjectile projectile, BlockSound sound) {
         super(owner, projectile);
 
         this.sound = sound;

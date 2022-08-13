@@ -1,9 +1,11 @@
 package me.cjcrafter.weaponmechanicscosmetics.trails;
 
 import me.deecaad.core.utils.VectorUtil;
+import me.deecaad.weaponmechanics.WeaponMechanics;
 import me.deecaad.weaponmechanics.weapon.projectile.AProjectile;
 import me.deecaad.weaponmechanics.weapon.projectile.ProjectileScript;
 import me.cjcrafter.weaponmechanicscosmetics.trails.shape.Vec2;
+import me.deecaad.weaponmechanics.weapon.projectile.weaponprojectile.WeaponProjectile;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
@@ -15,6 +17,10 @@ public class TrailScript extends ProjectileScript<AProjectile> {
     private Trail trail;
     private double spillOverDistance;
     private int updates;
+
+    public TrailScript(@NotNull Plugin owner, @NotNull WeaponProjectile projectile) {
+        this(owner, projectile, WeaponMechanics.getConfigurations().getObject(projectile.getWeaponTitle() + ".Trail", Trail.class));
+    }
 
     public TrailScript(@NotNull Plugin owner, @NotNull AProjectile projectile, Trail trail) {
         super(owner, projectile);

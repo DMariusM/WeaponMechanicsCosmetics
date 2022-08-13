@@ -3,11 +3,9 @@ package me.cjcrafter.weaponmechanicscosmetics.scripts;
 import me.cjcrafter.weaponmechanicscosmetics.WeaponMechanicsCosmetics;
 import me.deecaad.core.file.Configuration;
 import me.deecaad.core.utils.Debugger;
-import me.deecaad.core.utils.LogLevel;
 import me.deecaad.core.utils.VectorUtil;
 import me.deecaad.weaponmechanics.WeaponMechanics;
 import me.deecaad.weaponmechanics.mechanics.CastData;
-import me.deecaad.weaponmechanics.mechanics.Mechanics;
 import me.deecaad.weaponmechanics.mechanics.defaultmechanics.SoundMechanic;
 import me.deecaad.weaponmechanics.weapon.projectile.ProjectileScript;
 import me.deecaad.weaponmechanics.weapon.projectile.weaponprojectile.WeaponProjectile;
@@ -32,12 +30,12 @@ import java.util.LinkedList;
  * Plays a {@link me.cjcrafter.weaponmechanicscosmetics.general.PerPlayerSoundMechanic}
  * for a player when a projectile zips close by.
  */
-public class ProjectileZipScript extends ProjectileScript<WeaponProjectile> {
+public class ZipScript extends ProjectileScript<WeaponProjectile> {
 
     private final double distanceSquared;
     private final SoundMechanic mechanics;
 
-    public ProjectileZipScript(@NotNull Plugin owner, @NotNull WeaponProjectile projectile) {
+    public ZipScript(@NotNull Plugin owner, @NotNull WeaponProjectile projectile) {
         super(owner, projectile);
 
         Configuration config = WeaponMechanics.getConfigurations();
@@ -49,7 +47,7 @@ public class ProjectileZipScript extends ProjectileScript<WeaponProjectile> {
             throw new IllegalArgumentException('.' + projectile.getWeaponTitle() + ".Cosmetics.Bullet_Zip' is incomplete");
     }
 
-    public ProjectileZipScript(@NotNull Plugin owner, @NotNull WeaponProjectile projectile, double distanceSquared, SoundMechanic mechanics) {
+    public ZipScript(@NotNull Plugin owner, @NotNull WeaponProjectile projectile, double distanceSquared, SoundMechanic mechanics) {
         super(owner, projectile);
 
         this.distanceSquared = distanceSquared;

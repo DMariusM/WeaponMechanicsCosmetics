@@ -4,7 +4,7 @@ import me.cjcrafter.auto.UpdateChecker;
 import me.cjcrafter.auto.UpdateInfo;
 import me.cjcrafter.weaponmechanicscosmetics.listeners.ExplosionEffectSpawner;
 import me.cjcrafter.weaponmechanicscosmetics.listeners.MuzzleFlashSpawner;
-import me.cjcrafter.weaponmechanicscosmetics.scripts.ProjectileBlockSoundScript;
+import me.cjcrafter.weaponmechanicscosmetics.scripts.BlockSoundScript;
 import me.cjcrafter.weaponmechanicscosmetics.timer.TimerSpawner;
 import me.cjcrafter.weaponmechanicscosmetics.listeners.WeaponMechanicsSerializerListener;
 import me.cjcrafter.weaponmechanicscosmetics.general.ParticleMechanic;
@@ -65,6 +65,7 @@ public class WeaponMechanicsCosmetics {
 
         Mechanics.registerMechanic(plugin, new ParticleMechanic());
 
+        registerDebugger();
         registerBStats();
         // TODO add after release registerUpdateChecker();
     }
@@ -88,7 +89,7 @@ public class WeaponMechanicsCosmetics {
 
                     // Read config
                     List<Serializer<?>> serializers = new ArrayList<>();
-                    serializers.add(new ProjectileBlockSoundScript.BlockSound());
+                    serializers.add(new BlockSoundScript.BlockSound());
 
                     List<IValidator> validators = new ArrayList<>();
                     validators.add(new ExplosionEffectSpawner.ExplosionEffectValidator());
@@ -127,6 +128,12 @@ public class WeaponMechanicsCosmetics {
 
     public Configuration getConfiguration() {
         return config;
+    }
+
+    private void registerDebugger() {
+        debug.permission = "weaponmechanicscosmetics.errorlog";
+        debug.msg = "WeaponMechanicsCosmetics had %s error(s) in console.";
+        debug.start(plugin);
     }
 
     private void registerUpdateChecker() {

@@ -1,5 +1,6 @@
 package me.cjcrafter.weaponmechanicscosmetics.general;
 
+import me.cjcrafter.weaponmechanicscosmetics.scripts.ZipScript;
 import me.deecaad.core.compatibility.CompatibilityAPI;
 import me.deecaad.core.file.SerializeData;
 import me.deecaad.core.file.SerializerEnumException;
@@ -16,8 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * This mechanic is important for the
- * {@link me.cjcrafter.weaponmechanicscosmetics.scripts.ProjectileZipScript}.
+ * This mechanic is important for the {@link ZipScript}.
  * Players need to hear the sound from a specific direction and distance, so
  * this is used to ensure that only 1 player hears the sound.
  */

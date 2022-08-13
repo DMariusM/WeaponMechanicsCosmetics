@@ -57,27 +57,13 @@ public class ExplosionEffectSpawner implements Listener {
 
     public static class ExplosionEffectValidator implements IValidator {
 
-        public static final Serializer<?> DUMMY = new Serializer<Object>() {
-            @Override
-            public String getKeyword() {
-                return "Explosion_Effects";
-            }
-
-            @NotNull
-            @Override
-            public Object serialize(SerializeData serializeData) {
-                throw new RuntimeException("Unreachable code");
-            }
-        };
-
         @Override
         public String getKeyword() {
             return "Explosion_Effects";
         }
 
         @Override
-        public void validate(Configuration configuration, File file, ConfigurationSection config, String key) throws SerializerException {
-            SerializeData data = new SerializeData(DUMMY, file, key, config);
+        public void validate(Configuration configuration, SerializeData data) throws SerializerException {
 
             // Just check that type/range is proper, no need to set anything
             data.of("Explosion_Particle_Density").assertExists().assertRange(0.0, 1.0).getDouble();

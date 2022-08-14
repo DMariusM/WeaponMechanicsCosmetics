@@ -8,11 +8,14 @@ public class StringFunctionShape extends FunctionShape {
     private final Expression expression;
     private final Argument theta;
 
-    public StringFunctionShape(int points, int loops, String function) {
+    public StringFunctionShape(int points, int loops, String function, boolean cache) {
         super(points, loops);
 
         this.theta = new Argument("theta", 0.0);
         this.expression = new Expression(function, theta);
+
+        if (cache)
+            cache();
     }
 
     @Override

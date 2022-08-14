@@ -23,8 +23,8 @@ public final class ShapeFactory extends Factory<Shape> {
 
         INSTANCE.set("EQUATION,POLAR", INSTANCE.new Arguments(
                 StringFunctionShape.class,
-                new String[]{ "Points", "Loops", "Function" },
-                new Class[]{ int.class, int.class, String.class }
+                new String[]{ "Points", "Loops", "Function", "Cache" },
+                new Class[]{ int.class, int.class, String.class, boolean.class }
         ));
 
     }

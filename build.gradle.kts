@@ -1,7 +1,7 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 group = "me.cjcrafter"
-version = "1.0.1"
+version = "1.0.2"
 
 plugins {
     `java-library`
@@ -67,8 +67,8 @@ dependencies {
     implementation("co.aikar:minecraft-timings:1.0.4")
     testImplementation("org.junit.jupiter:junit-jupiter:5.9.0")
 
-    compileOnly("me.deecaad:mechanicscore:1.4.4")
-    compileOnly("me.deecaad:weaponmechanics:1.9.4")
+    compileOnly("me.deecaad:mechanicscore:1.4.7")
+    compileOnly("me.deecaad:weaponmechanics:1.9.8")
     implementation("org.bstats:bstats-bukkit:3.0.0")
     implementation("me.cjcrafter:mechanicsautodownload:1.1.2")
 

@@ -211,7 +211,7 @@ public class ParticleSerializer implements Serializer<ParticleSerializer> {
                         offset = new Vector(x, y, z);
                     }
                 } else {
-                    String raw = data.config.getString("Velocity");
+                    String raw = data.config.getString("Noise");
                     if (raw == null)
                         break;
 

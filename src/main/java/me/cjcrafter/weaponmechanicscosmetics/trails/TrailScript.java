@@ -10,6 +10,12 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
+/**
+ * This {@link ProjectileScript} handles the {@link Trail} feature by
+ * spawning particles around the projectile at the end of every tick. Due
+ * to many calls to {@link Math#sqrt(double)}, this feature can consume a
+ * con
+ */
 public class TrailScript extends ProjectileScript<AProjectile> {
 
     private Trail trail;

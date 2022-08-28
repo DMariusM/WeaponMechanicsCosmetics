@@ -1,20 +1,22 @@
+/*
+ * Copyright (c) 2022 CJCrafter <collinjbarber@gmail.com> - All Rights Reserved.
+ * Unauthorized copying of this file, via any medium is strictly prohibited proprietary and confidential.
+ */
+
 package me.cjcrafter.weaponmechanicscosmetics;
 
+import me.cjcrafter.weaponmechanicscosmetics.scripts.*;
+import me.deecaad.core.file.Configuration;
+import me.deecaad.weaponmechanics.WeaponMechanics;
+import me.deecaad.weaponmechanics.weapon.explode.BlockDamage;
 import me.deecaad.weaponmechanics.weapon.projectile.AProjectile;
 import me.deecaad.weaponmechanics.weapon.projectile.ProjectileScriptManager;
-import me.cjcrafter.weaponmechanicscosmetics.trails.ParticleSerializer;
 import me.cjcrafter.weaponmechanicscosmetics.trails.Trail;
 import me.cjcrafter.weaponmechanicscosmetics.trails.TrailScript;
-import me.cjcrafter.weaponmechanicscosmetics.trails.shape.FunctionShape;
-import me.cjcrafter.weaponmechanicscosmetics.trails.shape.Shape;
-import org.bukkit.Color;
-import org.bukkit.Particle;
+import me.deecaad.weaponmechanics.weapon.projectile.weaponprojectile.WeaponProjectile;
 import org.bukkit.plugin.Plugin;
-import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Arrays;
-import java.util.List;
 
 public class CosmeticsScriptManager extends ProjectileScriptManager {
 
@@ -27,21 +29,29 @@ public class CosmeticsScriptManager extends ProjectileScriptManager {
         if (aProjectile.getIntTag("explosion-falling-block") == 1) {
             FallingBlockScript script = new FallingBlockScript(getPlugin(), aProjectile);
             aProjectile.addProjectileScript(script);
+            return;
         }
 
-        List<ParticleSerializer> list = Arrays.asList(
-                new ParticleSerializer(Particle.DUST_COLOR_TRANSITION, 1, 1.0f, new Vector(), new Particle.DustTransition(Color.RED, Color.WHITE, 0.25f)),
-                new ParticleSerializer(Particle.DUST_COLOR_TRANSITION, 1, 1.0f, new Vector(), new Particle.DustTransition(Color.WHITE, Color.BLUE, 0.25f)),
-                new ParticleSerializer(Particle.DUST_COLOR_TRANSITION, 1, 1.0f, new Vector(), new Particle.DustTransition(Color.BLUE, Color.RED, 0.25f))
-        );
+        Configuration config = WeaponMechanics.getConfigurations();
 
-        Shape shape = new FunctionShape(32, 32) {
-            @Override
-            public double radiusFunction(double theta) {
-                return 2 * Math.cos(2 * theta);
-            }
-        };
-        Trail trail = new Trail(0.2, Trail.ListChooser.LOOP, list, shape);
-        aProjectile.addProjectileScript(new TrailScript(getPlugin(), aProjectile, trail));
+        if (aProjectile instanceof WeaponProjectile) {
+            WeaponProjectile projectile = (WeaponProjectile) aProjectile;
+
+            projectile.addProjectileScript(new BlockSoundScript(getPlugin(), projectile));
+
+            if (config.containsKey(projectile.getWeaponTitle() + ".Trail"))
+                projectile.addProjectileScript(new TrailScript(getPlugin(), projectile));
+
+            if (config.containsKey(projectile.getWeaponTitle() + ".Cosmetics.Bullet_Zip"))
+                projectile.addProjectileScript(new ZipScript(getPlugin(), projectile));
+
+            if (config.containsKey(projectile.getWeaponTitle() + ".Cosmetics.Block_Damage"))
+                projectile.addProjectileScript(new BlockCrackScript(getPlugin(), projectile));
+
+            // If the projectile has a disguise, then there is no need to show
+            // splash effects (entities have splash effects in vanilla mc)
+            if (projectile.getDisguise() == null )
+                projectile.addProjectileScript(new SplashScript(getPlugin(), projectile));
+        }
     }
 }

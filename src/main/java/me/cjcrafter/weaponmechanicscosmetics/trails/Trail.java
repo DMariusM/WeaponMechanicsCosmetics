@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2022 CJCrafter <collinjbarber@gmail.com> - All Rights Reserved.
+ * Unauthorized copying of this file, via any medium is strictly prohibited proprietary and confidential.
+ */
+
 package me.cjcrafter.weaponmechanicscosmetics.trails;
 
 import me.deecaad.core.file.SerializeData;
@@ -9,10 +14,7 @@ import me.cjcrafter.weaponmechanicscosmetics.trails.shape.ShapeFactory;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
 public class Trail implements Serializer<Trail> {
 
@@ -20,6 +22,12 @@ public class Trail implements Serializer<Trail> {
     private ListChooser chooser;
     private List<ParticleSerializer> particles;
     private Shape shape;
+
+    /**
+     * Default constructor for serializer
+     */
+    public Trail() {
+    }
 
     public Trail(double delta, ListChooser chooser, List<ParticleSerializer> particles, Shape shape) {
         this.delta = delta;
@@ -73,6 +81,11 @@ public class Trail implements Serializer<Trail> {
         }
     }
 
+    @Override
+    public String getKeyword() {
+        return "Trail";
+    }
+
     @NotNull
     @Override
     public Trail serialize(SerializeData data) throws SerializerException {
@@ -82,25 +95,20 @@ public class Trail implements Serializer<Trail> {
 
         // We need to serialize a list of ParticleSerializers. The user should
         // always define at least 1 particle.
-        ConfigurationSection section = data.config.getConfigurationSection(data.key + ".Particles");
-        if (section == null)
-            throw data.exception("Particles", "Your trail needs to have at least 1 particle!");
+        ConfigurationSection section = data.of("Particles").assertType(ConfigurationSection.class).assertExists().get();
 
         // Particles are generally stored like 'Particle_1', 'Particle_2', but
         // in reality, we don't care what they name it, as long as they use the
         // particle serializer correctly.
         List<ParticleSerializer> particles = new ArrayList<>();
         for (String key : section.getKeys(false)) {
-            SerializeData relative = data.move("Particles." + key);
-            particles.add(new ParticleSerializer().serialize(relative));
+            particles.add(data.of("Particles." + key).assertExists().serialize(ParticleSerializer.class));
         }
 
         String shapeInput = data.of("Shape").get("LINE").trim().toUpperCase(Locale.ROOT);
-        ConfigurationSection shapeConfig = data.config.getConfigurationSection(data.key + ".Shape_Data");
-        if (shapeConfig == null)
-            throw data.exception("Shape_Data", "Missing data for shape " + shapeInput);
+        ConfigurationSection shapeConfig = data.of("Shape_Data").assertType(ConfigurationSection.class).assertExists(!shapeInput.equalsIgnoreCase("LINE")).get(null);
 
-        Map<String, Object> shapeData = shapeConfig.getValues(false);
+        Map<String, Object> shapeData = shapeConfig == null ? new HashMap<>() : shapeConfig.getValues(false);
 
         Shape shape;
         try {

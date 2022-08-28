@@ -6,11 +6,15 @@
 Debug_Level: 2
 Print_Traces: false
 
-# Automatically download WeaponMechanics when not already installed.
-Weapon_Mechanics_Download:
+# Automatically download MechanicsCore and WeaponMechanics
+Auto_Download:
   Enabled: true
   Connection_Timeout: 10
   Read_Timeout: 30
+
+# Update checker
+Update_Checker:
+  Enabled: true
 
 # Global Explosion Effect configuration. Applies to every gun that uses
 # explosion, unless you add that gun to the 'Weapon_Blacklist'.

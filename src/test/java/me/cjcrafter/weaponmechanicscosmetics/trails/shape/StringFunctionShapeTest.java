@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2022 CJCrafter <collinjbarber@gmail.com> - All Rights Reserved.
+ * Unauthorized copying of this file, via any medium is strictly prohibited proprietary and confidential.
+ */
+
 package me.cjcrafter.weaponmechanicscosmetics.trails.shape;
 
 import org.junit.jupiter.api.Test;
@@ -8,7 +13,7 @@ public class StringFunctionShapeTest {
 
     @Test
     void test() {
-        StringFunctionShape shape = new StringFunctionShape(4, 1, "2*sin(theta)");
+        StringFunctionShape shape = new StringFunctionShape(4, 1, "2*sin(theta)", true);
 
         assertEquals(0, shape.radiusFunction(0), 1E-8);
         assertEquals(2, shape.radiusFunction(Math.PI / 2.0), 1E-8);
@@ -19,8 +24,8 @@ public class StringFunctionShapeTest {
 
         // This test is important since we reuse the same function for
         // a different theta input.
-        StringFunctionShape cos = new StringFunctionShape(8, 1, "cos(theta)");
-        StringFunctionShape sin = new StringFunctionShape(8, 1, "sin(theta)");
+        StringFunctionShape cos = new StringFunctionShape(8, 1, "cos(theta)", true);
+        StringFunctionShape sin = new StringFunctionShape(8, 1, "sin(theta)", false);
 
         double[] expectedCos = new double[]{ 1.0, Math.sqrt(2)/2, 0, -Math.sqrt(2)/2, -1.0, -Math.sqrt(2)/2, 0, Math.sqrt(2)/2 };
         double[] expectedSin = new double[]{ 0.0, Math.sqrt(2)/2, 1.0, Math.sqrt(2)/2, 0.0, -Math.sqrt(2)/2, -1.0, -Math.sqrt(2)/2 };

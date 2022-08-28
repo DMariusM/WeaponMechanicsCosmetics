@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2022 CJCrafter <collinjbarber@gmail.com> - All Rights Reserved.
+ * Unauthorized copying of this file, via any medium is strictly prohibited proprietary and confidential.
+ */
+
 package me.cjcrafter.weaponmechanicscosmetics.trails.shape;
 
 import me.deecaad.weaponmechanics.utils.Factory;
@@ -23,8 +28,8 @@ public final class ShapeFactory extends Factory<Shape> {
 
         INSTANCE.set("EQUATION,POLAR", INSTANCE.new Arguments(
                 StringFunctionShape.class,
-                new String[]{ "Points", "Loops", "Function" },
-                new Class[]{ int.class, int.class, String.class }
+                new String[]{ "Points", "Loops", "Function", "Cache" },
+                new Class[]{ int.class, int.class, String.class, boolean.class }
         ));
 
     }

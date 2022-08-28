@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2022 CJCrafter <collinjbarber@gmail.com> - All Rights Reserved.
+ * Unauthorized copying of this file, via any medium is strictly prohibited proprietary and confidential.
+ */
+
 package me.cjcrafter.weaponmechanicscosmetics.trails;
 
 import me.deecaad.core.file.SerializeData;
@@ -24,16 +29,21 @@ public class ParticleSerializer implements Serializer<ParticleSerializer> {
     private double extra;
     private Vector offset; // sometimes velocity
     private Object options;
+    private boolean force;
 
+    /**
+     * Default constructor for serializer
+     */
     public ParticleSerializer() {
     }
 
-    public ParticleSerializer(Particle particle, int count, double extra, Vector offset, Object options) {
+    public ParticleSerializer(Particle particle, int count, double extra, Vector offset, Object options, boolean force) {
         this.particle = particle;
         this.count = count;
         this.extra = extra;
         this.offset = offset;
         this.options = options;
+        this.force = force;
     }
 
     public void display(Location location) {
@@ -48,7 +58,10 @@ public class ParticleSerializer implements Serializer<ParticleSerializer> {
         if (world == null)
             throw new IllegalArgumentException("World cannot be null");
 
-        world.spawnParticle(particle, x, y, z, count, offset.getX(), offset.getY(), offset.getZ(), extra, options);
+        if (ReflectionUtil.getMCVersion() < 13)
+            world.spawnParticle(particle, x, y, z, count, offset.getX(), offset.getY(), offset.getZ(), extra, options);
+        else
+            world.spawnParticle(particle, x, y, z, count, offset.getX(), offset.getY(), offset.getZ(), extra, options, force);
     }
 
     @NotNull
@@ -65,6 +78,11 @@ public class ParticleSerializer implements Serializer<ParticleSerializer> {
         double extra = 0.0;
         Vector offset = new Vector();
         Object options = null;
+        boolean force = data.of("Always_Show").getBool(true);
+
+        // TODO Actually, using multiple packets we can fix this
+        if (data.has("Velocity") && data.has("Noise"))
+            throw data.exception(null, "Cannot use both 'Velocity' and 'Noise' at the same time!");
 
         // Dust transition was added in 1.17, which accompanies the skulk
         // sensor. It can fade from one color to another color. Can also
@@ -154,31 +172,43 @@ public class ParticleSerializer implements Serializer<ParticleSerializer> {
 
             // All of these particles can be directional by setting count=0.
             // This means that instead of using offset, we should use velocity.
-            case "EXPLOSION_NORMAL":
-            case "FIREWORKS_SPARK":
-            case "WATER_BUBBLE":
-            case "WATER_WAKE":
+            case "BUBBLE_COLUMN_UP":
+            case "BUBBLE_POP":
+            case "CAMPFIRE_COZY_SMOKE":
+            case "CAMPFIRE_SIGNAL_SMOKE":
+            case "CLOUD":
             case "CRIT":
             case "CRIT_MAGIC":
-            case "SMOKE_NORMAL":
-            case "SMOKE_LARGE":
-            case "PORTAL":
-            case "ENCHANTMENT_TABLE":
-            case "FLAME":
-            case "CLOUD":
-            case "DRAGON_BREATH":
-            case "END_ROD":
             case "DAMAGE_INDICATOR":
-            case "TOTEM":
+            case "DRAGON_BREATH":
+            case "ELECTRIC_SPARK":
+            case "ENCHANTMENT_TABLE":
+            case "END_ROD":
+            case "EXPLOSION_NORMAL":
+            case "FIREWORKS_SPARK":
+            case "FLAME":
+            case "NAUTILUS":
+            case "PORTAL":
+            case "REVERSE_PORTAL":
+            case "SCRAPE":
+            case "SCULK_CHARGE":
+            case "SCULK_CHARGE_POP":
+            case "SCULK_SOUL":
+            case "SMALL_FLAME":
+            case "SMOKE_LARGE":
+            case "SMOKE_NORMAL":
+            case "SOUL":
+            case "SOUL_FIRE_FLAME":
             case "SPIT":
             case "SQUID_INK":
-            case "BUBBLE_POP":
+            case "TOTEM":
+            case "WATER_BUBBLE":
+            case "WATER_WAKE":
+            case "WAX_OFF":
+            case "WAX_ON":
                 noBlock(particle, data);
                 noColor(particle, data);
                 noFade(particle, data);
-
-                if (data.has("Velocity") && data.has("Noise"))
-                    throw data.exception(null, "Cannot use both 'Velocity' and 'Noise' at the same time!");
 
                 // When the user doesn't define a count, we will define it for
                 // them. 0 for velocity, 1 for offset.
@@ -196,37 +226,12 @@ public class ParticleSerializer implements Serializer<ParticleSerializer> {
                     throw data.exception("Velocity", "Cannot use 'Velocity' when 'Count\u22600'. Count must be 0!");
 
                 if (count == 0) {
-                    data.of("Velocity").assertExists();
-                    String raw = data.config.getString("Velocity");
-                    assert raw != null;
-
-                    // TODO allow projectile motion inheritance!
-                    String match = StringUtil.match("\\d+[~ -]\\d+[~ -]\\d+", raw);
-                    if (match != null) {
-                        String[] split = StringUtil.split(match);
-                        double x = Double.parseDouble(split[0]); // these should be safe since we checked regex
-                        double y = Double.parseDouble(split[1]);
-                        double z = Double.parseDouble(split[2]);
-
-                        offset = new Vector(x, y, z);
-                    }
+                    offset = parseVector(data, "Velocity");
+                    extra = offset.length();
                 } else {
-                    String raw = data.config.getString("Noise");
-                    if (raw == null)
-                        break;
-
-                    String match = StringUtil.match("\\d+[~ -]\\d+[~ -]\\d+", raw);
-                    if (match != null) {
-                        String[] split = StringUtil.split(match);
-                        double x = Double.parseDouble(split[0]); // these should be safe since we checked regex
-                        double y = Double.parseDouble(split[1]);
-                        double z = Double.parseDouble(split[2]);
-
-                        offset = new Vector(x, y, z);
-                    }
+                    offset = parseVector(data, "Noise");
                 }
                 break;
-
 
             // Now that we have run out of special cases, lets make sure the user
             // did not try to add any extra data.
@@ -235,6 +240,11 @@ public class ParticleSerializer implements Serializer<ParticleSerializer> {
                 noBlock(particle, data);
                 noColor(particle, data);
                 noFade(particle, data);
+
+                if (count == 0)
+                    throw data.exception("Count", "Cannot use Count=0 for '" + particle + "'");
+
+                offset = parseVector(data, "Noise");
                 break;
         }
 
@@ -243,7 +253,7 @@ public class ParticleSerializer implements Serializer<ParticleSerializer> {
         if (count == -1)
             count = 1;
 
-        return new ParticleSerializer(particle, count, extra, offset, options);
+        return new ParticleSerializer(particle, count, extra, offset, options, force);
     }
 
     private void noVelocity(Particle particle, SerializeData data) throws SerializerException {
@@ -272,6 +282,26 @@ public class ParticleSerializer implements Serializer<ParticleSerializer> {
         if (data.has("Fade_Color")) {
             throw data.exception("Fade_Color", "'" + particle + "' cannot use the 'Fade_Color' argument",
                     "Only 'DUST_COLOR_TRANSITION'(1.17+) can use 'Fade_Color'");
+        }
+    }
+
+    private Vector parseVector(SerializeData data, String relative) throws SerializerException {
+        if (!data.has(relative))
+            return new Vector();
+
+        String raw = data.of(relative).assertExists().get();
+
+        //boolean matches = Pattern.compile("\\d+.?\\d*[~ -]\\d+.?\\d*[~ -]\\d+.?\\d*").matcher(raw.trim()).matches();
+        String[] split = StringUtil.split(raw);
+        try {
+            double x = Double.parseDouble(split[0]);
+            double y = Double.parseDouble(split[1]);
+            double z = Double.parseDouble(split[2]);
+            return new Vector(x, y, z);
+        } catch (NumberFormatException ex) {
+            throw data.exception(relative, "Failed to find 3 numbers while making Particle Vector",
+                    SerializerException.forValue(raw),
+                    "Make sure your numbers are in 'x.x y.y z.z' format");
         }
     }
 }

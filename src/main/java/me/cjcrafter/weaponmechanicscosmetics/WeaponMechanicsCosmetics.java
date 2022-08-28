@@ -1,24 +1,33 @@
+/*
+ * Copyright (c) 2022 CJCrafter <collinjbarber@gmail.com> - All Rights Reserved.
+ * Unauthorized copying of this file, via any medium is strictly prohibited proprietary and confidential.
+ */
+
 package me.cjcrafter.weaponmechanicscosmetics;
 
-import me.cjcrafter.weaponmechanicscosmetics.listeners.TrailListener;
-import me.deecaad.core.MechanicsCore;
-import me.deecaad.core.file.Configuration;
-import me.deecaad.core.file.FileReader;
-import me.deecaad.core.file.IValidator;
-import me.deecaad.core.file.LinkedConfig;
+import me.cjcrafter.auto.UpdateChecker;
+import me.cjcrafter.auto.UpdateInfo;
+import me.cjcrafter.weaponmechanicscosmetics.listeners.ExplosionEffectSpawner;
+import me.cjcrafter.weaponmechanicscosmetics.listeners.MuzzleFlashSpawner;
+import me.cjcrafter.weaponmechanicscosmetics.scripts.BlockSoundScript;
+import me.cjcrafter.weaponmechanicscosmetics.timer.TimerSpawner;
+import me.cjcrafter.weaponmechanicscosmetics.listeners.WeaponMechanicsSerializerListener;
+import me.cjcrafter.weaponmechanicscosmetics.general.ParticleMechanic;
+import me.deecaad.core.file.*;
 import me.deecaad.core.utils.Debugger;
 import me.deecaad.core.utils.FileUtil;
-import me.deecaad.core.utils.LogLevel;
-import me.deecaad.core.utils.NumberUtil;
-import me.deecaad.weaponmechanics.weapon.projectile.HitBox;
+import me.deecaad.weaponmechanics.WeaponMechanics;
+import me.deecaad.weaponmechanics.mechanics.Mechanics;
+import org.bstats.bukkit.Metrics;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.event.HandlerList;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.PluginManager;
-import org.yaml.snakeyaml.error.YAMLException;
 
 import java.io.File;
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -26,9 +35,12 @@ import java.util.logging.Logger;
 public class WeaponMechanicsCosmetics {
 
     private static WeaponMechanicsCosmetics INSTANCE;
+
     private WeaponMechanicsCosmeticsLoader plugin;
+    private UpdateChecker update;
+    private Metrics metrics;
     private Debugger debug;
-    private Configuration basicConfiguration;
+    private Configuration config;
 
     WeaponMechanicsCosmetics(WeaponMechanicsCosmeticsLoader plugin) {
         this.plugin = plugin;
@@ -36,88 +48,133 @@ public class WeaponMechanicsCosmetics {
         INSTANCE = this;
     }
 
-    // * ----- HELPER METHODS ----- * //
-    public Logger getLogger() { return plugin.getLogger(); }
-    public FileConfiguration getConfig() { return plugin.getConfig(); }
-    public File getDataFolder() { return plugin.getDataFolder(); }
-    public ClassLoader getClassLoader() { return plugin.getClassLoader0();}
-    public File getFile() { return plugin.getFile0(); }
-
-    // * ----- STANDARD PLUGIN METHODS ----- * //
     public void onLoad() {
-        setupDebugger();
+        int level = getConfig().getInt("Debug_Level", 2);
+        boolean printTraces = getConfig().getBoolean("Print_Traces", false);
+        debug = new Debugger(getLogger(), level, printTraces);
+
+        // Write config from jar to datafolder
+        if (!getDataFolder().exists() || getDataFolder().listFiles() == null || getDataFolder().listFiles().length == 0) {
+            debug.info("Copying files from jar (This process may take up to 30 seconds during the first load!)");
+            FileUtil.copyResourcesTo(getClassLoader().getResource("WeaponMechanicsCosmetics"), getDataFolder().toPath());
+        }
     }
 
     public void onEnable() {
-        long millisCurrent = System.currentTimeMillis();
-        INSTANCE = this;
 
-        writeFiles();
-        registerEvents();
+        PluginManager pm = plugin.getServer().getPluginManager();
+        pm.registerEvents(new ExplosionEffectSpawner(), plugin);
+        pm.registerEvents(new MuzzleFlashSpawner(), plugin);
+        pm.registerEvents(new TimerSpawner(), plugin);
+        pm.registerEvents(new WeaponMechanicsSerializerListener(), plugin);
 
-        //registerBStats();
+        Mechanics.registerMechanic(plugin, new ParticleMechanic());
 
-        long tookMillis = System.currentTimeMillis() - millisCurrent;
-        double seconds = NumberUtil.getAsRounded(tookMillis * 0.001, 2);
-        debug.info("Enabled WeaponMechanicsCosmetics in " + seconds + "s");
-        debug.start(plugin);
+        registerDebugger();
+        registerBStats();
+        // TODO add after release registerUpdateChecker();
+    }
+
+    public TaskChain reloadConfig() {
+        return new TaskChain(plugin)
+                .thenRunAsync(() -> {
+
+                    // Make sure config.yml exists
+                    if (!getDataFolder().exists() || getDataFolder().listFiles() == null || getDataFolder().listFiles().length == 0) {
+                        debug.info("Copying files from jar (This process may take up to 30 seconds during the first load!)");
+                        FileUtil.copyResourcesTo(getClassLoader().getResource("WeaponMechanicsCosmetics"), getDataFolder().toPath());
+                    }
+
+                    File file = new File(getDataFolder(), "config.yml");
+                    if (!file.exists()) {
+                        FileUtil.copyResourcesTo(getClassLoader().getResource("WeaponMechanicsCosmetics/config.yml"), file.toPath());
+                    }
+                })
+                .thenRunSync(() -> {
+
+                    // Read config
+                    List<Serializer<?>> serializers = new ArrayList<>();
+                    serializers.add(new BlockSoundScript.BlockSound());
+
+                    List<IValidator> validators = new ArrayList<>();
+                    validators.add(new ExplosionEffectSpawner.ExplosionEffectValidator());
+
+                    FileReader reader = new FileReader(debug, serializers, validators);
+                    File file = new File(getDataFolder(), "config.yml");
+                    config = reader.fillOneFile(file);
+                    reader.usePathToSerializersAndValidators(config);
+
+                    WeaponMechanics.getProjectilesRunnable().addScriptManager(new CosmeticsScriptManager(plugin));
+                });
     }
 
     public void onDisable() {
-        HandlerList.unregisterAll(plugin);
     }
 
-    // * ----- INTERNAl METHODS ----- * //
-    void setupDebugger() {
-        Logger logger = getLogger();
-        int level = getConfig().getInt("Debug_Level", 2);
-        boolean isPrintTraces = getConfig().getBoolean("Print_Traces", false);
-        debug = new Debugger(logger, level, isPrintTraces);
-        debug.permission = "mechanicscore.errorlog";
-        debug.msg = "WeaponMechanics had %s error(s) in console.";
+    public FileConfiguration getConfig() {
+        return plugin.getConfig();
     }
 
-    void writeFiles() {
-        debug.debug("Writing files and filling basic configuration");
+    public Logger getLogger() {
+        return plugin.getLogger();
+    }
 
-        // Create files
-        if (!getDataFolder().exists() || getDataFolder().listFiles() == null || getDataFolder().listFiles().length == 0) {
-            debug.info("Copying files from jar (This process may take up to 30 seconds during the first load!)");
-            try {
-                FileUtil.copyResourcesTo(getClassLoader().getResource("WeaponMechanicsCosmetics"), getDataFolder().toPath());
-            } catch (IOException | URISyntaxException e) {
-                e.printStackTrace();
+    public File getDataFolder() {
+        return plugin.getDataFolder();
+    }
+
+    public ClassLoader getClassLoader() {
+        return plugin.getClassLoader0();
+    }
+
+    public Debugger getDebug() {
+        return debug;
+    }
+
+    public Configuration getConfiguration() {
+        return config;
+    }
+
+    private void registerDebugger() {
+        debug.permission = "weaponmechanicscosmetics.errorlog";
+        debug.msg = "WeaponMechanicsCosmetics had %s error(s) in console.";
+        debug.start(plugin);
+    }
+
+    private void registerUpdateChecker() {
+        update = new UpdateChecker(plugin, UpdateChecker.spigot(-1, "WeaponMechanicsCosmetics"));
+        Listener listener = new Listener() {
+            @EventHandler
+            public void onJoin(PlayerJoinEvent event) {
+                if (event.getPlayer().isOp()) {
+                    new TaskChain(plugin)
+                            .thenRunAsync((callback) -> update.hasUpdate())
+                            .thenRunSync((callback) -> {
+                                UpdateInfo update = (UpdateInfo) callback;
+                                if (callback != null)
+                                    event.getPlayer().sendMessage(ChatColor.RED + "WeaponMechanicsCosmetics is out of date! " + update.current + " -> " + update.newest);
+
+                                return null;
+                            });
+                }
             }
-        }
+        };
 
-        try {
-            // TODO bad programmars comment out broken code
-            //FileUtil.ensureDefaults(getClassLoader(), "WeaponMechanics/config.yml", new File(getDataFolder(), "config.yml"));
-        } catch (YAMLException e) {
-            debug.error("WeaponMechanics jar corruption... This is most likely caused by using /reload after building jar!");
-        }
-
-        // Fill config.yml mappings
-        File configyml = new File(getDataFolder(), "config.yml");
-        if (configyml.exists()) {
-            List<IValidator> validators = new ArrayList<>();
-
-            FileReader basicConfigurationReader = new FileReader(debug, null, validators);
-            Configuration filledMap = basicConfigurationReader.fillOneFile(configyml);
-            basicConfiguration = basicConfigurationReader.usePathToSerializersAndValidators(filledMap);
-        } else {
-            // Just creates empty map to prevent other issues
-            basicConfiguration = new LinkedConfig();
-            debug.log(LogLevel.WARN,
-                    "Could not locate config.yml?",
-                    "Make sure it exists in path " + getDataFolder() + "/config.yml");
-        }
+        Bukkit.getPluginManager().registerEvents(listener, plugin);
     }
 
-    void registerEvents() {
-        PluginManager manager = plugin.getServer().getPluginManager();
-        manager.registerEvents(new TrailListener(), plugin);
+    private void registerBStats() {
+        if (metrics != null) return;
+
+        debug.debug("Registering bStats");
+
+        // See https://bstats.org/plugin/bukkit/WeaponMechanicsCosmetics/15790. This is
+        // the bStats plugin id used to track information.
+        int id = 15790;
+
+        this.metrics = new Metrics(plugin, id);
     }
+
 
     public WeaponMechanicsCosmeticsLoader getPlugin() {
         return plugin;

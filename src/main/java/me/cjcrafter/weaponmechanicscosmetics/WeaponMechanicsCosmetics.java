@@ -72,7 +72,7 @@ public class WeaponMechanicsCosmetics {
 
         registerDebugger();
         registerBStats();
-        // TODO add after release registerUpdateChecker();
+        registerUpdateChecker();
     }
 
     public TaskChain reloadConfig() {
@@ -142,7 +142,7 @@ public class WeaponMechanicsCosmetics {
     }
 
     private void registerUpdateChecker() {
-        update = new UpdateChecker(plugin, UpdateChecker.spigot(-1, "WeaponMechanicsCosmetics"));
+        update = new UpdateChecker(plugin, UpdateChecker.spigot(104539, "WeaponMechanicsCosmetics"));
         Listener listener = new Listener() {
             @EventHandler
             public void onJoin(PlayerJoinEvent event) {

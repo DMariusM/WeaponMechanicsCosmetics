@@ -39,13 +39,15 @@ public class PerPlayerSoundMechanic extends SoundMechanic {
     }
 
     @Override
-    protected SoundMechanicData serialize(SerializeData data, Sound sound, float volume, float pitch, int delay, float noise, double distance, MaterialCategory mat, String category) throws SerializerException {
-        return new PlayerBukkitSound(sound, volume, pitch, delay, noise, distance, mat, category);
+    protected SoundMechanicData serialize(SerializeData data, Sound sound, float volume, float pitch, int delay, float noise,
+                                          double minDistance, double maxDistance, MaterialCategory mat, String category) throws SerializerException {
+        return new PlayerBukkitSound(sound, volume, pitch, delay, noise, minDistance, maxDistance, mat, category);
     }
 
     @Override
-    protected SoundMechanicData serialize(SerializeData data, String sound, float volume, float pitch, int delay, float noise, double distance, MaterialCategory mat, String category) throws SerializerException {
-        return super.serialize(data, sound, volume, pitch, delay, noise, distance, mat, category);
+    protected SoundMechanicData serialize(SerializeData data, String sound, float volume, float pitch, int delay, float noise,
+                                          double minDistance, double maxDistance, MaterialCategory mat, String category) throws SerializerException {
+        return new PlayerCustomSound(sound, volume, pitch, delay, noise, minDistance, maxDistance, mat, category);
     }
 
     /**
@@ -65,8 +67,9 @@ public class PerPlayerSoundMechanic extends SoundMechanic {
 
         private final String sound;
 
-        public PlayerCustomSound(String sound, float volume, float pitch, int delay, float noise, double distance, MaterialCategory mat, String category) {
-            super(sound, volume, pitch, delay, noise, distance, mat, category);
+        public PlayerCustomSound(String sound, float volume, float pitch, int delay, float noise, double minDistance,
+                                 double maxDistance, MaterialCategory mat, String category) {
+            super(sound, volume, pitch, delay, noise, minDistance, maxDistance, mat, category);
             this.sound = sound;
         }
 
@@ -97,8 +100,9 @@ public class PerPlayerSoundMechanic extends SoundMechanic {
 
         private final Sound sound;
 
-        public PlayerBukkitSound(Sound sound, float volume, float pitch, int delay, float noise, double distance, MaterialCategory mat, String category) {
-            super(sound, volume, pitch, delay, noise, distance, mat, category);
+        public PlayerBukkitSound(Sound sound, float volume, float pitch, int delay, float noise, double minDistance,
+                                 double maxDistance, MaterialCategory mat, String category) {
+            super(sound, volume, pitch, delay, noise, minDistance, maxDistance, mat, category);
             this.sound = sound;
         }
 

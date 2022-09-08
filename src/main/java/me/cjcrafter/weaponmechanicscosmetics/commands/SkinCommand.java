@@ -6,18 +6,37 @@
 package me.cjcrafter.weaponmechanicscosmetics.commands;
 
 import me.cjcrafter.weaponmechanicscosmetics.WeaponMechanicsCosmetics;
-import me.deecaad.core.commands.CommandBuilder;
-import me.deecaad.core.commands.CommandExecutor;
+import me.deecaad.core.commands.*;
+import me.deecaad.core.commands.arguments.StringArgumentType;
 import me.deecaad.core.file.Configuration;
 import me.deecaad.weaponmechanics.WeaponMechanics;
 import me.deecaad.weaponmechanics.WeaponMechanicsAPI;
 import me.deecaad.weaponmechanics.weapon.skin.SkinList;
+import me.deecaad.weaponmechanics.weapon.stats.WeaponStat;
+import me.deecaad.weaponmechanics.wrappers.PlayerWrapper;
+import me.deecaad.weaponmechanics.wrappers.StatsData;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.permissions.Permission;
 
+import java.util.function.Function;
+
 public class SkinCommand {
+
+    private static Function<CommandData, Tooltip[]> SKIN_SUGGESTIONS = (data) -> {
+        PlayerInventory inv = ((Player) data.sender).getInventory();
+        ItemStack weapon = empty(inv.getItemInMainHand()) ? inv.getItemInOffHand() : inv.getItemInMainHand();
+        String title = weapon == null ? null : WeaponMechanicsAPI.getWeaponTitle(weapon);
+        SkinList skins = WeaponMechanics.getConfigurations().getObject(title + ".Skin", SkinList.class);
+
+        if (skins == null)
+            return new Tooltip[]{ Tooltip.of("N/A") };
+
+        return SuggestionsBuilder.from(skins.getSkins()).apply(data);
+    };
 
     public static void registerPermissions() {
         Configuration config = WeaponMechanics.getConfigurations();
@@ -43,10 +62,13 @@ public class SkinCommand {
                 permission.setDescription("Ability to use the " + skin + " skin for " + weaponTitle);
                 permission.addParent(global, true);
                 permission.addParent(weapon, true);
+                Bukkit.getPluginManager().addPermission(permission);
 
                 WeaponMechanicsCosmetics.getInstance().getDebug().debug("Registered: " + permission);
             }
+            Bukkit.getPluginManager().addPermission(weapon);
         }
+        Bukkit.getPluginManager().addPermission(global);
     }
 
     public static void register() {
@@ -54,6 +76,7 @@ public class SkinCommand {
                 .withAliases("skins", "weaponskin")
                 .withPermission("weaponmechanicscosmetics.commands.skin")
                 .withDescription("Change the skin for your weapon")
+                .withArgument(new Argument<>("skin", new StringArgumentType()).replace(SKIN_SUGGESTIONS))
                 .executes(CommandExecutor.player((player, args) -> {
                     PlayerInventory inv = player.getInventory();
                     ItemStack weapon = empty(inv.getItemInMainHand()) ? inv.getItemInOffHand() : inv.getItemInMainHand();
@@ -64,11 +87,33 @@ public class SkinCommand {
                     }
 
                     String title = WeaponMechanicsAPI.getWeaponTitle(weapon);
+                    PlayerWrapper wrapper = WeaponMechanics.getPlayerWrapper(player);
+                    StatsData stats = wrapper.getStatsData();
 
+                    if (stats == null) {
+                        player.sendMessage(ChatColor.RED + "You do not have any data to store");
+                        return;
+                    }
+
+                    SkinList list = WeaponMechanics.getConfigurations().getObject(title + ".Skin", SkinList.class);
+                    if (list == null) {
+                        player.sendMessage(ChatColor.RED + title + " does not have any skin.");
+                        return;
+                    }
+
+                    String skin = (String) args[0];
+                    if (list.getSkin(skin, null) == null) {
+                        player.sendMessage(ChatColor.RED + title + " unknown skin: " + skin);
+                        return;
+                    }
+
+                    wrapper.getStatsData().set(title, WeaponStat.SKIN, (String) args[0]);
                 }));
+
+        builder.register();
     }
 
     private static boolean empty(ItemStack item) {
-        return true;
+        return item == null || item.getAmount() == 0 || item.getType().name().endsWith("AIR");
     }
 }

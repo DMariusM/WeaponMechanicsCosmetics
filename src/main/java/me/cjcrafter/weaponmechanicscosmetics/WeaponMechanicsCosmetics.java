@@ -7,8 +7,10 @@ package me.cjcrafter.weaponmechanicscosmetics;
 
 import me.cjcrafter.auto.UpdateChecker;
 import me.cjcrafter.auto.UpdateInfo;
+import me.cjcrafter.weaponmechanicscosmetics.commands.SkinCommand;
 import me.cjcrafter.weaponmechanicscosmetics.listeners.ExplosionEffectSpawner;
 import me.cjcrafter.weaponmechanicscosmetics.listeners.MuzzleFlashSpawner;
+import me.cjcrafter.weaponmechanicscosmetics.listeners.WeaponSkinListener;
 import me.cjcrafter.weaponmechanicscosmetics.scripts.BlockSoundScript;
 import me.cjcrafter.weaponmechanicscosmetics.timer.TimerSpawner;
 import me.cjcrafter.weaponmechanicscosmetics.listeners.WeaponMechanicsSerializerListener;
@@ -67,12 +69,17 @@ public class WeaponMechanicsCosmetics {
         pm.registerEvents(new MuzzleFlashSpawner(), plugin);
         pm.registerEvents(new TimerSpawner(), plugin);
         pm.registerEvents(new WeaponMechanicsSerializerListener(), plugin);
+        pm.registerEvents(new WeaponSkinListener(), plugin);
 
         Mechanics.registerMechanic(plugin, new ParticleMechanic());
 
         registerDebugger();
         registerBStats();
         registerUpdateChecker();
+
+        // Register commands
+        SkinCommand.register();
+        SkinCommand.registerPermissions();
     }
 
     public TaskChain reloadConfig() {

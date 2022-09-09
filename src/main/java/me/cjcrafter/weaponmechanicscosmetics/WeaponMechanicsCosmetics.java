@@ -28,6 +28,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.PluginManager;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -79,7 +80,14 @@ public class WeaponMechanicsCosmetics {
 
         // Register commands
         SkinCommand.register();
-        SkinCommand.registerPermissions();
+
+        // Register permissions 2 ticks after server startup
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                SkinCommand.registerPermissions();
+            }
+        }.runTaskLater(plugin, 2);
     }
 
     public TaskChain reloadConfig() {

@@ -22,6 +22,9 @@ public class WeaponSkinListener implements Listener {
             return;
 
         StatsData stats = WeaponMechanics.getPlayerWrapper((Player) event.getShooter()).getStatsData();
+        if (stats == null)
+            return;
+
         String skin = (String) stats.get(event.getWeaponTitle(), WeaponStat.SKIN, null);
 
         if (skin != null)

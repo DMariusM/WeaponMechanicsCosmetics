@@ -11,6 +11,7 @@ import me.deecaad.core.commands.arguments.StringArgumentType;
 import me.deecaad.core.file.Configuration;
 import me.deecaad.weaponmechanics.WeaponMechanics;
 import me.deecaad.weaponmechanics.WeaponMechanicsAPI;
+import me.deecaad.weaponmechanics.weapon.skin.Skin;
 import me.deecaad.weaponmechanics.weapon.skin.SkinList;
 import me.deecaad.weaponmechanics.weapon.stats.WeaponStat;
 import me.deecaad.weaponmechanics.wrappers.PlayerWrapper;
@@ -18,10 +19,12 @@ import me.deecaad.weaponmechanics.wrappers.StatsData;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.permissions.Permission;
 
+import java.util.Set;
 import java.util.function.Function;
 
 public class SkinCommand {
@@ -33,7 +36,19 @@ public class SkinCommand {
         SkinList skins = WeaponMechanics.getConfigurations().getObject(title + ".Skin", SkinList.class);
 
         if (skins == null)
-            return new Tooltip[]{ Tooltip.of("N/A") };
+            return new Tooltip[]{ Tooltip.of("N/A", title + " cannot have a skin") };
+
+        // When giving player options, they shouldn't reselect a skin they are
+        // already using.
+        Set<String> options = skins.getSkins();
+        StatsData stats = WeaponMechanics.getPlayerWrapper((Player) data.sender).getStatsData();
+        if (stats != null) {
+            String skin = (String) stats.get(title, WeaponStat.SKIN, null);
+            options.remove(skin);
+        }
+
+        if (options.isEmpty())
+            return new Tooltip[]{ Tooltip.of("N/A", title + " only has default skin") };
 
         return SuggestionsBuilder.from(skins.getSkins()).apply(data);
     };
@@ -80,6 +95,7 @@ public class SkinCommand {
                 .executes(CommandExecutor.player((player, args) -> {
                     PlayerInventory inv = player.getInventory();
                     ItemStack weapon = empty(inv.getItemInMainHand()) ? inv.getItemInOffHand() : inv.getItemInMainHand();
+                    boolean mainHand = !empty(inv.getItemInOffHand());
 
                     if (empty(weapon) || WeaponMechanicsAPI.getWeaponTitle(weapon) == null) {
                         player.sendMessage(ChatColor.RED + "You must hold a weapon");
@@ -107,7 +123,10 @@ public class SkinCommand {
                         return;
                     }
 
-                    wrapper.getStatsData().set(title, WeaponStat.SKIN, (String) args[0]);
+                    // Apply the skin
+                    wrapper.getStatsData().set(title, WeaponStat.SKIN, skin);
+                    player.sendMessage(ChatColor.GREEN + "Now using " + skin + " for the " + title);
+                    WeaponMechanics.getWeaponHandler().getSkinHandler().tryUse(wrapper, title, weapon, mainHand ? EquipmentSlot.HAND : EquipmentSlot.OFF_HAND);
                 }));
 
         builder.register();

@@ -22,6 +22,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.PluginManager;
@@ -62,14 +63,6 @@ public class WeaponMechanicsCosmetics {
 
     public void onEnable() {
 
-        PluginManager pm = plugin.getServer().getPluginManager();
-        pm.registerEvents(new ExplosionEffectSpawner(), plugin);
-        pm.registerEvents(new MuzzleFlashSpawner(), plugin);
-        pm.registerEvents(new PumpkinScopeOverlay(), plugin);
-        pm.registerEvents(new TimerSpawner(), plugin);
-        pm.registerEvents(new WeaponMechanicsSerializerListener(), plugin);
-        pm.registerEvents(new WeaponSkinListener(), plugin);
-
         Mechanics.registerMechanic(plugin, new ParticleMechanic());
 
         registerDebugger();
@@ -79,6 +72,9 @@ public class WeaponMechanicsCosmetics {
         // Register commands
         SkinCommand.register();
 
+        // Separate from registerListeners
+        Bukkit.getPluginManager().registerEvents(new WeaponMechanicsSerializerListener(), plugin);
+
         // Register permissions 2 ticks after server startup
         new BukkitRunnable() {
             @Override
@@ -86,6 +82,18 @@ public class WeaponMechanicsCosmetics {
                 SkinCommand.registerPermissions();
             }
         }.runTaskLater(plugin, 2);
+    }
+
+    private void registerListeners() {
+        HandlerList.unregisterAll(plugin);
+
+        PluginManager pm = plugin.getServer().getPluginManager();
+        pm.registerEvents(new ExplosionEffectSpawner(), plugin);
+        pm.registerEvents(new MuzzleFlashSpawner(), plugin);
+        pm.registerEvents(new PumpkinScopeOverlay(), plugin);
+        pm.registerEvents(new TimerSpawner(), plugin);
+        pm.registerEvents(new WeaponMechanicsSerializerListener(), plugin);
+        pm.registerEvents(new WeaponSkinListener(), plugin);
     }
 
     public TaskChain reloadConfig() {
@@ -108,6 +116,8 @@ public class WeaponMechanicsCosmetics {
                     // Read config
                     List<Serializer<?>> serializers = new ArrayList<>();
                     serializers.add(new BlockSoundScript.BlockSound());
+                    serializers.add(new PumpkinScopeOverlay.PumpkinCreativeSerializer());
+                    serializers.add(new PumpkinScopeOverlay.PumpkinSurvivalSerializer());
 
                     List<IValidator> validators = new ArrayList<>();
                     validators.add(new ExplosionEffectSpawner.ExplosionEffectValidator());
@@ -117,7 +127,9 @@ public class WeaponMechanicsCosmetics {
                     config = reader.fillOneFile(file);
                     reader.usePathToSerializersAndValidators(config);
 
+                    debug.info("Reloading plugin");
                     WeaponMechanics.getProjectilesRunnable().addScriptManager(new CosmeticsScriptManager(plugin));
+                    registerListeners();
                 });
     }
 

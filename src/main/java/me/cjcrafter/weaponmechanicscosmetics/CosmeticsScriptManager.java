@@ -50,7 +50,7 @@ public class CosmeticsScriptManager extends ProjectileScriptManager {
 
             // If the projectile has a disguise, then there is no need to show
             // splash effects (entities have splash effects in vanilla mc)
-            if (projectile.getDisguise() == null )
+            if (config.containsKey(projectile.getWeaponTitle() + ".Cosmetics.Splash_Mechanics"))
                 projectile.addProjectileScript(new SplashScript(getPlugin(), projectile));
         }
     }

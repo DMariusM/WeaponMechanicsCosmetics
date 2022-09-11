@@ -70,7 +70,7 @@ dependencies {
     compileOnly("me.deecaad:mechanicscore:1.5.2")
     compileOnly("me.deecaad:weaponmechanics:1.11.0")
     implementation("org.bstats:bstats-bukkit:3.0.0")
-    implementation("me.cjcrafter:mechanicsautodownload:1.1.2")
+    implementation("me.cjcrafter:mechanicsautodownload:1.2.2")
 
     implementation("org.mariuszgromada.math:MathParser.org-mXparser:5.0.7")
 }

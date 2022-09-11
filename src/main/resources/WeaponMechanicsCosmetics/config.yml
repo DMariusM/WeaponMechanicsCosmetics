@@ -64,3 +64,26 @@ Block_Sounds:
     - Flashbang
     - Grenade
     - Semtex
+
+# This is the "fake pumpkin" shown to players when they are in survival
+# In older versions <1.12, use PUMPKIN instead of CARVED_PUMPKIN
+Survival_Pumpkin:
+  Type: CARVED_PUMPKIN
+  Name: "<yellow>Scope Overlay"
+  Lore:
+    - "<gray>Clicking this will cause the scope to disappear"
+    - "<gray>You can get it back by un-scoping then re-scoping"
+  Custom_Model_Data: 1
+
+# This is the "fake pumpkin" shown to players when they are in creative. Due
+# to how creative players generate items, people in creative will always be
+# able to duplicate this pumpkin.
+# In older versions <1.12, use PUMPKIN instead of CARVED_PUMPKIN
+Creative_Pumpkin:
+  Type: CARVED_PUMPKIN
+  Name: "&eScope Overlay"
+  Lore:
+    - "<gray>Clicking this will cause pumpkin duplication"
+    - "<gray>This only happens in creative mode"
+    - "<gray>Change this text in <i>WeaponMechanicsCosmetics</i> config.yml"
+  Custom_Model_Data: 1

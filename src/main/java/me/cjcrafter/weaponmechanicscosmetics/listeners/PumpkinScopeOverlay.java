@@ -36,7 +36,7 @@ public class PumpkinScopeOverlay implements Listener {
         Debugger debug = WeaponMechanicsCosmetics.getInstance().getDebug();
         if (pumpkin == null)
             debug.error("Could not find '" + key + "' in config.yml... Did you delete it?");
-        else if (pumpkin.getType().name().endsWith("PUMPKIN"))
+        else if (!pumpkin.getType().name().endsWith("PUMPKIN"))
             debug.error("'" + key + "' was not a pumpkin... Did you change it? " + pumpkin);
     }
 

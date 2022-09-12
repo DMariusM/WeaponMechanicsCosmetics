@@ -47,7 +47,7 @@ public class TrailScript extends ProjectileScript<AProjectile> {
     }
 
     @Override
-    public void onTickEnd() {
+    public void onTickStart() {
         Vector direction = projectile.getLocation().subtract(projectile.getLastLocation());
         double distance = direction.length();
         direction.multiply(1.0 / distance);

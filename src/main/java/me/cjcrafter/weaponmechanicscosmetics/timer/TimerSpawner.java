@@ -5,6 +5,7 @@
 
 package me.cjcrafter.weaponmechanicscosmetics.timer;
 
+import me.cjcrafter.weaponmechanicscosmetics.WeaponMechanicsCosmetics;
 import me.deecaad.core.events.EntityEquipmentEvent;
 import me.deecaad.core.file.Configuration;
 import me.deecaad.core.utils.ReflectionUtil;
@@ -16,6 +17,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerItemHeldEvent;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -31,116 +33,83 @@ public class TimerSpawner implements Listener {
 
     @EventHandler
     public void onEquip(WeaponEquipEvent event) {
-        if (event.getShooter().getType() != EntityType.PLAYER)
-            return;
+        // We have to run this 1 tick later, since otherwise the timer would
+        // be cancelled by onDequip(PlayerItemHeldEvent).
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                playTimer(event, ".Show_Time.Weapon_Equip_Delay", ".Info.Weapon_Equip_Delay");
+            }
+        }.runTask(WeaponMechanicsCosmetics.getInstance().getPlugin());
 
-        Configuration config = WeaponMechanics.getConfigurations();
-        Timer timer = config.getObject(event.getWeaponTitle() + ".Show_Time.Weapon_Equip_Delay", Timer.class);
-        if (timer == null)
-            return;
-
-        Player player = (Player) event.getShooter();
-        int delay = config.getInt(event.getWeaponTitle() + ".Info.Weapon_Equip_Delay") / 50;
-        TimerData task = timer.play(player, event.getWeaponStack(), delay);
-        emplace(task);
     }
 
     @EventHandler (priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onMeleeHit(WeaponMeleeHitEvent event) {
-        if (event.getShooter().getType() != EntityType.PLAYER)
-            return;
-
-        Configuration config = WeaponMechanics.getConfigurations();
-        Timer timer = config.getObject(event.getWeaponTitle() + ".Show_Time.Melee_Hit_Delay", Timer.class);
-        if (timer == null)
-            return;
-
-        Player player = (Player) event.getShooter();
-        int delay = event.getMeleeHitDelay();
-        TimerData task = timer.play(player, event.getWeaponStack(), delay);
-        emplace(task);
+        playTimer(event, ".Show_Time.Melee_Hit_Delay", event.getMeleeHitDelay());
     }
 
     @EventHandler (priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onMeleeMiss(WeaponMeleeMissEvent event) {
-        if (event.getShooter().getType() != EntityType.PLAYER)
-            return;
-
-        Configuration config = WeaponMechanics.getConfigurations();
-        Timer timer = config.getObject(event.getWeaponTitle() + ".Show_Time.Melee_Miss_Delay", Timer.class);
-        if (timer == null)
-            return;
-
-        Player player = (Player) event.getShooter();
-        int delay = event.getMeleeMissDelay();
-        TimerData task = timer.play(player, event.getWeaponStack(), delay);
-        emplace(task);
+        playTimer(event, ".Show_Time.Melee_Miss_Delay", event.getMeleeMissDelay());
     }
 
     @EventHandler (priority = EventPriority.MONITOR)
     public void onReload(WeaponReloadEvent event) {
-        if (event.getShooter().getType() != EntityType.PLAYER)
-            return;
-
-        Configuration config = WeaponMechanics.getConfigurations();
-        Timer timer = config.getObject(event.getWeaponTitle() + ".Show_Time.Reload", Timer.class);
-        if (timer == null)
-            return;
-
-        Player player = (Player) event.getShooter();
-        int delay = event.getReloadCompleteTime();
-        TimerData task = timer.play(player, event.getWeaponStack(), delay);
-        emplace(task);
+        playTimer(event, ".Show_Time.Reload", event.getReloadCompleteTime());
     }
 
     @EventHandler (priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onScope(WeaponScopeEvent event) {
-        if (event.getShooter().getType() != EntityType.PLAYER)
+        if (event.getScopeType() != WeaponScopeEvent.ScopeType.IN)
             return;
 
-        Configuration config = WeaponMechanics.getConfigurations();
-        Timer timer = config.getObject(event.getWeaponTitle() + ".Show_Time.Shoot_Delay_After_Scope", Timer.class);
-        if (timer == null)
-            return;
-
-        int delay = config.getInt(event.getWeaponTitle() + ".Scope.Shoot_Delay_After_Scope") / 50;
-        TimerData task = timer.play((Player) event.getShooter(), event.getWeaponStack(), delay);
-        emplace(task);
+        playTimer(event, ".Show_Time.Shoot_Delay_After_Scope", ".Scope.Shoot_Delay_After_Scope");
     }
 
     @EventHandler (priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onFirearm(WeaponFirearmEvent event) {
-        if (event.getShooter().getType() != EntityType.PLAYER)
-            return;
-
-        Configuration config = WeaponMechanics.getConfigurations();
-        Timer timer = config.getObject(event.getWeaponTitle() + ".Show_Time.Firearm_Actions", Timer.class);
-        if (timer == null)
-            return;
-
-        TimerData task = timer.play((Player) event.getShooter(), event.getWeaponStack(), event.getTime());
-        emplace(task);
+        playTimer(event, ".Show_Time.Firearm_Actions", event.getTime());
     }
 
     @EventHandler
     public void onShoot(WeaponPostShootEvent event) {
-        if (event.getShooter().getType() != EntityType.PLAYER)
-            return;
-
-        // Extra check... when weaponStack is null, it was shot through the API
+        // weaponStack is null, it was shot through the API
         if (event.getWeaponStack() == null)
             return;
 
+        playTimer(event, ".Show_Time.Delay_Between_Shots", ".Shoot.Delay_Between_Shots");
+    }
+
+    private void playTimer(WeaponEvent event, String timerPath, String delayPath) {
         Configuration config = WeaponMechanics.getConfigurations();
-        Timer timer = config.getObject(event.getWeaponTitle() + ".Show_Time.Delay_Between_Shots", Timer.class);
+        int ticks = config.getInt(event.getWeaponTitle() + delayPath) / 50; // divide by 50 for millis -> ticks
+        playTimer(event, timerPath, ticks);
+    }
+
+    /**
+     * Pulls the timer from config and starts it with the given amount of time,
+     * in ticks. If the amount of ticks is defined in config, use
+     * {@link #playTimer(WeaponEvent, String, String)}.
+     *
+     * @param event     The non-null event that triggered the timer.
+     * @param timerPath The path to the {@link Timer} in config.
+     * @param ticks     The time, in ticks, to play the timer.
+     */
+    private void playTimer(WeaponEvent event, String timerPath, int ticks) {
+        if (event.getShooter().getType() != EntityType.PLAYER)
+            return;
+
+        Configuration config = WeaponMechanics.getConfigurations();
+        Timer timer = config.getObject(event.getWeaponTitle() + timerPath, Timer.class);
         if (timer == null)
             return;
 
-        int delay = config.getInt(event.getWeaponTitle() + ".Shoot.Delay_Between_Shots") / 50;
-        TimerData task = timer.play((Player) event.getShooter(), event.getWeaponStack(), delay);
-        emplace(task);
+        TimerData task = timer.play((Player) event.getShooter(), event.getWeaponStack(), ticks);
+        TimerData old = tasks.put(task.player, task);
+        if (old != null)
+            old.cancel();
     }
-
 
 
     //
@@ -190,11 +159,5 @@ public class TimerSpawner implements Listener {
             return;
 
         task.cancel();
-    }
-
-    private void emplace(TimerData replacement) {
-        TimerData old = tasks.put(replacement.player, replacement);
-        if (old != null)
-            old.cancel();
     }
 }

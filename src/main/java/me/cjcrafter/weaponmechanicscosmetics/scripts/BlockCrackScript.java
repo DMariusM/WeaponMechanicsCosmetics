@@ -13,6 +13,9 @@ import me.deecaad.weaponmechanics.weapon.explode.BlockDamage;
 import me.deecaad.weaponmechanics.weapon.projectile.ProjectileScript;
 import me.deecaad.weaponmechanics.weapon.projectile.weaponprojectile.RayTraceResult;
 import me.deecaad.weaponmechanics.weapon.projectile.weaponprojectile.WeaponProjectile;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
@@ -58,7 +61,9 @@ public class BlockCrackScript extends ProjectileScript<WeaponProjectile> {
         if (!hit.isBlock() || damage == null)
             return;
 
-        BlockDamageData.DamageData data = damage.damage(hit.getBlock());
+        LivingEntity shooter = projectile.getShooter();
+        BlockDamageData.DamageData data = damage.damage(hit.getBlock(),
+                shooter != null && shooter.getType() == EntityType.PLAYER ? (Player) shooter : null);
 
         // Didn't damage block
         if (data == null)

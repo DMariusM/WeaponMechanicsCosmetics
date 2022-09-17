@@ -19,6 +19,7 @@ import java.util.*;
 public class Trail implements Serializer<Trail> {
 
     private double delta;
+    private int skipUpdates;
     private ListChooser chooser;
     private List<ParticleSerializer> particles;
     private Shape shape;
@@ -29,8 +30,9 @@ public class Trail implements Serializer<Trail> {
     public Trail() {
     }
 
-    public Trail(double delta, ListChooser chooser, List<ParticleSerializer> particles, Shape shape) {
+    public Trail(double delta, int skipUpdates, ListChooser chooser, List<ParticleSerializer> particles, Shape shape) {
         this.delta = delta;
+        this.skipUpdates = skipUpdates;
         this.chooser = chooser;
         this.particles = particles;
         this.shape = shape;
@@ -42,6 +44,14 @@ public class Trail implements Serializer<Trail> {
 
     public void setDelta(double delta) {
         this.delta = delta;
+    }
+
+    public int getSkipUpdates() {
+        return skipUpdates;
+    }
+
+    public void setSkipUpdates(int skipUpdates) {
+        this.skipUpdates = skipUpdates;
     }
 
     public ListChooser getChooser() {
@@ -91,6 +101,7 @@ public class Trail implements Serializer<Trail> {
     public Trail serialize(SerializeData data) throws SerializerException {
 
         double delta = data.of("Distance_Between_Particles").assertExists().assertPositive().getDouble();
+        int skipUpdates = (int) Math.round(data.of("Hide_Trail_For").assertPositive().getDouble(0.5) / delta);
         ListChooser selector = data.of("Particle_Chooser").getEnum(ListChooser.class, ListChooser.LOOP);
 
         // We need to serialize a list of ParticleSerializers. The user should
@@ -118,7 +129,7 @@ public class Trail implements Serializer<Trail> {
             throw e;
         }
 
-        return new Trail(delta, selector, particles, shape);
+        return new Trail(delta, skipUpdates, selector, particles, shape);
     }
 
     public enum ListChooser {

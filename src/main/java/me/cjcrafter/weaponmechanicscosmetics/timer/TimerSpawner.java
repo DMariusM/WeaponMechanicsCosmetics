@@ -41,7 +41,6 @@ public class TimerSpawner implements Listener {
                 playTimer(event, ".Show_Time.Weapon_Equip_Delay", ".Info.Weapon_Equip_Delay");
             }
         }.runTask(WeaponMechanicsCosmetics.getInstance().getPlugin());
-
     }
 
     @EventHandler (priority = EventPriority.MONITOR, ignoreCancelled = true)

@@ -11,6 +11,8 @@ import me.deecaad.weaponmechanics.weapon.projectile.AProjectile;
 import me.deecaad.weaponmechanics.weapon.projectile.ProjectileScript;
 import me.cjcrafter.weaponmechanicscosmetics.trails.shape.Vec2;
 import me.deecaad.weaponmechanics.weapon.projectile.weaponprojectile.WeaponProjectile;
+import org.bukkit.Color;
+import org.bukkit.Particle;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
@@ -47,21 +49,40 @@ public class TrailScript extends ProjectileScript<AProjectile> {
     }
 
     @Override
-    public void onTickStart() {
+    public void onTickEnd() {
         Vector direction = projectile.getLocation().subtract(projectile.getLastLocation());
         double distance = direction.length();
         direction.multiply(1.0 / distance);
+
+        // Spill over occurs when there was a "small distance"
+        // (<trail.getDelta()) left over from the previous tick. So we move the
+        // current point backwards a little, and make sure to trace forwards
+        // a little more.
         distance += spillOverDistance;
+        Vector current = projectile.getLastLocation().subtract(direction.clone().multiply(spillOverDistance));
 
-        Vector current = projectile.getLocation().subtract(direction.clone().multiply(spillOverDistance));
-
+        // Create an axis of 3 perpendicular vectors... direction is the third
         Vector a = VectorUtil.getPerpendicular(direction).normalize();
         Vector b = direction.clone().crossProduct(a).normalize();
 
         // Make sure this happens after perpendicular vector calculations
+        // 'direction' now stores the step size
         direction.multiply(trail.getDelta());
 
+        // Instead of using a do-while loop, we add 1 extra iteration to the
+        // loop. We need to do this since the while loop condition executes
+        // before the code block executes.
+        distance += trail.getDelta();
         while ((distance -= trail.getDelta()) >= trail.getDelta()) {
+
+            // Usually you don't want to show the trail for the first 0.5
+            // blocks, since it covers the player's screen too much
+            if (trail.getSkipUpdates() >= updates) {
+                current.add(direction);
+                updates++;
+                continue;
+            }
+
             ParticleSerializer particle = trail.getParticle(updates);
             List<Vec2> points = trail.getShape().getPoint(updates);
 

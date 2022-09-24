@@ -62,8 +62,8 @@ public class BlockCrackScript extends ProjectileScript<WeaponProjectile> {
             return;
 
         LivingEntity shooter = projectile.getShooter();
-        BlockDamageData.DamageData data = damage.damage(hit.getBlock(),
-                shooter != null && shooter.getType() == EntityType.PLAYER ? (Player) shooter : null);
+        Player player = shooter != null && shooter.getType() == EntityType.PLAYER ? (Player) shooter : null;
+        BlockDamageData.DamageData data = damage.damage(hit.getBlock(), player, regenDelay != -1);
 
         // Didn't damage block
         if (data == null)

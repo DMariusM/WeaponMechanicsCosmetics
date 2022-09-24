@@ -67,8 +67,8 @@ dependencies {
     implementation("co.aikar:minecraft-timings:1.0.4")
     testImplementation("org.junit.jupiter:junit-jupiter:5.9.0")
 
-    compileOnly("me.deecaad:mechanicscore:1.5.4")
-    compileOnly("me.deecaad:weaponmechanics:1.11.5")
+    compileOnly("me.deecaad:mechanicscore:1.5.7")
+    compileOnly("me.deecaad:weaponmechanics:1.11.9")
     implementation("org.bstats:bstats-bukkit:3.0.0")
     implementation("me.cjcrafter:mechanicsautodownload:1.2.2")
 

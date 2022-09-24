@@ -6,12 +6,14 @@
 package me.cjcrafter.weaponmechanicscosmetics.scripts;
 
 import me.deecaad.core.file.Configuration;
+import me.deecaad.core.utils.ReflectionUtil;
 import me.deecaad.weaponmechanics.WeaponMechanics;
 import me.deecaad.weaponmechanics.mechanics.CastData;
 import me.deecaad.weaponmechanics.mechanics.Mechanics;
 import me.deecaad.weaponmechanics.weapon.projectile.ProjectileScript;
 import me.deecaad.weaponmechanics.weapon.projectile.weaponprojectile.RayTraceResult;
 import me.deecaad.weaponmechanics.weapon.projectile.weaponprojectile.WeaponProjectile;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
@@ -31,11 +33,13 @@ public class SplashScript extends ProjectileScript<WeaponProjectile> {
 
         Configuration config = WeaponMechanics.getConfigurations();
         mechanics = config.getObject(projectile.getWeaponTitle() + ".Cosmetics.Splash_Mechanics", Mechanics.class);
+        wasInWater = isInWater();
     }
 
     public SplashScript(@NotNull Plugin owner, @NotNull WeaponProjectile projectile, Mechanics mechanics) {
         super(owner, projectile);
         this.mechanics = mechanics;
+        wasInWater = isInWater();
     }
 
     public Mechanics getMechanics() {
@@ -66,6 +70,9 @@ public class SplashScript extends ProjectileScript<WeaponProjectile> {
 
     public boolean isWater(Block block) {
         // Weird water check for version compatibility... "STATIONARY_WATER"
-        return block.isLiquid() && block.getType().name().endsWith("WATER");
+        if (ReflectionUtil.getMCVersion() < 13)
+            return block.isLiquid() && block.getType().name().endsWith("WATER");
+        else
+            return block.isLiquid() && block.getType() == Material.WATER;
     }
 }

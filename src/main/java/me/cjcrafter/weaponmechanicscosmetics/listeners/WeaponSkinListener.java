@@ -64,7 +64,7 @@ public class WeaponSkinListener implements Listener {
             SkinHandler handler = WeaponMechanics.getWeaponHandler().getSkinHandler();
 
             // TODO Determine which hand is holding the weapon, when weapon is in offhand and hand should be in mainhand
-            HandData handData = wrapper.getOffHandData();
+            HandData handData = wrapper.getMainHandData();
             Skin toApply = handler.getSkin(list, skin, handData, event.getWeaponStack(), null);
             ItemStack handItem = config.getObject(event.getWeaponTitle() + ".Hand.Item", ItemStack.class).clone();
             toApply.apply(handItem);

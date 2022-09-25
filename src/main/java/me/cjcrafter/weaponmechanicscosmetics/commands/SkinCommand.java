@@ -135,8 +135,8 @@ public class SkinCommand {
                 .withArgument(new Argument<>("skin", new StringArgumentType()).replace(SKIN_SUGGESTIONS))
                 .executes(CommandExecutor.player((player, args) -> {
                     PlayerInventory inv = player.getInventory();
-                    ItemStack weapon = empty(inv.getItemInMainHand()) ? inv.getItemInOffHand() : inv.getItemInMainHand();
                     boolean mainHand = !empty(inv.getItemInOffHand());
+                    ItemStack weapon = mainHand ? inv.getItemInMainHand() : inv.getItemInOffHand();
 
                     if (empty(weapon) || WeaponMechanicsAPI.getWeaponTitle(weapon) == null) {
                         player.sendMessage(ChatColor.RED + "You must hold a weapon");

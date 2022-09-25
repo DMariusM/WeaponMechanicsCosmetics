@@ -44,19 +44,21 @@ public class HitMarkerSpawner implements Listener {
 
         double width = WeaponCompatibilityAPI.getWeaponCompatibility().getWidth(event.getVictim());
         Location pos = event.getVictim().getEyeLocation();
-        pos.add(NumberUtil.random(-width, width), 0.0, NumberUtil.random(-width, width));
+        pos.add(NumberUtil.random(-width, width), -2, NumberUtil.random(-width, width));
         FakeEntity entity = CompatibilityAPI.getEntityCompatibility().generateFakeEntity(pos, EntityType.ARMOR_STAND, null);
         entity.setInvisible(true);
+        entity.setGravity(false);
         entity.setDisplay(format);
+        //entity.setMotion(0, 0.05, 0);
         entity.show();
 
-        entity.setMotion(new Vector(0, 0.03, 0));
+        entity.setPosition(pos.getX(), pos.getY() + 1.0, pos.getZ());
 
         new BukkitRunnable() {
             @Override
             public void run() {
                 entity.remove();
             }
-        }.runTaskLater(WeaponMechanicsCosmetics.getInstance().getPlugin(), 25);
+        }.runTaskLater(WeaponMechanicsCosmetics.getInstance().getPlugin(), 20);
     }
 }

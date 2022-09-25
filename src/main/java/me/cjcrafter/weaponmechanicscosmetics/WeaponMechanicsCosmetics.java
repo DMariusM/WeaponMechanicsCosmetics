@@ -89,6 +89,7 @@ public class WeaponMechanicsCosmetics {
 
         PluginManager pm = plugin.getServer().getPluginManager();
         pm.registerEvents(new ExplosionEffectSpawner(), plugin);
+        pm.registerEvents(new HitMarkerSpawner(), plugin);
         pm.registerEvents(new MuzzleFlashSpawner(), plugin);
         pm.registerEvents(new PumpkinScopeOverlay(), plugin);
         pm.registerEvents(new TimerSpawner(), plugin);

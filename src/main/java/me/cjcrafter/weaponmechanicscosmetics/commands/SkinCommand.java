@@ -87,7 +87,7 @@ public class SkinCommand {
     }
 
     public static void register() {
-        CommandBuilder builder = new CommandBuilder("skin")
+        new CommandBuilder("skin")
                 .withAliases("skins", "weaponskin")
                 .withPermission("weaponmechanicscosmetics.commands.skin")
                 .withDescription("Change the skin for your weapon")
@@ -127,9 +127,48 @@ public class SkinCommand {
                     wrapper.getStatsData().set(title, WeaponStat.SKIN, skin);
                     player.sendMessage(ChatColor.GREEN + "Now using " + skin + " for the " + title);
                     WeaponMechanics.getWeaponHandler().getSkinHandler().tryUse(wrapper, title, weapon, mainHand ? EquipmentSlot.HAND : EquipmentSlot.OFF_HAND);
-                }));
+                })).register();
 
-        builder.register();
+        new CommandBuilder("handskin")
+                .withPermission("weaponmechanicscosmetics.commands.handskin")
+                .withDescription("Change the skin for your hand")
+                .withArgument(new Argument<>("skin", new StringArgumentType()).replace(SKIN_SUGGESTIONS))
+                .executes(CommandExecutor.player((player, args) -> {
+                    PlayerInventory inv = player.getInventory();
+                    ItemStack weapon = empty(inv.getItemInMainHand()) ? inv.getItemInOffHand() : inv.getItemInMainHand();
+                    boolean mainHand = !empty(inv.getItemInOffHand());
+
+                    if (empty(weapon) || WeaponMechanicsAPI.getWeaponTitle(weapon) == null) {
+                        player.sendMessage(ChatColor.RED + "You must hold a weapon");
+                        return;
+                    }
+
+                    String title = WeaponMechanicsAPI.getWeaponTitle(weapon);
+                    PlayerWrapper wrapper = WeaponMechanics.getPlayerWrapper(player);
+                    StatsData stats = wrapper.getStatsData();
+
+                    if (stats == null) {
+                        player.sendMessage(ChatColor.RED + "You do not have any data to store");
+                        return;
+                    }
+
+                    SkinList list = WeaponMechanics.getConfigurations().getObject(title + ".Hand", SkinList.class);
+                    if (list == null) {
+                        player.sendMessage(ChatColor.RED + title + " does not have any skin.");
+                        return;
+                    }
+
+                    String skin = (String) args[0];
+                    if (list.getSkin(skin, null) == null) {
+                        player.sendMessage(ChatColor.RED + title + " unknown skin: " + skin);
+                        return;
+                    }
+
+                    // Apply the skin
+                    wrapper.getStatsData().set(title, WeaponStat.HAND_SKIN, skin);
+                    player.sendMessage(ChatColor.GREEN + "Now using " + skin + " for the " + title);
+                    WeaponMechanics.getWeaponHandler().getSkinHandler().tryUse(wrapper, title, weapon, mainHand ? EquipmentSlot.HAND : EquipmentSlot.OFF_HAND);
+                })).register();
     }
 
     private static boolean empty(ItemStack item) {

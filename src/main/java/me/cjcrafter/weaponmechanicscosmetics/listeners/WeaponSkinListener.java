@@ -13,6 +13,7 @@ import me.deecaad.weaponmechanics.wrappers.EntityWrapper;
 import me.deecaad.weaponmechanics.wrappers.HandData;
 import me.deecaad.weaponmechanics.wrappers.PlayerWrapper;
 import me.deecaad.weaponmechanics.wrappers.StatsData;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -21,6 +22,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
+import org.vivecraft.VSE;
 
 public class WeaponSkinListener implements Listener {
 
@@ -43,12 +45,18 @@ public class WeaponSkinListener implements Listener {
         if (event.getShooter().getType() != EntityType.PLAYER)
             return;
 
+        // When a player is in VR, we should not try to assign an off-hand to
+        // them (Since they already have a visual hand).
+        Player player = (Player) event.getShooter();
+        if (Bukkit.getPluginManager().getPlugin("Vivecraft-Spigot-Extensions") != null && VSE.isVive(player))
+            return;
+
         Configuration config = WeaponMechanics.getConfigurations();
         SkinList list = config.getObject(event.getWeaponTitle() + ".Hand", SkinList.class);
         if (list == null)
             return;
 
-        PlayerWrapper wrapper = WeaponMechanics.getPlayerWrapper((Player) event.getShooter());
+        PlayerWrapper wrapper = WeaponMechanics.getPlayerWrapper(player);
         //wrapper.getPlayer().sendMessage("Yoyoyo");
         StatsData stats = wrapper.getStatsData();
         if (stats != null) {
@@ -68,8 +76,7 @@ public class WeaponSkinListener implements Listener {
     @EventHandler
     public void onEquip(PlayerItemHeldEvent event) {
         // Always update off-hand in case of weapon.Hand.Item
-        ItemStack offhand = event.getPlayer().getInventory().getItemInOffHand();
-        CompatibilityAPI.getEntityCompatibility().setSlot(event.getPlayer(), EquipmentSlot.OFF_HAND, offhand);
+        CompatibilityAPI.getEntityCompatibility().setSlot(event.getPlayer(), EquipmentSlot.OFF_HAND, null);
 
         ItemStack item = event.getPlayer().getInventory().getItem(event.getNewSlot());
         if (item == null)

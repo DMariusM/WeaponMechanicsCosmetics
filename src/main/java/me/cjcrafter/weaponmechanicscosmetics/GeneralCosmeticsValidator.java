@@ -49,5 +49,8 @@ public class GeneralCosmeticsValidator implements IValidator {
         // Block damage stuff
         configuration.set(key + ".Block_Damage", data.of("Block_Damage").serialize(BlockDamage.class));
         configuration.set(key + ".Block_Damage.Ticks_Before_Regenerate", data.of("Block_Damage.Ticks_Before_Regenerate").assertRange(-1, 20 * 60 * 60).getInt(-1));
+
+        // Hit Marker
+        configuration.set(key + ".Hit_Marker", data.of("Hit_Marker").getAdventure(null));
     }
 }

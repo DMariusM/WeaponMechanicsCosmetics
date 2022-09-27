@@ -79,7 +79,8 @@ public class WeaponMechanicsCosmetics {
         new BukkitRunnable() {
             @Override
             public void run() {
-                SkinCommand.registerPermissions();
+                SkinCommand.registerPermissions("Skin");
+                SkinCommand.registerPermissions("Hand");
             }
         }.runTaskLater(plugin, 2);
     }

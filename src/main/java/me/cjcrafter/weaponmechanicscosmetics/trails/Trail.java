@@ -85,7 +85,7 @@ public class Trail implements Serializer<Trail> {
             case RANDOM:
                 return particles.get(NumberUtil.random(particles.size()));
             case STOP:
-                return particles.get(Math.min(index, particles.size()));
+                return particles.get(Math.min(index, particles.size() - 1));
             default:
                 throw new RuntimeException("unreachable code");
         }

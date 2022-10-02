@@ -67,8 +67,8 @@ dependencies {
     implementation("co.aikar:minecraft-timings:1.0.4")
     testImplementation("org.junit.jupiter:junit-jupiter:5.9.0")
 
-    compileOnly("me.deecaad:mechanicscore:1.5.7")
-    compileOnly("me.deecaad:weaponmechanics:1.11.9")
+    compileOnly("me.deecaad:mechanicscore:1.5.8")
+    compileOnly("me.deecaad:weaponmechanics:1.11.10")
     compileOnly(files(file("lib/vivecraft/Vivecraft_Spigot_Extensions.jar")))
     implementation("org.bstats:bstats-bukkit:3.0.0")
     implementation("me.cjcrafter:mechanicsautodownload:1.2.3")

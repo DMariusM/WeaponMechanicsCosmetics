@@ -14,6 +14,7 @@ import me.deecaad.weaponmechanics.wrappers.HandData;
 import me.deecaad.weaponmechanics.wrappers.PlayerWrapper;
 import me.deecaad.weaponmechanics.wrappers.StatsData;
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -49,6 +50,10 @@ public class WeaponSkinListener implements Listener {
         // them (Since they already have a visual hand).
         Player player = (Player) event.getShooter();
         if (Bukkit.getPluginManager().getPlugin("Vivecraft-Spigot-Extensions") != null && VSE.isVive(player))
+            return;
+
+        // Creative players cause item duplication
+        if (player.getGameMode() == GameMode.CREATIVE)
             return;
 
         Configuration config = WeaponMechanics.getConfigurations();

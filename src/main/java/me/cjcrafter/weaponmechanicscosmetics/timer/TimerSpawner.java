@@ -24,7 +24,6 @@ import java.util.Map;
 
 public class TimerSpawner implements Listener {
 
-    // TODO test usage of IdentityHashMap for potential performance boost
     private final Map<Player, TimerData> tasks;
 
     public TimerSpawner() {

@@ -140,6 +140,11 @@ public class SkinCommand {
             return;
         }
 
+        if (!skin.equals("default") && !player.hasPermission("weaponmechanics." + keylower + "." + title + "." + skin)) {
+            player.sendMessage("You do not have permission to use %skin% for the %weapon%".replace("%skin%", skin).replace("%weapon%", title));
+            return;
+        }
+
         // Apply the skin
         wrapper.getStatsData().set(title, key.equals("Hand") ? WeaponStat.HAND_SKIN : WeaponStat.SKIN, skin);
         player.sendMessage(ChatColor.GREEN + "Now using " + skin + " for the " + title);

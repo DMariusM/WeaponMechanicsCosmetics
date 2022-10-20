@@ -87,3 +87,8 @@ Creative_Pumpkin:
     - "<gray>This only happens in creative mode"
     - "<gray>Change this text in <i>WeaponMechanicsCosmetics</i> config.yml"
   Custom_Model_Data: 1
+
+# Supported languages are "en-US", "fr-FR". More languages will be added,
+# but you will need to let your lang folder regenerate. Did you add a new
+# language? Please, send to me so everybody can use it.
+Language: "en-US"

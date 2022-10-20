@@ -15,6 +15,7 @@ import me.cjcrafter.weaponmechanicscosmetics.general.ParticleMechanic;
 import me.deecaad.core.file.*;
 import me.deecaad.core.utils.Debugger;
 import me.deecaad.core.utils.FileUtil;
+import me.deecaad.core.utils.LogLevel;
 import me.deecaad.weaponmechanics.WeaponMechanics;
 import me.deecaad.weaponmechanics.mechanics.Mechanics;
 import org.bstats.bukkit.Metrics;
@@ -29,8 +30,10 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.*;
 import java.util.logging.Logger;
 
 public class WeaponMechanicsCosmetics {
@@ -42,6 +45,7 @@ public class WeaponMechanicsCosmetics {
     private Metrics metrics;
     private Debugger debug;
     private Configuration config;
+    private ClassLoader langLoader;
 
     WeaponMechanicsCosmetics(WeaponMechanicsCosmeticsLoader plugin) {
         this.plugin = plugin;
@@ -102,15 +106,25 @@ public class WeaponMechanicsCosmetics {
         return new TaskChain(plugin)
                 .thenRunAsync(() -> {
 
-                    // Make sure config.yml exists
+                    // Writes files
                     if (!getDataFolder().exists() || getDataFolder().listFiles() == null || getDataFolder().listFiles().length == 0) {
                         debug.info("Copying files from jar (This process may take up to 30 seconds during the first load!)");
                         FileUtil.copyResourcesTo(getClassLoader().getResource("WeaponMechanicsCosmetics"), getDataFolder().toPath());
                     }
 
-                    File file = new File(getDataFolder(), "config.yml");
-                    if (!file.exists()) {
-                        FileUtil.copyResourcesTo(getClassLoader().getResource("WeaponMechanicsCosmetics/config.yml"), file.toPath());
+                    // Make sure config.yml exists
+                    File config = new File(getDataFolder(), "config.yml");
+                    FileUtil.ensureDefaults(getClassLoader().getResource("WeaponMechanicsCosmetics/config.yml"), config);
+
+                    // Make sure the lang folder exists, and save resource locations
+                    File langFolder = new File(getDataFolder(), "lang");
+                    if (!langFolder.exists() || langFolder.listFiles() == null || langFolder.listFiles().length == 0) {
+                        FileUtil.copyResourcesTo(getClassLoader().getResource("WeaponMechanicsCosmetics/lang"), langFolder.toPath());
+                    }
+                    try {
+                        langLoader = new URLClassLoader(new URL[]{ langFolder.toURI().toURL() });
+                    } catch (MalformedURLException e) {
+                        debug.log(LogLevel.ERROR, "Error while loading Lang", e);
                     }
                 })
                 .thenRunSync(() -> {
@@ -202,6 +216,18 @@ public class WeaponMechanicsCosmetics {
         this.metrics = new Metrics(plugin, id);
     }
 
+    public String getLang(String key) {
+        Locale locale = Locale.forLanguageTag(config.getString("Language", "en-US"));
+        ResourceBundle lang = ResourceBundle.getBundle("Lang", locale, langLoader);
+
+        try {
+            return lang.getString(key);
+        } catch (MissingResourceException ex) {
+            debug.log(LogLevel.DEBUG, "Missing key '" + key + "'", ex);
+            debug.error("Found a missing language key '" + key + "' in 'Lang_" + locale + ".properties'");
+            return "missing-lang-key";
+        }
+    }
 
     public WeaponMechanicsCosmeticsLoader getPlugin() {
         return plugin;

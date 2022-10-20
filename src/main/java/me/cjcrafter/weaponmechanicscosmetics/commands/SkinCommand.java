@@ -5,10 +5,14 @@
 
 package me.cjcrafter.weaponmechanicscosmetics.commands;
 
+import com.google.common.collect.Maps;
 import me.cjcrafter.weaponmechanicscosmetics.WeaponMechanicsCosmetics;
+import me.deecaad.core.MechanicsCore;
 import me.deecaad.core.commands.*;
 import me.deecaad.core.commands.arguments.StringArgumentType;
 import me.deecaad.core.file.Configuration;
+import me.deecaad.core.lib.adventure.text.Component;
+import me.deecaad.core.placeholder.PlaceholderAPI;
 import me.deecaad.weaponmechanics.WeaponMechanics;
 import me.deecaad.weaponmechanics.WeaponMechanicsAPI;
 import me.deecaad.weaponmechanics.weapon.skin.Skin;
@@ -18,14 +22,14 @@ import me.deecaad.weaponmechanics.wrappers.PlayerWrapper;
 import me.deecaad.weaponmechanics.wrappers.StatsData;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.permissions.Permission;
 
-import java.util.Locale;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 
 public class SkinCommand {
@@ -116,7 +120,7 @@ public class SkinCommand {
         ItemStack weapon = mainHand ? inv.getItemInMainHand() : inv.getItemInOffHand();
 
         if (empty(weapon) || WeaponMechanicsAPI.getWeaponTitle(weapon) == null) {
-            player.sendMessage(ChatColor.RED + "You must hold a weapon");
+            sendMessage(player, "skin-hold-weapon", weapon, null, mainHand, Collections.singletonMap("%hand%", key.equals("Hand") ? "hand" : ""));
             return;
         }
 
@@ -124,31 +128,43 @@ public class SkinCommand {
         PlayerWrapper wrapper = WeaponMechanics.getPlayerWrapper(player);
         StatsData stats = wrapper.getStatsData();
 
+        Map<String, String> variables = new HashMap<>();
+        variables.put("%hand%", key.equals("Hand") ? "hand" : "");
+        variables.put("%weapon%", title);
+        variables.put("%skin%", skin);
+
         if (stats == null) {
-            player.sendMessage(ChatColor.RED + "You do not have any data to store");
+            sendMessage(player, "skin-player-data", weapon, title, mainHand, variables);
             return;
         }
 
         SkinList list = WeaponMechanics.getConfigurations().getObject(title + "." + key, SkinList.class);
         if (list == null) {
-            player.sendMessage(ChatColor.RED + title + " does not have any " + keylower + ".");
+            sendMessage(player, "skin-list", weapon, title, mainHand, variables);
             return;
         }
 
         if (list.getSkin(skin, null) == null) {
-            player.sendMessage(ChatColor.RED + title + " unknown " + keylower + ": " + skin);
+            sendMessage(player, "skin-option", weapon, title, mainHand, variables);
             return;
         }
 
         if (!skin.equals("default") && !player.hasPermission("weaponmechanics." + keylower + "." + title + "." + skin)) {
-            player.sendMessage("You do not have permission to use %skin% for the %weapon%".replace("%skin%", skin).replace("%weapon%", title));
+            sendMessage(player, "skin-permission", weapon, title, mainHand, variables);
             return;
         }
 
         // Apply the skin
         wrapper.getStatsData().set(title, key.equals("Hand") ? WeaponStat.HAND_SKIN : WeaponStat.SKIN, skin);
-        player.sendMessage(ChatColor.GREEN + "Now using " + skin + " for the " + title);
+        sendMessage(player, "skin-success", weapon, title, mainHand, variables);
         WeaponMechanics.getWeaponHandler().getSkinHandler().tryUse(wrapper, title, weapon, mainHand ? EquipmentSlot.HAND : EquipmentSlot.OFF_HAND);
+    }
+
+    public static void sendMessage(Player player, String key, ItemStack weapon, String title, boolean mainHand, Map<String, String> variables) {
+        String input = WeaponMechanicsCosmetics.getInstance().getLang(key);
+        input = PlaceholderAPI.applyPlaceholders(input, player, weapon, title, mainHand ? EquipmentSlot.HAND : EquipmentSlot.OFF_HAND, variables);
+        Component adventure = MechanicsCore.getPlugin().message.deserialize(input);
+        MechanicsCore.getPlugin().adventure.player(player).sendMessage(adventure);
     }
 
     private static boolean empty(ItemStack item) {

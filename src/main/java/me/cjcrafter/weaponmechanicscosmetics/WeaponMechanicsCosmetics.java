@@ -12,7 +12,9 @@ import me.cjcrafter.weaponmechanicscosmetics.listeners.*;
 import me.cjcrafter.weaponmechanicscosmetics.scripts.BlockSoundScript;
 import me.cjcrafter.weaponmechanicscosmetics.timer.TimerSpawner;
 import me.cjcrafter.weaponmechanicscosmetics.general.ParticleMechanic;
+import me.deecaad.core.MechanicsCore;
 import me.deecaad.core.file.*;
+import me.deecaad.core.lib.adventure.text.Component;
 import me.deecaad.core.utils.Debugger;
 import me.deecaad.core.utils.FileUtil;
 import me.deecaad.core.utils.LogLevel;
@@ -20,7 +22,7 @@ import me.deecaad.weaponmechanics.WeaponMechanics;
 import me.deecaad.weaponmechanics.mechanics.Mechanics;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
+import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
@@ -184,6 +186,18 @@ public class WeaponMechanicsCosmetics {
 
     private void registerUpdateChecker() {
         update = new UpdateChecker(plugin, UpdateChecker.spigot(104539, "WeaponMechanicsCosmetics"));
+
+        try {
+            UpdateInfo consoleUpdate = update.hasUpdate();
+            if (consoleUpdate != null) {
+                sendLang(Bukkit.getConsoleSender(), "update-checker", Map.of("old", consoleUpdate.current.toString(), "new", consoleUpdate.newest.toString()));
+            }
+        } catch (Throwable ex) {
+            debug.log(LogLevel.DEBUG, "UpdateChecker error", ex);
+            debug.error("UpdateChecker failed to connect: " + ex.getMessage());
+            return;
+        }
+
         Listener listener = new Listener() {
             @EventHandler
             public void onJoin(PlayerJoinEvent event) {
@@ -193,7 +207,7 @@ public class WeaponMechanicsCosmetics {
                             .thenRunSync((callback) -> {
                                 UpdateInfo update = (UpdateInfo) callback;
                                 if (callback != null)
-                                    event.getPlayer().sendMessage(ChatColor.RED + "WeaponMechanicsCosmetics is out of date! " + update.current + " -> " + update.newest);
+                                    sendLang(event.getPlayer(),"update-checker", Map.of("old", update.current.toString(), "new", update.newest.toString()));
 
                                 return null;
                             });
@@ -227,6 +241,44 @@ public class WeaponMechanicsCosmetics {
             debug.error("Found a missing language key '" + key + "' in 'Lang_" + locale + ".properties'");
             return "missing-lang-key";
         }
+    }
+
+    public void sendLang(CommandSender sender, String key) {
+        sendLang(sender, key, Collections.emptyMap());
+    }
+
+    public void sendLang(CommandSender sender, String key, Map<String, String> variables) {
+        String msg = getLang(key);
+
+        int startIndex = -1;
+
+        StringBuilder temp = new StringBuilder(msg.length());
+        for (int i = 0; i < msg.length(); i++) {
+            char c = msg.charAt(i);
+            if (c != '%') {
+                if (startIndex == -1) temp.append(c);
+                continue;
+            }
+
+            // Start tracking for substring
+            if (startIndex == -1) {
+                startIndex = i;
+                continue;
+            }
+
+            // %% counts as escaped character
+            if (i - startIndex == 1) {
+                temp.append('%');
+                continue;
+            }
+
+            String substring = msg.substring(startIndex + 1, i);
+            temp.append(variables.get(substring));
+            startIndex = -1;
+        }
+
+        Component component = MechanicsCore.getPlugin().message.deserialize(temp.toString());
+        MechanicsCore.getPlugin().adventure.sender(sender).sendMessage(component);
     }
 
     public WeaponMechanicsCosmeticsLoader getPlugin() {

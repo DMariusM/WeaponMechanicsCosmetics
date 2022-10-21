@@ -71,7 +71,7 @@ dependencies {
     compileOnly("me.deecaad:weaponmechanics:1.12.1")
     compileOnly(files(file("lib/vivecraft/Vivecraft_Spigot_Extensions.jar")))
     implementation("org.bstats:bstats-bukkit:3.0.0")
-    implementation("me.cjcrafter:mechanicsautodownload:1.3.0")
+    implementation("me.cjcrafter:mechanicsautodownload:1.3.1")
 
     implementation("org.mariuszgromada.math:MathParser.org-mXparser:5.0.7")
 }
@@ -110,7 +110,7 @@ java {
 tasks {
     compileJava {
         options.encoding = Charsets.UTF_8.name() // We want UTF-8 for everything
-        options.release.set(8)
+        options.release.set(16)
     }
     javadoc {
         options.encoding = Charsets.UTF_8.name() // We want UTF-8 for everything

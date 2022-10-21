@@ -5,24 +5,17 @@
 
 package me.cjcrafter.weaponmechanicscosmetics.commands;
 
-import com.google.common.collect.Maps;
 import me.cjcrafter.weaponmechanicscosmetics.WeaponMechanicsCosmetics;
-import me.deecaad.core.MechanicsCore;
 import me.deecaad.core.commands.*;
 import me.deecaad.core.commands.arguments.StringArgumentType;
 import me.deecaad.core.file.Configuration;
-import me.deecaad.core.lib.adventure.text.Component;
-import me.deecaad.core.placeholder.PlaceholderAPI;
 import me.deecaad.weaponmechanics.WeaponMechanics;
 import me.deecaad.weaponmechanics.WeaponMechanicsAPI;
-import me.deecaad.weaponmechanics.weapon.skin.Skin;
 import me.deecaad.weaponmechanics.weapon.skin.SkinList;
 import me.deecaad.weaponmechanics.weapon.stats.WeaponStat;
 import me.deecaad.weaponmechanics.wrappers.PlayerWrapper;
 import me.deecaad.weaponmechanics.wrappers.StatsData;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
@@ -120,51 +113,41 @@ public class SkinCommand {
         ItemStack weapon = mainHand ? inv.getItemInMainHand() : inv.getItemInOffHand();
 
         if (empty(weapon) || WeaponMechanicsAPI.getWeaponTitle(weapon) == null) {
-            sendMessage(player, "skin-hold-weapon", weapon, null, mainHand, Collections.singletonMap("%hand%", key.equals("Hand") ? "hand" : ""));
+            WeaponMechanicsCosmetics.getInstance().sendLang(player, "skin-hold-weapon", Map.of("hand", key.equals("Hand") ? "hand" : ""));
             return;
         }
 
-        String title = WeaponMechanicsAPI.getWeaponTitle(weapon);
+        String title = Objects.requireNonNull(WeaponMechanicsAPI.getWeaponTitle(weapon));
         PlayerWrapper wrapper = WeaponMechanics.getPlayerWrapper(player);
         StatsData stats = wrapper.getStatsData();
 
-        Map<String, String> variables = new HashMap<>();
-        variables.put("%hand%", key.equals("Hand") ? "hand" : "");
-        variables.put("%weapon%", title);
-        variables.put("%skin%", skin);
+        Map<String, String> variables = Map.of("hand", key.equals("Hand") ? "hand" : "", "weapon", title, "skin", skin);
 
         if (stats == null) {
-            sendMessage(player, "skin-player-data", weapon, title, mainHand, variables);
+            WeaponMechanicsCosmetics.getInstance().sendLang(player, "skin-player-data", variables);
             return;
         }
 
         SkinList list = WeaponMechanics.getConfigurations().getObject(title + "." + key, SkinList.class);
         if (list == null) {
-            sendMessage(player, "skin-list", weapon, title, mainHand, variables);
+            WeaponMechanicsCosmetics.getInstance().sendLang(player, "skin-list", variables);
             return;
         }
 
         if (list.getSkin(skin, null) == null) {
-            sendMessage(player, "skin-option", weapon, title, mainHand, variables);
+            WeaponMechanicsCosmetics.getInstance().sendLang(player, "skin-option", variables);
             return;
         }
 
         if (!skin.equals("default") && !player.hasPermission("weaponmechanics." + keylower + "." + title + "." + skin)) {
-            sendMessage(player, "skin-permission", weapon, title, mainHand, variables);
+            WeaponMechanicsCosmetics.getInstance().sendLang(player, "skin-permission", variables);
             return;
         }
 
         // Apply the skin
-        wrapper.getStatsData().set(title, key.equals("Hand") ? WeaponStat.HAND_SKIN : WeaponStat.SKIN, skin);
-        sendMessage(player, "skin-success", weapon, title, mainHand, variables);
+        stats.set(title, key.equals("Hand") ? WeaponStat.HAND_SKIN : WeaponStat.SKIN, skin);
+        WeaponMechanicsCosmetics.getInstance().sendLang(player, "skin-success", variables);
         WeaponMechanics.getWeaponHandler().getSkinHandler().tryUse(wrapper, title, weapon, mainHand ? EquipmentSlot.HAND : EquipmentSlot.OFF_HAND);
-    }
-
-    public static void sendMessage(Player player, String key, ItemStack weapon, String title, boolean mainHand, Map<String, String> variables) {
-        String input = WeaponMechanicsCosmetics.getInstance().getLang(key);
-        input = PlaceholderAPI.applyPlaceholders(input, player, weapon, title, mainHand ? EquipmentSlot.HAND : EquipmentSlot.OFF_HAND, variables);
-        Component adventure = MechanicsCore.getPlugin().message.deserialize(input);
-        MechanicsCore.getPlugin().adventure.player(player).sendMessage(adventure);
     }
 
     private static boolean empty(ItemStack item) {

@@ -28,10 +28,14 @@ public class WeaponMechanicsCosmeticsLoader extends JavaPlugin {
     public void onLoad() {
 
         // Attempt to automatically download MechanicsCore and WeaponMechanics.
-        if (getConfig().getBoolean("Auto_Download.Enabled")) {
-            AutoMechanicsDownload auto = new AutoMechanicsDownload(getConfig());
-            auto.MECHANICS_CORE.install();
-            auto.WEAPON_MECHANICS.install();
+        try {
+            if (getConfig().getBoolean("Auto_Download.Enabled")) {
+                AutoMechanicsDownload auto = new AutoMechanicsDownload(getConfig());
+                auto.MECHANICS_CORE.install();
+                auto.WEAPON_MECHANICS.install();
+            }
+        } catch (Throwable ex) {
+            getLogger().log(Level.SEVERE, "Github Connection Failed: " + ex.getMessage());
         }
 
         // Don't enable the plugin if either dependencies are absent

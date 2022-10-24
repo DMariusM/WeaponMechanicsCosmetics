@@ -186,6 +186,7 @@ public class WeaponMechanicsCosmetics {
 
     private void registerUpdateChecker() {
         update = new UpdateChecker(plugin, UpdateChecker.spigot(104539, "WeaponMechanicsCosmetics"));
+        debug.info("UpdateChecker enabled for %%__USER__%%");
 
         try {
             UpdateInfo consoleUpdate = update.hasUpdate();

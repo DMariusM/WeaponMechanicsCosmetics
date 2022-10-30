@@ -9,4 +9,4 @@ folder.
 Need Help?
 * Check the wiki: https://github.com/WeaponMechanics/WeaponMechanicsCosmeticsWiki/wiki
 * Ask in discord: https://discord.gg/ERVgpfg
-* Download the latest version: TODO fix me
+* Download the latest version: https://www.spigotmc.org/resources/104539/

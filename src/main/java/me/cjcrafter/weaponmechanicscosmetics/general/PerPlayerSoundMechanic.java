@@ -75,12 +75,11 @@ public class PerPlayerSoundMechanic extends SoundMechanic {
 
         @Override
         public void play(CastData castData) {
-            if (!(castData.getCaster() instanceof Player))
+            if (!(castData.getCaster() instanceof Player player))
                 return;
 
             Location location = castData.getCastLocation();
 
-            Player player = (Player) castData.getCaster();
             if (!getHeadMaterial().test(player))
                 return;
 
@@ -108,12 +107,11 @@ public class PerPlayerSoundMechanic extends SoundMechanic {
 
         @Override
         public void play(CastData castData) {
-            if (!(castData.getCaster() instanceof Player))
+            if (!(castData.getCaster() instanceof Player player))
                 return;
 
             Location location = castData.getCastLocation();
 
-            Player player = (Player) castData.getCaster();
             if (!getHeadMaterial().test(player))
                 return;
 

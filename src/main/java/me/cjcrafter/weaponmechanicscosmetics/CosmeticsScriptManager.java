@@ -34,8 +34,7 @@ public class CosmeticsScriptManager extends ProjectileScriptManager {
 
         Configuration config = WeaponMechanics.getConfigurations();
 
-        if (aProjectile instanceof WeaponProjectile) {
-            WeaponProjectile projectile = (WeaponProjectile) aProjectile;
+        if (aProjectile instanceof WeaponProjectile projectile) {
 
             projectile.addProjectileScript(new BlockSoundScript(getPlugin(), projectile));
 

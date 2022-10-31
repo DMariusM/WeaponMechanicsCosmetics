@@ -8,8 +8,11 @@ package me.cjcrafter.weaponmechanicscosmetics;
 import me.cjcrafter.auto.UpdateChecker;
 import me.cjcrafter.auto.UpdateInfo;
 import me.cjcrafter.weaponmechanicscosmetics.commands.SkinCommand;
+import me.cjcrafter.weaponmechanicscosmetics.config.BlockBreakParticleSerializer;
+import me.cjcrafter.weaponmechanicscosmetics.config.BlockBreakSoundSerializer;
+import me.cjcrafter.weaponmechanicscosmetics.config.BlockParticleSerializer;
+import me.cjcrafter.weaponmechanicscosmetics.config.BlockSoundSerializer;
 import me.cjcrafter.weaponmechanicscosmetics.listeners.*;
-import me.cjcrafter.weaponmechanicscosmetics.scripts.BlockSoundScript;
 import me.cjcrafter.weaponmechanicscosmetics.timer.TimerSpawner;
 import me.cjcrafter.weaponmechanicscosmetics.general.ParticleMechanic;
 import me.deecaad.core.MechanicsCore;
@@ -133,7 +136,10 @@ public class WeaponMechanicsCosmetics {
 
                     // Read config
                     List<Serializer<?>> serializers = new ArrayList<>();
-                    serializers.add(new BlockSoundScript.BlockSound());
+                    serializers.add(new BlockSoundSerializer());
+                    serializers.add(new BlockBreakSoundSerializer());
+                    serializers.add(new BlockParticleSerializer());
+                    serializers.add(new BlockBreakParticleSerializer());
                     serializers.add(new PumpkinScopeOverlay.PumpkinCreativeSerializer());
                     serializers.add(new PumpkinScopeOverlay.PumpkinSurvivalSerializer());
 

@@ -1,0 +1,177 @@
+package me.cjcrafter.weaponmechanicscosmetics.config;
+
+import me.deecaad.core.file.SerializeData;
+import me.deecaad.core.file.Serializer;
+import me.deecaad.core.file.SerializerException;
+import me.deecaad.core.utils.EnumUtil;
+import me.deecaad.core.utils.ReflectionUtil;
+import me.deecaad.core.utils.VectorUtil;
+import me.deecaad.weaponmechanics.WeaponMechanics;
+import me.deecaad.weaponmechanics.weapon.projectile.weaponprojectile.WeaponProjectile;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.Particle;
+import org.bukkit.World;
+import org.bukkit.block.BlockState;
+import org.bukkit.material.MaterialData;
+import org.bukkit.util.Vector;
+import org.jetbrains.annotations.NotNull;
+
+import javax.annotation.Nullable;
+import java.util.*;
+
+public class BlockParticleSerializer implements Serializer<BlockParticleSerializer> {
+
+    /**
+     * Stores the data needed to spawn particles from a block.
+     *
+     * @param amount
+     * @param spread
+     */
+    private record ParticleConfig(int amount, double spread) {
+    }
+
+    private int amount;
+    private double spread;
+    private Map<Material, ParticleConfig> overrides;
+    private Map<Material, Object> materialBlacklist;
+    private Set<String> weaponBlacklist;
+
+    /**
+     * Default constructor for serializer
+     */
+    public BlockParticleSerializer() {
+    }
+
+    public BlockParticleSerializer(int amount, double spread, Map<Material, ParticleConfig> overrides,
+                                   Map<Material, Object> materialBlacklist, Set<String> weaponBlacklist) {
+        this.amount = amount;
+        this.spread = spread;
+        this.overrides = overrides;
+        this.materialBlacklist = materialBlacklist;
+        this.weaponBlacklist = weaponBlacklist;
+    }
+
+    public void play(WeaponProjectile projectile, BlockState block, @Nullable Vector hitLocation, @Nullable Vector normal) {
+        World world = projectile.getWorld();
+
+        // Handle blacklists
+        if (materialBlacklist.containsKey(block.getType()) || weaponBlacklist.contains(projectile.getWeaponTitle()))
+            return;
+
+        int amount = this.amount;
+        double spread = this.spread;
+
+        // Handle overrides
+        ParticleConfig override = overrides.get(block.getType());
+        if (override != null) {
+            amount = override.amount;
+            spread = override.spread;
+        }
+
+        Object data = ReflectionUtil.getMCVersion() < 13 ? new MaterialData(block.getType(), block.getRawData()) : block.getBlockData();
+
+        // When there is no precise hit/normal, assume the block has been broken.
+        // In this case, we want to spawn particles in all directions from the
+        // center fo the block.
+        if (hitLocation == null && normal == null) {
+            Location spawnLoc = block.getLocation().add(0.5, 0.5, 0.5);
+            world.spawnParticle(Particle.BLOCK_CRACK, spawnLoc, amount, spread, spread, spread, data);
+        }
+
+        // We need both...
+        else if (hitLocation == null || normal == null) {
+            throw new IllegalArgumentException("Need both hitLocation and normal to be non-null (or both null)");
+        }
+
+        // When a precise hit/normal is defined, spray particles out from that
+        // point and direction.
+        else {
+            Location spawnLoc = hitLocation.toLocation(world);
+            for (int i = 0; i < amount; i++) {
+                Vector direction = VectorUtil.random(spread).add(normal);
+                world.spawnParticle(Particle.BLOCK_CRACK, spawnLoc, 0, direction.getX(), direction.getY(), direction.getZ(), data);
+            }
+        }
+    }
+
+    @Override
+    public String getKeyword() {
+        return "Block_Particles";
+    }
+
+    @NotNull
+    @Override
+    public BlockParticleSerializer serialize(SerializeData data) throws SerializerException {
+
+        // Let people completely disable the feature
+        boolean enabled = data.of("Enabled").assertExists().getBool();
+        if (!enabled) {
+            return new BlockParticleSerializer() {
+                @Override
+                public void play(WeaponProjectile projectile, BlockState block, @Nullable Vector hitLocation, @Nullable Vector normal) {
+                    // do nothing...
+                }
+            };
+        }
+
+        int amount = data.of("Amount").assertExists().assertPositive().getInt();
+        double spread = data.of("Spread").assertExists().assertPositive().getDouble();
+
+        // Construct a list of overrides, so you can increase/decrease particles
+        // per block. This could also be used to customize every block, so let's
+        // take performance into consideration.
+        Map<Material, ParticleConfig> overrides = new EnumMap<>(Material.class);
+        List<String[]> temp = data.ofList("Overrides")
+                .addArgument(Material.class, true)
+                .addArgument(int.class, true)
+                .addArgument(double.class, false)
+                .assertExists().assertList().get();
+
+        for (String[] split : temp) {
+            List<Material> materials = EnumUtil.parseEnums(Material.class, split[0]);
+            int customAmount = Integer.parseInt(split[1]);
+            double customSpread = split.length > 2 ? Double.parseDouble(split[2]) : spread;
+
+            ParticleConfig config = new ParticleConfig(customAmount, customSpread);
+            for (Material mat : materials)
+                overrides.put(mat, config);
+        }
+
+        // Construct a list of materials that shouldn't have any effects.
+        // We use a map since EnumMap is very fast, and there is no EnumSet
+        // equivalent.
+        Map<Material, Object> materialBlacklist = new EnumMap<>(Material.class);
+        temp = data.ofList("Material_Blacklist")
+                .addArgument(Material.class, true)
+                .assertExists().assertList().get();
+
+        for (String[] split : temp) {
+            List<Material> materials = EnumUtil.parseEnums(Material.class, split[0]);
+
+            for (Material mat : materials)
+                materialBlacklist.put(mat, null);
+        }
+
+        // Construct a list of weapons that should not use the block
+        // effects. We check each weapon to make sure it exists in
+        // WeaponMechanics.
+        Set<String> weaponBlacklist = new HashSet<>();
+        temp = data.ofList("Weapon_Blacklist")
+                .addArgument(String.class, true, true)
+                .assertExists().assertList().get();
+
+        List<String> weaponOptions = WeaponMechanics.getWeaponHandler().getInfoHandler().getSortedWeaponList();
+        for (int i = 0; i < temp.size(); i++) {
+            String[] split = temp.get(i);
+
+            // TODO cannot check weapons yet since they haven't been serialized!
+            //if (!weaponOptions.contains(split[0]))
+            //    throw new SerializerOptionsException(this, "Weapon", weaponOptions, split[0], data.ofList("Weapon_Blacklist").getLocation(i));
+
+            weaponBlacklist.add(split[0]);
+        }
+
+        return new BlockParticleSerializer(amount, spread, overrides, materialBlacklist, weaponBlacklist);
+    }
+}

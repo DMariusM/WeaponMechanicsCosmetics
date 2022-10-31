@@ -88,7 +88,7 @@ public class ParticleSerializer implements Serializer<ParticleSerializer> {
         // sensor. It can fade from one color to another color. Can also
         // modify particle size.
         switch (particle.name()) {
-            case "DUST_COLOR_TRANSITION": {
+            case "DUST_COLOR_TRANSITION" -> {
                 Color color = data.of("Color").assertExists().serializeNonStandardSerializer(new ColorSerializer());
                 Color fade = data.of("Fade_Color").assertExists().serializeNonStandardSerializer(new ColorSerializer());
                 float size = (float) data.of("Size").assertPositive().getDouble(1.0);
@@ -96,12 +96,11 @@ public class ParticleSerializer implements Serializer<ParticleSerializer> {
                 noBlock(particle, data);
 
                 options = new Particle.DustTransition(color, fade, size);
-                break;
             }
 
             // Redstone dust can be colored to any rgb value. This uses the
             // DustOptions class. Can also modify particle size.
-            case "REDSTONE": {
+            case "REDSTONE" -> {
                 Color color = data.of("Color").assertExists().serializeNonStandardSerializer(new ColorSerializer());
                 float size = (float) data.of("Size").assertPositive().getDouble(1.0);
                 noVelocity(particle, data);
@@ -109,17 +108,18 @@ public class ParticleSerializer implements Serializer<ParticleSerializer> {
                 noBlock(particle, data);
 
                 options = new Particle.DustOptions(color, size);
-                break;
             }
 
             // mob_spells can use colors, but instead of using the extra data,
             // the color is stored in the offset vector. This means we should warn
             // the user about using offset with the mob_spell particle. Note that
             // extra=1 and count=0
-            case "SPELL_MOB": {
+            case "SPELL_MOB" -> {
                 Color color = data.of("Color").assertExists().serializeNonStandardSerializer(new ColorSerializer());
-                if (data.has("Count")) throw data.exception("Count", "'SPELL_MOB' cannot use the 'Count' argument!", "Consider using 'REDSTONE' particles instead.");
-                if (data.has("Noise")) throw data.exception("Noise", "'SPELL_MOB' cannot use the 'Noise' argument!", "Consider using 'REDSTONE' particles instead.");
+                if (data.has("Count"))
+                    throw data.exception("Count", "'SPELL_MOB' cannot use the 'Count' argument!", "Consider using 'REDSTONE' particles instead.");
+                if (data.has("Noise"))
+                    throw data.exception("Noise", "'SPELL_MOB' cannot use the 'Noise' argument!", "Consider using 'REDSTONE' particles instead.");
                 noVelocity(particle, data);
                 noFade(particle, data);
                 noBlock(particle, data);
@@ -127,28 +127,23 @@ public class ParticleSerializer implements Serializer<ParticleSerializer> {
                 count = 0;
                 extra = 1.0;
                 offset = new Vector(color.getRed() / 255.0, color.getGreen() / 255.0, color.getBlue() / 255.0);
-                break;
             }
 
             // Shows the item breaking animation (tools running out of durability,
             // for example). In all versions, this simply took a bukkit ItemStack.
-            case "ITEM_CRACK":
+            case "ITEM_CRACK" -> {
                 noVelocity(particle, data);
                 noColor(particle, data);
                 noFade(particle, data);
-
                 options = data.of("Material_Data").assertExists().serializeNonStandardSerializer(new ItemSerializer());
-                break;
+            }
 
             // In pre 1.13 versions, these 3 particle types took a MaterialData
             // argument instead of a BlockData argument.
-            case "BLOCK_CRACK":
-            case "BLOCK_DUST":
-            case "FALLING_DUST":
+            case "BLOCK_CRACK", "BLOCK_DUST", "FALLING_DUST" -> {
                 noVelocity(particle, data);
                 noColor(particle, data);
                 noFade(particle, data);
-
                 if (ReflectionUtil.getMCVersion() < 13) {
                     if (data.config.isConfigurationSection(data.key + ".Material_Data")) {
                         ItemStack item = data.of("Material_Data").assertExists().serializeNonStandardSerializer(new ItemSerializer());
@@ -168,44 +163,11 @@ public class ParticleSerializer implements Serializer<ParticleSerializer> {
                         options = material.createBlockData();
                     }
                 }
-                break;
+            }
 
             // All of these particles can be directional by setting count=0.
             // This means that instead of using offset, we should use velocity.
-            case "BUBBLE_COLUMN_UP":
-            case "BUBBLE_POP":
-            case "CAMPFIRE_COZY_SMOKE":
-            case "CAMPFIRE_SIGNAL_SMOKE":
-            case "CLOUD":
-            case "CRIT":
-            case "CRIT_MAGIC":
-            case "DAMAGE_INDICATOR":
-            case "DRAGON_BREATH":
-            case "ELECTRIC_SPARK":
-            case "ENCHANTMENT_TABLE":
-            case "END_ROD":
-            case "EXPLOSION_NORMAL":
-            case "FIREWORKS_SPARK":
-            case "FLAME":
-            case "NAUTILUS":
-            case "PORTAL":
-            case "REVERSE_PORTAL":
-            case "SCRAPE":
-            case "SCULK_CHARGE":
-            case "SCULK_CHARGE_POP":
-            case "SCULK_SOUL":
-            case "SMALL_FLAME":
-            case "SMOKE_LARGE":
-            case "SMOKE_NORMAL":
-            case "SOUL":
-            case "SOUL_FIRE_FLAME":
-            case "SPIT":
-            case "SQUID_INK":
-            case "TOTEM":
-            case "WATER_BUBBLE":
-            case "WATER_WAKE":
-            case "WAX_OFF":
-            case "WAX_ON":
+            case "BUBBLE_COLUMN_UP", "BUBBLE_POP", "CAMPFIRE_COZY_SMOKE", "CAMPFIRE_SIGNAL_SMOKE", "CLOUD", "CRIT", "CRIT_MAGIC", "DAMAGE_INDICATOR", "DRAGON_BREATH", "ELECTRIC_SPARK", "ENCHANTMENT_TABLE", "END_ROD", "EXPLOSION_NORMAL", "FIREWORKS_SPARK", "FLAME", "NAUTILUS", "PORTAL", "REVERSE_PORTAL", "SCRAPE", "SCULK_CHARGE", "SCULK_CHARGE_POP", "SCULK_SOUL", "SMALL_FLAME", "SMOKE_LARGE", "SMOKE_NORMAL", "SOUL", "SOUL_FIRE_FLAME", "SPIT", "SQUID_INK", "TOTEM", "WATER_BUBBLE", "WATER_WAKE", "WAX_OFF", "WAX_ON" -> {
                 noBlock(particle, data);
                 noColor(particle, data);
                 noFade(particle, data);
@@ -224,28 +186,25 @@ public class ParticleSerializer implements Serializer<ParticleSerializer> {
                     throw data.exception("Noise", "Cannot use 'Noise' when 'Count=0'. Count must be 1 or higher!");
                 if (count != 0 && data.has("Velocity"))
                     throw data.exception("Velocity", "Cannot use 'Velocity' when 'Count\u22600'. Count must be 0!");
-
                 if (count == 0) {
                     offset = parseVector(data, "Velocity");
                     extra = offset.length();
                 } else {
                     offset = parseVector(data, "Noise");
                 }
-                break;
+            }
 
             // Now that we have run out of special cases, lets make sure the user
             // did not try to add any extra data.
-            default:
+            default -> {
                 noVelocity(particle, data);
                 noBlock(particle, data);
                 noColor(particle, data);
                 noFade(particle, data);
-
                 if (count == 0)
                     throw data.exception("Count", "Cannot use Count=0 for '" + particle + "'");
-
                 offset = parseVector(data, "Noise");
-                break;
+            }
         }
 
         // When the user didn't specify count and the plugin couldn't

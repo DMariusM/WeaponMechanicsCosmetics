@@ -1,3 +1,8 @@
+# Supported languages are "en-US", "fr-FR". More languages will be added,
+# but you will need to let your lang folder regenerate. Did you add a new
+# language? Please, send to me so everybody can use it.
+Language: "en-US"
+
 # the debug level dictates what is printed to console
 #   0: No printing
 #   1: Errors/Info
@@ -36,6 +41,7 @@ Explosion_Effects:
 # Block sounds are played whenever a projectile hits a block.
 # Note that water "splash" effects are handled by each gun in their own file.
 Block_Sounds:
+  Enabled: true
   Type: BREAK    # <BREAK, STEP, PLACE, HIT, FALL>
   Default_Randomness: 0.02
 
@@ -65,6 +71,50 @@ Block_Sounds:
     - Grenade
     - Semtex
 
+# Block Particles are played when a projectile impacts with a block. Particles
+# are "sprayed" out of the impact point.
+Block_Particles:
+  Enabled: true
+  Amount: 8
+  Spread: 0.5
+
+  # The format is:
+  # <block> <amount> <spread>
+  Overrides:
+    - $glass 16 0.5
+  Material_Blacklist:
+    - bedrock
+  Weapon_Blacklist: [ ]
+
+# Break sounds are played when a projectile breaks a block using
+# https://github.com/WeaponMechanics/WeaponMechanicsCosmeticsWiki/wiki/General#block_damage
+#
+# All the options are the same as the Block_Sounds options
+Break_Sounds:
+  Enabled: true
+  Type: BREAK
+  Default_Randomness: 0.02
+  Overrides:
+    - "$glass block_glass_break 1 1.3 0.01"
+  Material_Blacklist: []
+  Weapon_Blacklist: []
+
+# Break Particles are spawned when a projectile breaks a block using
+# https://github.com/WeaponMechanics/WeaponMechanicsCosmeticsWiki/wiki/General#block_damage
+Break_Particles:
+  Enabled: true
+  Amount: 8
+  Spread: 0.5
+
+  # The format is:
+  # <block> <amount> <spread>
+  Overrides:
+    - $glass 16 0.5
+  Material_Blacklist:
+    - bedrock
+  Weapon_Blacklist: []
+
+
 # This is the "fake pumpkin" shown to players when they are in survival
 # In older versions <1.12, use PUMPKIN instead of CARVED_PUMPKIN
 Survival_Pumpkin:
@@ -87,8 +137,3 @@ Creative_Pumpkin:
     - "<gray>This only happens in creative mode"
     - "<gray>Change this text in <i>WeaponMechanicsCosmetics</i> config.yml"
   Custom_Model_Data: 1
-
-# Supported languages are "en-US", "fr-FR". More languages will be added,
-# but you will need to let your lang folder regenerate. Did you add a new
-# language? Please, send to me so everybody can use it.
-Language: "en-US"

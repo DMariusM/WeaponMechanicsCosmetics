@@ -10,24 +10,28 @@ import me.deecaad.core.file.Serializer;
 import me.deecaad.core.file.SerializerException;
 import me.deecaad.core.file.serializers.ColorSerializer;
 import me.deecaad.core.file.serializers.ItemSerializer;
+import me.deecaad.core.file.serializers.VectorSerializer;
 import me.deecaad.core.utils.ReflectionUtil;
 import me.deecaad.core.utils.StringUtil;
+import me.deecaad.weaponmechanics.mechanics.CastData;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.World;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.material.MaterialData;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class ParticleSerializer implements Serializer<ParticleSerializer> {
 
     private Particle particle;
     private int count;
     private double extra;
-    private Vector offset; // sometimes velocity
+    private VectorSerializer offset; // sometimes velocity
     private Object options;
     private boolean force;
 
@@ -37,7 +41,7 @@ public class ParticleSerializer implements Serializer<ParticleSerializer> {
     public ParticleSerializer() {
     }
 
-    public ParticleSerializer(Particle particle, int count, double extra, Vector offset, Object options, boolean force) {
+    public ParticleSerializer(Particle particle, int count, double extra, VectorSerializer offset, Object options, boolean force) {
         this.particle = particle;
         this.count = count;
         this.extra = extra;
@@ -47,16 +51,29 @@ public class ParticleSerializer implements Serializer<ParticleSerializer> {
     }
 
     public void display(Location location) {
-        display(location.getWorld(), location.getX(), location.getY(), location.getZ());
+        display(location.getWorld(), location.getX(), location.getY(), location.getZ(), null);
+    }
+
+    public void display(CastData castData) {
+        Location location = castData.getCastLocation();
+        Vector direction = castData.getCaster() == null ? null : castData.getCaster().getLocation().getDirection();
+        display(location.getWorld(), location.getX(), location.getY(), location.getZ(), direction);
     }
 
     public void display(World world, Vector position) {
-        display(world, position.getX(), position.getY(), position.getZ());
+        display(world, position.getX(), position.getY(), position.getZ(), null);
     }
 
     public void display(World world, double x, double y, double z) {
+        display(world, x, y, z, null);
+    }
+
+    public void display(World world, double x, double y, double z, @Nullable Vector relative) {
         if (world == null)
             throw new IllegalArgumentException("World cannot be null");
+
+        Vector offset = this.offset.getVector(relative);
+        double extra = this.extra == -11 ? offset.length() / 20 : this.extra;
 
         if (ReflectionUtil.getMCVersion() < 13)
             world.spawnParticle(particle, x, y, z, count, offset.getX(), offset.getY(), offset.getZ(), extra, options);
@@ -76,7 +93,7 @@ public class ParticleSerializer implements Serializer<ParticleSerializer> {
         Particle particle = data.of("Type").assertExists().getEnum(Particle.class);
         int count = data.of("Count").assertPositive().getInt(-1);
         double extra = 0.0;
-        Vector offset = new Vector();
+        VectorSerializer offset = VectorSerializer.from(new Vector());
         Object options = null;
         boolean force = data.of("Always_Show").getBool(true);
 
@@ -126,7 +143,7 @@ public class ParticleSerializer implements Serializer<ParticleSerializer> {
 
                 count = 0;
                 extra = 1.0;
-                offset = new Vector(color.getRed() / 255.0, color.getGreen() / 255.0, color.getBlue() / 255.0);
+                offset = VectorSerializer.from(new Vector(color.getRed() / 255.0, color.getGreen() / 255.0, color.getBlue() / 255.0));
             }
 
             // Shows the item breaking animation (tools running out of durability,
@@ -188,7 +205,7 @@ public class ParticleSerializer implements Serializer<ParticleSerializer> {
                     throw data.exception("Velocity", "Cannot use 'Velocity' when 'Count\u22600'. Count must be 0!");
                 if (count == 0) {
                     offset = parseVector(data, "Velocity");
-                    extra = offset.length();
+                    extra = -11;
                 } else {
                     offset = parseVector(data, "Noise");
                 }
@@ -244,23 +261,10 @@ public class ParticleSerializer implements Serializer<ParticleSerializer> {
         }
     }
 
-    private Vector parseVector(SerializeData data, String relative) throws SerializerException {
+    private VectorSerializer parseVector(SerializeData data, String relative) throws SerializerException {
         if (!data.has(relative))
-            return new Vector();
+            return VectorSerializer.from(new Vector());
 
-        String raw = data.of(relative).assertExists().get();
-
-        //boolean matches = Pattern.compile("\\d+.?\\d*[~ -]\\d+.?\\d*[~ -]\\d+.?\\d*").matcher(raw.trim()).matches();
-        String[] split = StringUtil.split(raw);
-        try {
-            double x = Double.parseDouble(split[0]);
-            double y = Double.parseDouble(split[1]);
-            double z = Double.parseDouble(split[2]);
-            return new Vector(x, y, z);
-        } catch (NumberFormatException ex) {
-            throw data.exception(relative, "Failed to find 3 numbers while making Particle Vector",
-                    SerializerException.forValue(raw),
-                    "Make sure your numbers are in 'x.x y.y z.z' format");
-        }
+        return data.of(relative).serialize(VectorSerializer.class);
     }
 }

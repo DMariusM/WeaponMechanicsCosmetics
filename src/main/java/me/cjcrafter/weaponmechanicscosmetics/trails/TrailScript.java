@@ -53,6 +53,7 @@ public class TrailScript extends ProjectileScript<AProjectile> {
         Vector direction = projectile.getLocation().subtract(projectile.getLastLocation());
         double distance = direction.length();
         direction.multiply(1.0 / distance);
+        Vector normal = direction.clone();
 
         // Spill over occurs when there was a "small distance"
         // (<trail.getDelta()) left over from the previous tick. So we move the
@@ -91,7 +92,7 @@ public class TrailScript extends ProjectileScript<AProjectile> {
                 double y = current.getY() + point.x * a.getY() + point.y * b.getY();
                 double z = current.getZ() + point.x * a.getZ() + point.y * b.getZ();
 
-                particle.display(projectile.getWorld(), x, y, z);
+                particle.display(projectile.getWorld(), x, y, z, normal);
             }
 
             current.add(direction);

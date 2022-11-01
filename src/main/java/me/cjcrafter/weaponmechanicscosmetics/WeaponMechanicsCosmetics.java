@@ -12,6 +12,7 @@ import me.cjcrafter.weaponmechanicscosmetics.config.BlockBreakParticleSerializer
 import me.cjcrafter.weaponmechanicscosmetics.config.BlockBreakSoundSerializer;
 import me.cjcrafter.weaponmechanicscosmetics.config.BlockParticleSerializer;
 import me.cjcrafter.weaponmechanicscosmetics.config.BlockSoundSerializer;
+import me.cjcrafter.weaponmechanicscosmetics.general.FakeItemMechanic;
 import me.cjcrafter.weaponmechanicscosmetics.listeners.*;
 import me.cjcrafter.weaponmechanicscosmetics.timer.TimerSpawner;
 import me.cjcrafter.weaponmechanicscosmetics.general.ParticleMechanic;
@@ -73,6 +74,7 @@ public class WeaponMechanicsCosmetics {
     public void onEnable() {
 
         Mechanics.registerMechanic(plugin, new ParticleMechanic());
+        Mechanics.registerMechanic(plugin, new FakeItemMechanic());
 
         registerDebugger();
         registerBStats();

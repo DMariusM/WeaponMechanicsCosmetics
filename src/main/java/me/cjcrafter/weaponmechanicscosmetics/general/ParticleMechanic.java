@@ -37,7 +37,7 @@ public class ParticleMechanic implements IMechanic<ParticleMechanic> {
     @Override
     public void use(CastData castData) {
         for (ParticleSerializer particle : particles) {
-            particle.display(castData.getCastLocation());
+            particle.display(castData);
         }
     }
 

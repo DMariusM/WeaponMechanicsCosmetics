@@ -8,10 +8,8 @@ package me.cjcrafter.weaponmechanicscosmetics;
 import me.cjcrafter.weaponmechanicscosmetics.scripts.*;
 import me.deecaad.core.file.Configuration;
 import me.deecaad.weaponmechanics.WeaponMechanics;
-import me.deecaad.weaponmechanics.weapon.explode.BlockDamage;
 import me.deecaad.weaponmechanics.weapon.projectile.AProjectile;
 import me.deecaad.weaponmechanics.weapon.projectile.ProjectileScriptManager;
-import me.cjcrafter.weaponmechanicscosmetics.trails.Trail;
 import me.cjcrafter.weaponmechanicscosmetics.trails.TrailScript;
 import me.deecaad.weaponmechanics.weapon.projectile.weaponprojectile.WeaponProjectile;
 import org.bukkit.plugin.Plugin;
@@ -36,7 +34,7 @@ public class CosmeticsScriptManager extends ProjectileScriptManager {
 
         if (aProjectile instanceof WeaponProjectile projectile) {
 
-            projectile.addProjectileScript(new BlockSoundScript(getPlugin(), projectile));
+            projectile.addProjectileScript(new BlockImpactScript(getPlugin(), projectile));
 
             if (config.containsKey(projectile.getWeaponTitle() + ".Trail"))
                 projectile.addProjectileScript(new TrailScript(getPlugin(), projectile));
@@ -45,7 +43,7 @@ public class CosmeticsScriptManager extends ProjectileScriptManager {
                 projectile.addProjectileScript(new ZipScript(getPlugin(), projectile));
 
             if (config.containsKey(projectile.getWeaponTitle() + ".Cosmetics.Block_Damage"))
-                projectile.addProjectileScript(new BlockCrackScript(getPlugin(), projectile));
+                projectile.addProjectileScript(new BlockDamageScript(getPlugin(), projectile));
 
             // If the projectile has a disguise, then there is no need to show
             // splash effects (entities have splash effects in vanilla mc)

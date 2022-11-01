@@ -20,12 +20,12 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Adds hit-block sounds for projectiles.
  */
-public class BlockSoundScript extends ProjectileScript<WeaponProjectile> {
+public class BlockImpactScript extends ProjectileScript<WeaponProjectile> {
 
     private BlockSoundSerializer sound;
     private BlockParticleSerializer particles;
 
-    public BlockSoundScript(@NotNull Plugin owner, @NotNull WeaponProjectile projectile) {
+    public BlockImpactScript(@NotNull Plugin owner, @NotNull WeaponProjectile projectile) {
         super(owner, projectile);
 
         Configuration config = WeaponMechanicsCosmetics.getInstance().getConfiguration();
@@ -42,7 +42,7 @@ public class BlockSoundScript extends ProjectileScript<WeaponProjectile> {
         }
     }
 
-    public BlockSoundScript(@NotNull Plugin owner, @NotNull WeaponProjectile projectile, BlockSoundSerializer sound, BlockParticleSerializer particles) {
+    public BlockImpactScript(@NotNull Plugin owner, @NotNull WeaponProjectile projectile, BlockSoundSerializer sound, BlockParticleSerializer particles) {
         super(owner, projectile);
 
         this.sound = sound;

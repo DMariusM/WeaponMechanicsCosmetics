@@ -23,14 +23,14 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 
-public class BlockCrackScript extends ProjectileScript<WeaponProjectile> {
+public class BlockDamageScript extends ProjectileScript<WeaponProjectile> {
 
     private BlockDamage damage;
     private BlockSoundSerializer sounds;
     private BlockParticleSerializer particles;
     private int regenDelay;
 
-    public BlockCrackScript(@NotNull Plugin owner, @NotNull WeaponProjectile projectile) {
+    public BlockDamageScript(@NotNull Plugin owner, @NotNull WeaponProjectile projectile) {
         super(owner, projectile);
 
         Configuration config = WeaponMechanics.getConfigurations();
@@ -42,8 +42,8 @@ public class BlockCrackScript extends ProjectileScript<WeaponProjectile> {
         this.particles = config.getObject("Break_Particles", BlockParticleSerializer.class);
     }
 
-    public BlockCrackScript(@NotNull Plugin owner, @NotNull WeaponProjectile projectile, BlockDamage damage,
-                            BlockSoundSerializer sounds, BlockParticleSerializer particles, int regenDelay) {
+    public BlockDamageScript(@NotNull Plugin owner, @NotNull WeaponProjectile projectile, BlockDamage damage,
+                             BlockSoundSerializer sounds, BlockParticleSerializer particles, int regenDelay) {
         super(owner, projectile);
 
         this.damage = damage;
@@ -85,13 +85,13 @@ public class BlockCrackScript extends ProjectileScript<WeaponProjectile> {
             return;
 
         // Play effects from config.yml
-        if (data.isBroken()) {
+        if (data.isBroken() && damage.getBreakMode(state.getType()) == BlockDamage.BreakMode.BREAK) {
             sounds.play(projectile, state);
             particles.play(projectile, state, null, null);
         }
 
         if (regenDelay != -1) {
-            if (damage.isBreakBlocks() && data.isBroken()) {
+            if (damage.getBreakMode(state.getType()) == BlockDamage.BreakMode.BREAK && data.isBroken()) {
                 new BukkitRunnable() {
                     public void run() {
                         data.regenerate();

@@ -17,7 +17,7 @@ public class HandValidator implements IValidator {
 
     @Override
     public void validate(Configuration configuration, SerializeData data) throws SerializerException {
-        ItemStack baseItem = data.of("Item").assertExists().serializeNonStandardSerializer(new ItemSerializer());
+        ItemStack baseItem = data.of("Item").assertExists().serialize(new ItemSerializer());
         SkinList skins = data.of().assertExists().serialize(SkinList.class);
 
         configuration.set(data.key + ".Item", baseItem);

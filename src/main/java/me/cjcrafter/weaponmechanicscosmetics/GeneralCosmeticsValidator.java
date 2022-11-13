@@ -43,7 +43,7 @@ public class GeneralCosmeticsValidator implements IValidator {
         // Value should be less than 8 for good results, but we'll *allow*
         // larger values for experimentation.
         configuration.set(key + ".Bullet_Zip.Maximum_Distance", data.of("Bullet_Zip.Maximum_Distance").assertRange(0.0, 16.0).getDouble(0.0));
-        SoundMechanic zipMechanics = data.of("Bullet_Zip.Sounds").serializeNonStandardSerializer(new PerPlayerSoundMechanic());
+        SoundMechanic zipMechanics = data.of("Bullet_Zip.Sounds").serialize(new PerPlayerSoundMechanic());
         configuration.set(key + ".Bullet_Zip.Sounds", zipMechanics);
 
         // Block damage stuff

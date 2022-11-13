@@ -106,8 +106,8 @@ public class ParticleSerializer implements Serializer<ParticleSerializer> {
         // modify particle size.
         switch (particle.name()) {
             case "DUST_COLOR_TRANSITION" -> {
-                Color color = data.of("Color").assertExists().serializeNonStandardSerializer(new ColorSerializer());
-                Color fade = data.of("Fade_Color").assertExists().serializeNonStandardSerializer(new ColorSerializer());
+                Color color = data.of("Color").assertExists().serialize(new ColorSerializer());
+                Color fade = data.of("Fade_Color").assertExists().serialize(new ColorSerializer());
                 float size = (float) data.of("Size").assertPositive().getDouble(1.0);
                 noVelocity(particle, data);
                 noBlock(particle, data);
@@ -118,7 +118,7 @@ public class ParticleSerializer implements Serializer<ParticleSerializer> {
             // Redstone dust can be colored to any rgb value. This uses the
             // DustOptions class. Can also modify particle size.
             case "REDSTONE" -> {
-                Color color = data.of("Color").assertExists().serializeNonStandardSerializer(new ColorSerializer());
+                Color color = data.of("Color").assertExists().serialize(new ColorSerializer());
                 float size = (float) data.of("Size").assertPositive().getDouble(1.0);
                 noVelocity(particle, data);
                 noFade(particle, data);
@@ -132,7 +132,7 @@ public class ParticleSerializer implements Serializer<ParticleSerializer> {
             // the user about using offset with the mob_spell particle. Note that
             // extra=1 and count=0
             case "SPELL_MOB" -> {
-                Color color = data.of("Color").assertExists().serializeNonStandardSerializer(new ColorSerializer());
+                Color color = data.of("Color").assertExists().serialize(new ColorSerializer());
                 if (data.has("Count"))
                     throw data.exception("Count", "'SPELL_MOB' cannot use the 'Count' argument!", "Consider using 'REDSTONE' particles instead.");
                 if (data.has("Noise"))
@@ -152,7 +152,7 @@ public class ParticleSerializer implements Serializer<ParticleSerializer> {
                 noVelocity(particle, data);
                 noColor(particle, data);
                 noFade(particle, data);
-                options = data.of("Material_Data").assertExists().serializeNonStandardSerializer(new ItemSerializer());
+                options = data.of("Material_Data").assertExists().serialize(new ItemSerializer());
             }
 
             // In pre 1.13 versions, these 3 particle types took a MaterialData
@@ -163,7 +163,7 @@ public class ParticleSerializer implements Serializer<ParticleSerializer> {
                 noFade(particle, data);
                 if (ReflectionUtil.getMCVersion() < 13) {
                     if (data.config.isConfigurationSection(data.key + ".Material_Data")) {
-                        ItemStack item = data.of("Material_Data").assertExists().serializeNonStandardSerializer(new ItemSerializer());
+                        ItemStack item = data.of("Material_Data").assertExists().serialize(new ItemSerializer());
                         options = item.getData();
                     } else {
                         Material material = data.of("Material_Data").assertExists().getEnum(Material.class);
@@ -172,7 +172,7 @@ public class ParticleSerializer implements Serializer<ParticleSerializer> {
 
                 } else {
                     if (data.config.isConfigurationSection(data.key + ".Material_Data")) {
-                        ItemStack item = data.of("Material_Data").assertExists().serializeNonStandardSerializer(new ItemSerializer());
+                        ItemStack item = data.of("Material_Data").assertExists().serialize(new ItemSerializer());
                         options = item.getType().createBlockData();
 
                     } else {

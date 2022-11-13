@@ -68,7 +68,7 @@ public class FakeItemMechanic implements IMechanic<FakeItemMechanic> {
         for (String key : config.getKeys(false)) {
             SerializeData move = data.move(key);
 
-            ItemStack item = move.of().assertExists().serializeNonStandardSerializer(new ItemSerializer());
+            ItemStack item = move.of().assertExists().serialize(new ItemSerializer());
             int time = move.of("Time").assertExists().getInt();
             VectorSerializer offset = move.of("Offset").assertExists().serialize(VectorSerializer.class);
             VectorSerializer velocity = move.of("Velocity").assertExists().serialize(VectorSerializer.class);

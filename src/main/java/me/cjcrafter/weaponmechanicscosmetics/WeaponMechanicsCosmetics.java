@@ -240,7 +240,7 @@ public class WeaponMechanicsCosmetics {
     }
 
     public String getLang(String key) {
-        Locale locale = Locale.forLanguageTag(config.getString("Language", "en-US"));
+        Locale locale = Locale.forLanguageTag(config == null ? "en-US" : config.getString("Language", "en-US"));
         ResourceBundle lang = ResourceBundle.getBundle("Lang", locale, langLoader);
 
         try {

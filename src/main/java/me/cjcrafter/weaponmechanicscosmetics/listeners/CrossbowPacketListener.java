@@ -15,6 +15,7 @@ import me.deecaad.weaponmechanics.utils.CustomTag;
 import me.deecaad.weaponmechanics.wrappers.EntityWrapper;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
 
 import java.util.List;
@@ -73,7 +74,18 @@ public class CrossbowPacketListener extends PacketAdapter {
         CrossbowConfigSerializer crossbow = WeaponMechanics.getConfigurations().getObject(weaponTitle + ".Cosmetics.Crossbow", CrossbowConfigSerializer.class);
         boolean isScoping = wrapper != null && wrapper.getHandData(slot == EnumWrappers.ItemSlot.MAINHAND).getZoomData().isZooming();
         if (crossbow != null && !(crossbow.onlyScope() && !isScoping)) {
-            return crossbow.item();
+            ItemStack temp = crossbow.item();
+
+            // Allow copying of model data for when the model itself changes
+            // for scoping/sprinting/whatever
+            if (crossbow.isCopyModel()) {
+                temp = temp.clone();
+                ItemMeta meta = temp.getItemMeta();
+                meta.setCustomModelData(equipment.getItemMeta().getCustomModelData());
+                temp.setItemMeta(meta);
+            }
+
+            return temp;
         }
 
         return equipment;

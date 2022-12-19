@@ -17,6 +17,7 @@ public final class CrossbowConfigSerializer implements Serializer<CrossbowConfig
 
     private ItemStack item;
     private boolean onlyScope;
+    private boolean copyModel;
 
     /**
      * Default constructor for serializer
@@ -24,7 +25,7 @@ public final class CrossbowConfigSerializer implements Serializer<CrossbowConfig
     public CrossbowConfigSerializer() {
     }
 
-    public CrossbowConfigSerializer(ItemStack item, boolean onlyScope) {
+    public CrossbowConfigSerializer(ItemStack item, boolean onlyScope, boolean copyModel) {
         this.item = item;
         this.onlyScope = onlyScope;
     }
@@ -35,6 +36,10 @@ public final class CrossbowConfigSerializer implements Serializer<CrossbowConfig
 
     public boolean isOnlyScope() {
         return onlyScope;
+    }
+
+    public boolean isCopyModel() {
+        return copyModel;
     }
 
     @Override
@@ -93,8 +98,9 @@ public final class CrossbowConfigSerializer implements Serializer<CrossbowConfig
             item.setItemMeta(meta);
         }
 
-        boolean onlyScope = data.of("Only_When_Scoping").assertExists().getBool();
-        return new CrossbowConfigSerializer(item, onlyScope);
+        boolean onlyScope = data.of("Only_When_Scoping").getBool(true);
+        boolean copyModel = data.of("Copy_Custom_Model_Data").getBool(false);
+        return new CrossbowConfigSerializer(item, onlyScope, copyModel);
     }
 
     public ItemStack item() {

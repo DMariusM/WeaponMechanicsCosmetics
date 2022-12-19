@@ -5,7 +5,8 @@
 
 package me.cjcrafter.weaponmechanicscosmetics.listeners;
 
-import me.cjcrafter.weaponmechanicscosmetics.GeneralCosmeticsValidator;
+import me.cjcrafter.weaponmechanicscosmetics.config.CrossbowConfigSerializer;
+import me.cjcrafter.weaponmechanicscosmetics.config.GeneralCosmeticsValidator;
 import me.cjcrafter.weaponmechanicscosmetics.WeaponMechanicsCosmetics;
 import me.cjcrafter.weaponmechanicscosmetics.config.HandValidator;
 import me.cjcrafter.weaponmechanicscosmetics.timer.TimerValidator;
@@ -25,6 +26,7 @@ public class WeaponMechanicsSerializerListener implements Listener {
         event.addValidators(new GeneralCosmeticsValidator());
         event.addValidators(new HandValidator());
         event.addSerializers(new Trail());
+        event.addSerializers(new CrossbowConfigSerializer());
 
         // Whenever WeaponMechanics reloads, we should also reload
         // WeaponMechanicsCosmetics. TODO Move this to a proper location.

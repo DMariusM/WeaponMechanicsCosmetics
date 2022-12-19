@@ -1,7 +1,7 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 group = "me.cjcrafter"
-version = "1.3.2"
+version = "1.4.0"
 
 plugins {
     `java-library`
@@ -61,7 +61,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly("org.jetbrains:annotations:23.0.0")
+    compileOnly("org.jetbrains:annotations:23.1.0")
 
     api("org.spigotmc:spigot-api:1.18-R0.1-SNAPSHOT")
     implementation("co.aikar:minecraft-timings:1.0.4")
@@ -69,6 +69,7 @@ dependencies {
 
     compileOnly("me.deecaad:mechanicscore:1.8.0")
     compileOnly("me.deecaad:weaponmechanics:1.14.1")
+    compileOnly("com.comphenix.protocol:ProtocolLib:4.7.0")
     compileOnly(files(file("lib/vivecraft/Vivecraft_Spigot_Extensions.jar")))
     implementation("org.bstats:bstats-bukkit:3.0.0")
     implementation("me.cjcrafter:mechanicsautodownload:1.3.1")

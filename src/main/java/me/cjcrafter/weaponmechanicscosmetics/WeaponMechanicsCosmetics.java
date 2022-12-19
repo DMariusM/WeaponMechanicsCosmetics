@@ -5,6 +5,7 @@
 
 package me.cjcrafter.weaponmechanicscosmetics;
 
+import com.comphenix.protocol.ProtocolLibrary;
 import me.cjcrafter.auto.UpdateChecker;
 import me.cjcrafter.auto.UpdateInfo;
 import me.cjcrafter.weaponmechanicscosmetics.commands.SkinCommand;
@@ -156,6 +157,10 @@ public class WeaponMechanicsCosmetics {
                     debug.info("Reloading plugin");
                     WeaponMechanics.getProjectilesRunnable().addScriptManager(new CosmeticsScriptManager(plugin));
                     registerListeners();
+
+                    // Reload packet listeners
+                    ProtocolLibrary.getProtocolManager().removePacketListeners(plugin);
+                    ProtocolLibrary.getProtocolManager().addPacketListener(new CrossbowPacketListener(plugin));
                 });
     }
 

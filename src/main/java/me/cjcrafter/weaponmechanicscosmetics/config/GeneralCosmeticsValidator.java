@@ -3,7 +3,7 @@
  * Unauthorized copying of this file, via any medium is strictly prohibited proprietary and confidential.
  */
 
-package me.cjcrafter.weaponmechanicscosmetics;
+package me.cjcrafter.weaponmechanicscosmetics.config;
 
 import me.cjcrafter.weaponmechanicscosmetics.general.PerPlayerSoundMechanic;
 import me.deecaad.core.file.*;

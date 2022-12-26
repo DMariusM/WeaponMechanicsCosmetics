@@ -23,6 +23,7 @@ import me.deecaad.core.lib.adventure.text.Component;
 import me.deecaad.core.utils.Debugger;
 import me.deecaad.core.utils.FileUtil;
 import me.deecaad.core.utils.LogLevel;
+import me.deecaad.core.utils.ReflectionUtil;
 import me.deecaad.weaponmechanics.WeaponMechanics;
 import me.deecaad.weaponmechanics.mechanics.Mechanics;
 import org.bstats.bukkit.Metrics;
@@ -82,7 +83,8 @@ public class WeaponMechanicsCosmetics {
         registerUpdateChecker();
 
         // Register commands
-        SkinCommand.register();
+        if (ReflectionUtil.getMCVersion() >= 13)
+            SkinCommand.register();
 
         // Separate from registerListeners
         Bukkit.getPluginManager().registerEvents(new WeaponMechanicsSerializerListener(), plugin);

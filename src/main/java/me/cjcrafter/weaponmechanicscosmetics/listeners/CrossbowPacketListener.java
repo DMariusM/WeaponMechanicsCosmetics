@@ -42,7 +42,13 @@ public class CrossbowPacketListener extends PacketAdapter {
 
         // Get the entity/wrapper who is holding the weapon.
         LivingEntity entity = (LivingEntity) packet.getEntityModifier(event).read(0);
-        EntityWrapper wrapper = WeaponMechanics.getEntityWrapper(entity, true);
+        EntityWrapper wrapper = entity == null ? null : WeaponMechanics.getEntityWrapper(entity, true);
+
+        // Wrapper can be null when the entity is from model engine (or any
+        // other fake entity plugin), or when the entity does not have a
+        // wrapper (Which is most non-player entities).
+        if (wrapper == null)
+            return;
 
         // From 1.9 -> 1.15, the SetEquipment packet had 3 variables: id, slot,
         // and item.

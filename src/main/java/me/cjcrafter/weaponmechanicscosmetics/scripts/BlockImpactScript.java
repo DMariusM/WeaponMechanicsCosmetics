@@ -13,9 +13,14 @@ import me.deecaad.core.utils.Debugger;
 import me.deecaad.weaponmechanics.weapon.projectile.ProjectileScript;
 import me.deecaad.weaponmechanics.weapon.projectile.weaponprojectile.RayTraceResult;
 import me.deecaad.weaponmechanics.weapon.projectile.weaponprojectile.WeaponProjectile;
+import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Adds hit-block sounds for projectiles.
@@ -24,6 +29,7 @@ public class BlockImpactScript extends ProjectileScript<WeaponProjectile> {
 
     private BlockSoundSerializer sound;
     private BlockParticleSerializer particles;
+    private Map<BlockFace, Vector> faceVectorMap;
 
     public BlockImpactScript(@NotNull Plugin owner, @NotNull WeaponProjectile projectile) {
         super(owner, projectile);
@@ -40,6 +46,12 @@ public class BlockImpactScript extends ProjectileScript<WeaponProjectile> {
             debug.error("Did you delete the 'Block_Particles' section in config.yml?",
                     "You can regenerate your config by deleting the config.yml file");
         }
+
+        // in 1.13+, BlockFace has the getDirection method. In older versions,
+        // we have to store a cache.
+        faceVectorMap = new HashMap<>();
+        for (BlockFace face : BlockFace.values())
+            faceVectorMap.put(face, new Vector(face.getModX(), face.getModY(), face.getModZ()).normalize());
     }
 
     public BlockImpactScript(@NotNull Plugin owner, @NotNull WeaponProjectile projectile, BlockSoundSerializer sound, BlockParticleSerializer particles) {
@@ -72,6 +84,6 @@ public class BlockImpactScript extends ProjectileScript<WeaponProjectile> {
 
         BlockState state = hit.getBlock().getState();
         sound.play(projectile, state);
-        particles.play(projectile, state, hit.getHitLocation(), hit.getHitFace().getDirection());
+        particles.play(projectile, state, hit.getHitLocation(), faceVectorMap.get(hit.getHitFace()));
     }
 }

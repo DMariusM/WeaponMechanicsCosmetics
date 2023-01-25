@@ -29,7 +29,7 @@ public class SkinCommand {
 
     private static Function<CommandData, Tooltip[]> SKIN_SUGGESTIONS(boolean hand) {
         return (data) -> {
-            PlayerInventory inv = ((Player) data.sender).getInventory();
+            PlayerInventory inv = ((Player) data.sender()).getInventory();
             ItemStack weapon = empty(inv.getItemInMainHand()) ? inv.getItemInOffHand() : inv.getItemInMainHand();
             String title = weapon == null ? null : WeaponMechanicsAPI.getWeaponTitle(weapon);
             SkinList skins = WeaponMechanics.getConfigurations().getObject(title + (hand ? ".Hand" : ".Skin"), SkinList.class);
@@ -40,7 +40,7 @@ public class SkinCommand {
             // When giving player options, they shouldn't reselect a skin they are
             // already using.
             Set<String> options = skins.getSkins();
-            StatsData stats = WeaponMechanics.getPlayerWrapper((Player) data.sender).getStatsData();
+            StatsData stats = WeaponMechanics.getPlayerWrapper((Player) data.sender()).getStatsData();
             if (stats != null) {
                 String skin = (String) stats.get(title, WeaponStat.SKIN, null);
                 options.remove(skin);

@@ -41,7 +41,7 @@ public class HitMarkerSpawner implements Listener {
         Component component = MechanicsCore.getPlugin().message.deserialize(format);
         format = LegacyComponentSerializer.legacySection().serialize(component);
 
-        double width = WeaponCompatibilityAPI.getWeaponCompatibility().getWidth(event.getVictim());
+        double width = CompatibilityAPI.getEntityCompatibility().getWidth(event.getVictim());
         Location pos = event.getVictim().getEyeLocation();
         pos.add(NumberUtil.random(-width, width), -2, NumberUtil.random(-width, width));
         FakeEntity entity = CompatibilityAPI.getEntityCompatibility().generateFakeEntity(pos, EntityType.ARMOR_STAND, null);

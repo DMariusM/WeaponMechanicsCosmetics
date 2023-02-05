@@ -7,11 +7,12 @@ package me.cjcrafter.weaponmechanicscosmetics.scripts;
 
 import me.cjcrafter.weaponmechanicscosmetics.WeaponMechanicsCosmetics;
 import me.deecaad.core.file.Configuration;
-import me.deecaad.core.utils.Debugger;
+import me.deecaad.core.mechanics.CastData;
+import me.deecaad.core.mechanics.Mechanics;
+import me.deecaad.core.mechanics.defaultmechanics.Mechanic;
+import me.deecaad.core.mechanics.defaultmechanics.SoundMechanic;
 import me.deecaad.core.utils.VectorUtil;
 import me.deecaad.weaponmechanics.WeaponMechanics;
-import me.deecaad.weaponmechanics.mechanics.CastData;
-import me.deecaad.weaponmechanics.mechanics.defaultmechanics.SoundMechanic;
 import me.deecaad.weaponmechanics.weapon.projectile.ProjectileScript;
 import me.deecaad.weaponmechanics.weapon.projectile.weaponprojectile.WeaponProjectile;
 import me.deecaad.weaponmechanics.wrappers.EntityWrapper;
@@ -31,14 +32,10 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Collection;
 import java.util.LinkedList;
 
-/**
- * Plays a {@link me.cjcrafter.weaponmechanicscosmetics.general.PerPlayerSoundMechanic}
- * for a player when a projectile zips close by.
- */
 public class ZipScript extends ProjectileScript<WeaponProjectile> {
 
     private double distanceSquared;
-    private SoundMechanic mechanics;
+    private Mechanics mechanics;
 
     public ZipScript(@NotNull Plugin owner, @NotNull WeaponProjectile projectile) {
         super(owner, projectile);
@@ -46,13 +43,13 @@ public class ZipScript extends ProjectileScript<WeaponProjectile> {
         Configuration config = WeaponMechanics.getConfigurations();
         double distance = config.getDouble(projectile.getWeaponTitle() + ".Cosmetics.Bullet_Zip.Maximum_Distance", -1.0);
         this.distanceSquared = distance * distance;
-        this.mechanics = config.getObject(projectile.getWeaponTitle() + ".Cosmetics.Bullet_Zip.Sounds", SoundMechanic.class);
+        this.mechanics = config.getObject(projectile.getWeaponTitle() + ".Cosmetics.Bullet_Zip.Sounds", Mechanics.class);
 
         if (distance == -1.0 || mechanics == null)
             throw new IllegalArgumentException('.' + projectile.getWeaponTitle() + ".Cosmetics.Bullet_Zip' is incomplete");
     }
 
-    public ZipScript(@NotNull Plugin owner, @NotNull WeaponProjectile projectile, double distanceSquared, SoundMechanic mechanics) {
+    public ZipScript(@NotNull Plugin owner, @NotNull WeaponProjectile projectile, double distanceSquared, Mechanics mechanics) {
         super(owner, projectile);
 
         this.distanceSquared = distanceSquared;
@@ -67,11 +64,11 @@ public class ZipScript extends ProjectileScript<WeaponProjectile> {
         this.distanceSquared = distanceSquared;
     }
 
-    public SoundMechanic getMechanics() {
+    public Mechanics getMechanics() {
         return mechanics;
     }
 
-    public void setMechanics(SoundMechanic mechanics) {
+    public void setMechanics(Mechanics mechanics) {
         this.mechanics = mechanics;
     }
 
@@ -117,8 +114,10 @@ public class ZipScript extends ProjectileScript<WeaponProjectile> {
             //}
 
             if (closeEnough) {
-                EntityWrapper wrapper = WeaponMechanics.getEntityWrapper(player);
-                mechanics.use(new CastData(wrapper, point.toLocation(world), projectile.getWeaponTitle(), projectile.getWeaponStack()));
+                CastData cast = new CastData(player, projectile.getWeaponTitle(), projectile.getWeaponStack());
+                cast.setTargetLocation(point.toLocation(world));
+                cast.setTargetEntity(player);
+                mechanics.use(cast);
             }
         }
     }

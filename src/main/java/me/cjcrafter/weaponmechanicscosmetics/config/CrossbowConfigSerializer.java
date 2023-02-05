@@ -11,7 +11,6 @@ import org.bukkit.inventory.meta.CrossbowMeta;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
-import java.util.Objects;
 
 public final class CrossbowConfigSerializer implements Serializer<CrossbowConfigSerializer> {
 
@@ -28,6 +27,7 @@ public final class CrossbowConfigSerializer implements Serializer<CrossbowConfig
     public CrossbowConfigSerializer(ItemStack item, boolean onlyScope, boolean copyModel) {
         this.item = item;
         this.onlyScope = onlyScope;
+        this.copyModel = copyModel;
     }
 
     public ItemStack getItem() {
@@ -83,7 +83,7 @@ public final class CrossbowConfigSerializer implements Serializer<CrossbowConfig
         else {
             // TODO this is hacky AF... Add late pass serializer
             String weaponTitle = data.key.split("\\.")[0];
-            int model = data.config.getInt(weaponTitle + ".Skin.Default.Custom_Model_Data", -1);
+            int model = (Integer) data.config.get(weaponTitle + ".Skin.Default.Custom_Model_Data", -1);
 
             if (model == -1) {
                 throw data.exception("Could not infer model data for '" + weaponTitle + "'",
@@ -102,34 +102,4 @@ public final class CrossbowConfigSerializer implements Serializer<CrossbowConfig
         boolean copyModel = data.of("Copy_Custom_Model_Data").getBool(false);
         return new CrossbowConfigSerializer(item, onlyScope, copyModel);
     }
-
-    public ItemStack item() {
-        return item;
-    }
-
-    public boolean onlyScope() {
-        return onlyScope;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == this) return true;
-        if (obj == null || obj.getClass() != this.getClass()) return false;
-        var that = (CrossbowConfigSerializer) obj;
-        return Objects.equals(this.item, that.item) &&
-                this.onlyScope == that.onlyScope;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(item, onlyScope);
-    }
-
-    @Override
-    public String toString() {
-        return "CrossbowConfigSerializer[" +
-                "item=" + item + ", " +
-                "onlyScope=" + onlyScope + ']';
-    }
-
 }

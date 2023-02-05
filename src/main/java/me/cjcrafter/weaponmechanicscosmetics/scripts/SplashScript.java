@@ -6,12 +6,12 @@
 package me.cjcrafter.weaponmechanicscosmetics.scripts;
 
 import me.deecaad.core.file.Configuration;
+import me.deecaad.core.mechanics.CastData;
+import me.deecaad.core.mechanics.Mechanics;
 import me.deecaad.core.utils.ReflectionUtil;
+import me.deecaad.core.utils.ray.RayTraceResult;
 import me.deecaad.weaponmechanics.WeaponMechanics;
-import me.deecaad.weaponmechanics.mechanics.CastData;
-import me.deecaad.weaponmechanics.mechanics.Mechanics;
 import me.deecaad.weaponmechanics.weapon.projectile.ProjectileScript;
-import me.deecaad.weaponmechanics.weapon.projectile.weaponprojectile.RayTraceResult;
 import me.deecaad.weaponmechanics.weapon.projectile.weaponprojectile.WeaponProjectile;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -58,7 +58,8 @@ public class SplashScript extends ProjectileScript<WeaponProjectile> {
     @Override
     public void onCollide(@NotNull RayTraceResult hit) {
         if (hit.isBlock() && isWater(hit.getBlock()) && !wasInWater) {
-            CastData cast = new CastData(projectile);
+            CastData cast = new CastData(projectile.getShooter(), projectile.getWeaponTitle(), projectile.getWeaponStack());
+            cast.setTargetLocation(hit.getHitLocation().toLocation(hit.getBlock().getWorld()));
             mechanics.use(cast);
         }
     }

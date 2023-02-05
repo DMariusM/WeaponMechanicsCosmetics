@@ -9,11 +9,11 @@ import me.cjcrafter.weaponmechanicscosmetics.WeaponMechanicsCosmetics;
 import me.cjcrafter.weaponmechanicscosmetics.config.BlockParticleSerializer;
 import me.cjcrafter.weaponmechanicscosmetics.config.BlockSoundSerializer;
 import me.deecaad.core.file.Configuration;
+import me.deecaad.core.utils.ray.RayTraceResult;
 import me.deecaad.weaponmechanics.WeaponMechanics;
 import me.deecaad.weaponmechanics.weapon.damage.BlockDamageData;
 import me.deecaad.weaponmechanics.weapon.explode.BlockDamage;
 import me.deecaad.weaponmechanics.weapon.projectile.ProjectileScript;
-import me.deecaad.weaponmechanics.weapon.projectile.weaponprojectile.RayTraceResult;
 import me.deecaad.weaponmechanics.weapon.projectile.weaponprojectile.WeaponProjectile;
 import org.bukkit.block.BlockState;
 import org.bukkit.entity.EntityType;
@@ -70,7 +70,7 @@ public class BlockDamageScript extends ProjectileScript<WeaponProjectile> {
 
     @Override
     public void onCollide(@NotNull RayTraceResult hit) {
-        if (!hit.isBlock() || damage == null)
+        if (!hit.isBlock() || damage == null || hit.getBlock().isLiquid())
             return;
 
         // Save the state of the block before it is broken

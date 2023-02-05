@@ -6,27 +6,28 @@
 package me.cjcrafter.weaponmechanicscosmetics.trails;
 
 import me.deecaad.core.file.SerializeData;
-import me.deecaad.core.file.Serializer;
 import me.deecaad.core.file.SerializerException;
 import me.deecaad.core.file.serializers.ColorSerializer;
 import me.deecaad.core.file.serializers.ItemSerializer;
 import me.deecaad.core.file.serializers.VectorSerializer;
+import me.deecaad.core.mechanics.CastData;
+import me.deecaad.core.mechanics.Mechanics;
+import me.deecaad.core.mechanics.conditions.Condition;
+import me.deecaad.core.mechanics.defaultmechanics.Mechanic;
+import me.deecaad.core.mechanics.targeters.Targeter;
 import me.deecaad.core.utils.ReflectionUtil;
-import me.deecaad.core.utils.StringUtil;
-import me.deecaad.weaponmechanics.mechanics.CastData;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.World;
-import org.bukkit.entity.LivingEntity;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.material.MaterialData;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class ParticleSerializer implements Serializer<ParticleSerializer> {
+import java.util.List;
+
+public class ParticleMechanic extends Mechanic {
 
     private Particle particle;
     private int count;
@@ -35,19 +36,26 @@ public class ParticleSerializer implements Serializer<ParticleSerializer> {
     private Object options;
     private boolean force;
 
+    private Targeter viewers;
+    private List<Condition> viewerConditions;
+
     /**
      * Default constructor for serializer
      */
-    public ParticleSerializer() {
+    public ParticleMechanic() {
     }
 
-    public ParticleSerializer(Particle particle, int count, double extra, VectorSerializer offset, Object options, boolean force) {
+    public ParticleMechanic(Particle particle, int count, double extra, VectorSerializer offset, Object options,
+                            boolean force, Targeter viewers, List<Condition> viewerConditions) {
         this.particle = particle;
         this.count = count;
         this.extra = extra;
         this.offset = offset;
         this.options = options;
         this.force = force;
+
+        this.viewers = viewers;
+        this.viewerConditions = viewerConditions;
     }
 
     public void display(Location location) {
@@ -55,8 +63,8 @@ public class ParticleSerializer implements Serializer<ParticleSerializer> {
     }
 
     public void display(CastData castData) {
-        Location location = castData.getCastLocation();
-        Vector direction = castData.getCaster() == null ? null : castData.getCaster().getLocation().getDirection();
+        Location location = castData.getTargetLocation();
+        Vector direction = castData.getTarget() == null ? null : castData.getTarget().getLocation().getDirection();
         display(location.getWorld(), location.getX(), location.getY(), location.getZ(), direction);
     }
 
@@ -81,16 +89,31 @@ public class ParticleSerializer implements Serializer<ParticleSerializer> {
             world.spawnParticle(particle, x, y, z, count, offset.getX(), offset.getY(), offset.getZ(), extra, options, force);
     }
 
+    @Override
+    protected void use0(CastData cast) {
+        display(cast);
+    }
+
+    @Override
+    public String getKeyword() {
+        return "Particle";
+    }
+
+    @Override
+    public @Nullable String getWikiLink() {
+        return "https://github.com/WeaponMechanics/MechanicsMain/wiki/ParticleMechanic";
+    }
+
     @NotNull
     @Override
-    public ParticleSerializer serialize(SerializeData data) throws SerializerException {
+    public ParticleMechanic serialize(SerializeData data) throws SerializerException {
 
         // This Serializer was developed using information from this thread:
         // https://www.spigotmc.org/threads/comprehensive-particle-spawning-guide-1-13-1-18.343001/
         // Big thanks to Esophose who compiled all of that information for
         // anybody to use.
 
-        Particle particle = data.of("Type").assertExists().getEnum(Particle.class);
+        Particle particle = data.of("Particle").assertExists().getEnum(Particle.class);
         int count = data.of("Count").assertPositive().getInt(-1);
         double extra = 0.0;
         VectorSerializer offset = VectorSerializer.from(new Vector());
@@ -106,8 +129,8 @@ public class ParticleSerializer implements Serializer<ParticleSerializer> {
         // modify particle size.
         switch (particle.name()) {
             case "DUST_COLOR_TRANSITION" -> {
-                Color color = data.of("Color").assertExists().serialize(new ColorSerializer());
-                Color fade = data.of("Fade_Color").assertExists().serialize(new ColorSerializer());
+                Color color = data.of("Color").assertExists().serialize(new ColorSerializer()).getColor();
+                Color fade = data.of("Fade_Color").assertExists().serialize(new ColorSerializer()).getColor();
                 float size = (float) data.of("Size").assertPositive().getDouble(1.0);
                 noVelocity(particle, data);
                 noBlock(particle, data);
@@ -118,7 +141,7 @@ public class ParticleSerializer implements Serializer<ParticleSerializer> {
             // Redstone dust can be colored to any rgb value. This uses the
             // DustOptions class. Can also modify particle size.
             case "REDSTONE" -> {
-                Color color = data.of("Color").assertExists().serialize(new ColorSerializer());
+                Color color = data.of("Color").assertExists().serialize(new ColorSerializer()).getColor();
                 float size = (float) data.of("Size").assertPositive().getDouble(1.0);
                 noVelocity(particle, data);
                 noFade(particle, data);
@@ -132,7 +155,7 @@ public class ParticleSerializer implements Serializer<ParticleSerializer> {
             // the user about using offset with the mob_spell particle. Note that
             // extra=1 and count=0
             case "SPELL_MOB" -> {
-                Color color = data.of("Color").assertExists().serialize(new ColorSerializer());
+                Color color = data.of("Color").assertExists().serialize(new ColorSerializer()).getColor();
                 if (data.has("Count"))
                     throw data.exception("Count", "'SPELL_MOB' cannot use the 'Count' argument!", "Consider using 'REDSTONE' particles instead.");
                 if (data.has("Noise"))
@@ -162,23 +185,9 @@ public class ParticleSerializer implements Serializer<ParticleSerializer> {
                 noColor(particle, data);
                 noFade(particle, data);
                 if (ReflectionUtil.getMCVersion() < 13) {
-                    if (data.config.isConfigurationSection(data.key + ".Material_Data")) {
-                        ItemStack item = data.of("Material_Data").assertExists().serialize(new ItemSerializer());
-                        options = item.getData();
-                    } else {
-                        Material material = data.of("Material_Data").assertExists().getEnum(Material.class);
-                        options = new MaterialData(material);
-                    }
-
+                    options = data.of("Material_Data").assertExists().serialize(new ItemSerializer()).getData();
                 } else {
-                    if (data.config.isConfigurationSection(data.key + ".Material_Data")) {
-                        ItemStack item = data.of("Material_Data").assertExists().serialize(new ItemSerializer());
-                        options = item.getType().createBlockData();
-
-                    } else {
-                        Material material = data.of("Material_Data").assertExists().getEnum(Material.class);
-                        options = material.createBlockData();
-                    }
+                    options = data.of("Material_Data").assertExists().getEnum(Material.class).createBlockData();
                 }
             }
 
@@ -229,7 +238,10 @@ public class ParticleSerializer implements Serializer<ParticleSerializer> {
         if (count == -1)
             count = 1;
 
-        return new ParticleSerializer(particle, count, extra, offset, options, force);
+        Targeter viewers = data.of("Viewers").getRegistry(Mechanics.TARGETERS, null);
+        List<Condition> viewerConditions = data.of("Viewer_Conditions").getRegistryList(Mechanics.CONDITIONS);
+
+        return new ParticleMechanic(particle, count, extra, offset, options, force, viewers, viewerConditions);
     }
 
     private void noVelocity(Particle particle, SerializeData data) throws SerializerException {

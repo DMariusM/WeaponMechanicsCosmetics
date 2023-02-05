@@ -79,8 +79,8 @@ public class CrossbowPacketListener extends PacketAdapter {
 
         CrossbowConfigSerializer crossbow = WeaponMechanics.getConfigurations().getObject(weaponTitle + ".Cosmetics.Crossbow", CrossbowConfigSerializer.class);
         boolean isScoping = wrapper != null && wrapper.getHandData(slot == EnumWrappers.ItemSlot.MAINHAND).getZoomData().isZooming();
-        if (crossbow != null && !(crossbow.onlyScope() && !isScoping)) {
-            ItemStack temp = crossbow.item();
+        if (crossbow != null && !(crossbow.isOnlyScope() && !isScoping)) {
+            ItemStack temp = crossbow.getItem();
 
             // Allow copying of model data for when the model itself changes
             // for scoping/sprinting/whatever

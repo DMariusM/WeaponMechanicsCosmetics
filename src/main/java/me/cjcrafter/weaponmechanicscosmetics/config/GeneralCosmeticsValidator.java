@@ -5,10 +5,8 @@
 
 package me.cjcrafter.weaponmechanicscosmetics.config;
 
-import me.cjcrafter.weaponmechanicscosmetics.general.PerPlayerSoundMechanic;
 import me.deecaad.core.file.*;
-import me.deecaad.weaponmechanics.mechanics.Mechanics;
-import me.deecaad.weaponmechanics.mechanics.defaultmechanics.SoundMechanic;
+import me.deecaad.core.mechanics.Mechanics;
 import me.deecaad.weaponmechanics.weapon.explode.BlockDamage;
 
 public class GeneralCosmeticsValidator implements IValidator {
@@ -43,7 +41,7 @@ public class GeneralCosmeticsValidator implements IValidator {
         // Value should be less than 8 for good results, but we'll *allow*
         // larger values for experimentation.
         configuration.set(key + ".Bullet_Zip.Maximum_Distance", data.of("Bullet_Zip.Maximum_Distance").assertRange(0.0, 16.0).getDouble(0.0));
-        SoundMechanic zipMechanics = data.of("Bullet_Zip.Sounds").serialize(new PerPlayerSoundMechanic());
+        Mechanics zipMechanics = data.of("Bullet_Zip.Sounds").serialize(new Mechanics());
         configuration.set(key + ".Bullet_Zip.Sounds", zipMechanics);
 
         // Block damage stuff

@@ -16,16 +16,16 @@ import me.cjcrafter.weaponmechanicscosmetics.config.BlockSoundSerializer;
 import me.cjcrafter.weaponmechanicscosmetics.general.FakeItemMechanic;
 import me.cjcrafter.weaponmechanicscosmetics.listeners.*;
 import me.cjcrafter.weaponmechanicscosmetics.timer.TimerSpawner;
-import me.cjcrafter.weaponmechanicscosmetics.general.ParticleMechanic;
+import me.cjcrafter.weaponmechanicscosmetics.trails.ParticleMechanic;
 import me.deecaad.core.MechanicsCore;
 import me.deecaad.core.file.*;
 import me.deecaad.core.lib.adventure.text.Component;
+import me.deecaad.core.mechanics.Mechanics;
 import me.deecaad.core.utils.Debugger;
 import me.deecaad.core.utils.FileUtil;
 import me.deecaad.core.utils.LogLevel;
 import me.deecaad.core.utils.ReflectionUtil;
 import me.deecaad.weaponmechanics.WeaponMechanics;
-import me.deecaad.weaponmechanics.mechanics.Mechanics;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
@@ -74,9 +74,6 @@ public class WeaponMechanicsCosmetics {
     }
 
     public void onEnable() {
-
-        Mechanics.registerMechanic(plugin, new ParticleMechanic());
-        Mechanics.registerMechanic(plugin, new FakeItemMechanic());
 
         registerDebugger();
         registerBStats();

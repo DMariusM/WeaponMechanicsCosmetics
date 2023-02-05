@@ -7,23 +7,19 @@ import me.deecaad.core.file.SerializeData;
 import me.deecaad.core.file.SerializerException;
 import me.deecaad.core.file.serializers.ItemSerializer;
 import me.deecaad.core.file.serializers.VectorSerializer;
-import me.deecaad.weaponmechanics.mechanics.CastData;
-import me.deecaad.weaponmechanics.mechanics.IMechanic;
+import me.deecaad.core.mechanics.CastData;
+import me.deecaad.core.mechanics.defaultmechanics.Mechanic;
 import org.bukkit.Location;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.List;
+public class FakeItemMechanic extends Mechanic {
 
-public class FakeItemMechanic implements IMechanic<FakeItemMechanic> {
-
-    private record ItemMechanicConfig(ItemStack item, VectorSerializer offset, VectorSerializer velocity, int time) {
-    }
-
-    private List<ItemMechanicConfig> items;
+    private ItemStack item;
+    private VectorSerializer offset;
+    private VectorSerializer velocity;
+    private int time;
 
     /**
      * Default constructor for serializers.
@@ -31,51 +27,63 @@ public class FakeItemMechanic implements IMechanic<FakeItemMechanic> {
     public FakeItemMechanic() {
     }
 
-    public FakeItemMechanic(List<ItemMechanicConfig> items) {
-        this.items = items;
+    public FakeItemMechanic(ItemStack item, VectorSerializer offset, VectorSerializer velocity, int time) {
+        this.item = item;
+        this.offset = offset;
+        this.velocity = velocity;
+        this.time = time;
+    }
+
+    public ItemStack getItem() {
+        return item;
+    }
+
+    public VectorSerializer getOffset() {
+        return offset;
+    }
+
+    public VectorSerializer getVelocity() {
+        return velocity;
+    }
+
+    public int getTime() {
+        return time;
     }
 
     @Override
-    public void use(CastData castData) {
-        for (ItemMechanicConfig item : items) {
-            Location location = castData.getCaster() == null ? castData.getCastLocation().clone() : castData.getCaster().getEyeLocation();
-            location.add(item.offset.getVector(castData.getCaster()));
+    public void use0(CastData cast) {
+        Location location = cast.getTarget() == null ? cast.getTargetLocation() : cast.getTarget().getEyeLocation();
+        location.add(offset.getVector(cast.getTarget()));
 
-            FakeEntity entity = CompatibilityAPI.getEntityCompatibility().generateFakeEntity(location, item.item);
-            entity.setMotion(item.velocity.getVector(castData.getCaster()).multiply(1.0 / 20.0));
-            entity.show();
+        FakeEntity entity = CompatibilityAPI.getEntityCompatibility().generateFakeEntity(location, item);
+        entity.setMotion(velocity.getVector(cast.getTarget()).multiply(1.0 / 20.0));
+        entity.show();
 
-            new BukkitRunnable() {
-                @Override
-                public void run() {
-                    entity.remove();
-                }
-            }.runTaskLater(WeaponMechanicsCosmetics.getInstance().getPlugin(), item.time);
-        }
+        int task = new BukkitRunnable() {
+            @Override
+            public void run() {
+                entity.remove();
+            }
+        }.runTaskLater(WeaponMechanicsCosmetics.getInstance().getPlugin(), time).getTaskId();
+
+        if (cast.getTaskIdConsumer() != null)
+            cast.getTaskIdConsumer().accept(task);
     }
 
     @Override
     public String getKeyword() {
-        return "Items";
+        return "Fake_Item";
     }
 
     @NotNull
     @Override
     public FakeItemMechanic serialize(SerializeData data) throws SerializerException {
-        ConfigurationSection config = data.of().assertType(ConfigurationSection.class).assertExists().get();
 
-        List<ItemMechanicConfig> items = new ArrayList<>();
-        for (String key : config.getKeys(false)) {
-            SerializeData move = data.move(key);
+        ItemStack item = data.of("Item").assertExists().serialize(new ItemSerializer());
+        int time = data.of("Time").assertExists().getInt();
+        VectorSerializer offset = data.of("Offset").assertExists().serialize(VectorSerializer.class);
+        VectorSerializer velocity = data.of("Velocity").assertExists().serialize(VectorSerializer.class);
 
-            ItemStack item = move.of().assertExists().serialize(new ItemSerializer());
-            int time = move.of("Time").assertExists().getInt();
-            VectorSerializer offset = move.of("Offset").assertExists().serialize(VectorSerializer.class);
-            VectorSerializer velocity = move.of("Velocity").assertExists().serialize(VectorSerializer.class);
-
-            items.add(new ItemMechanicConfig(item, offset, velocity, time));
-        }
-
-        return new FakeItemMechanic(items);
+        return new FakeItemMechanic(item, offset, velocity, time);
     }
 }

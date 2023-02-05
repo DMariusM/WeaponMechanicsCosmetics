@@ -33,7 +33,6 @@ public class CosmeticsScriptManager extends ProjectileScriptManager {
         Configuration config = WeaponMechanics.getConfigurations();
 
         if (aProjectile instanceof WeaponProjectile projectile) {
-
             projectile.addProjectileScript(new BlockImpactScript(getPlugin(), projectile));
 
             if (config.containsKey(projectile.getWeaponTitle() + ".Trail"))

@@ -11,8 +11,6 @@ import me.deecaad.weaponmechanics.weapon.projectile.AProjectile;
 import me.deecaad.weaponmechanics.weapon.projectile.ProjectileScript;
 import me.cjcrafter.weaponmechanicscosmetics.trails.shape.Vec2;
 import me.deecaad.weaponmechanics.weapon.projectile.weaponprojectile.WeaponProjectile;
-import org.bukkit.Color;
-import org.bukkit.Particle;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
@@ -84,7 +82,7 @@ public class TrailScript extends ProjectileScript<AProjectile> {
                 continue;
             }
 
-            ParticleSerializer particle = trail.getParticle(updates);
+            ParticleMechanic particle = trail.getParticle(updates);
             List<Vec2> points = trail.getShape().getPoint(updates);
 
             for (Vec2 point : points) {

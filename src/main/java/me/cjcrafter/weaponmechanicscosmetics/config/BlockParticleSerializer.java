@@ -1,8 +1,11 @@
 package me.cjcrafter.weaponmechanicscosmetics.config;
 
+import me.cjcrafter.weaponmechanicscosmetics.trails.ParticleMechanic;
 import me.deecaad.core.file.SerializeData;
 import me.deecaad.core.file.Serializer;
 import me.deecaad.core.file.SerializerException;
+import me.deecaad.core.mechanics.Mechanics;
+import me.deecaad.core.mechanics.defaultmechanics.Mechanic;
 import me.deecaad.core.utils.EnumUtil;
 import me.deecaad.core.utils.ReflectionUtil;
 import me.deecaad.core.utils.VectorUtil;
@@ -22,18 +25,9 @@ import java.util.*;
 
 public class BlockParticleSerializer implements Serializer<BlockParticleSerializer> {
 
-    /**
-     * Stores the data needed to spawn particles from a block.
-     *
-     * @param amount
-     * @param spread
-     */
-    private record ParticleConfig(int amount, double spread) {
-    }
-
     private int amount;
     private double spread;
-    private Map<Material, ParticleConfig> overrides;
+    private Map<Material, ParticleMechanic> overrides;
     private Map<Material, Object> materialBlacklist;
     private Set<String> weaponBlacklist;
 
@@ -43,7 +37,7 @@ public class BlockParticleSerializer implements Serializer<BlockParticleSerializ
     public BlockParticleSerializer() {
     }
 
-    public BlockParticleSerializer(int amount, double spread, Map<Material, ParticleConfig> overrides,
+    public BlockParticleSerializer(int amount, double spread, Map<Material, ParticleMechanic> overrides,
                                    Map<Material, Object> materialBlacklist, Set<String> weaponBlacklist) {
         this.amount = amount;
         this.spread = spread;
@@ -63,10 +57,10 @@ public class BlockParticleSerializer implements Serializer<BlockParticleSerializ
         double spread = this.spread;
 
         // Handle overrides
-        ParticleConfig override = overrides.get(block.getType());
-        if (override != null) {
-            amount = override.amount;
-            spread = override.spread;
+        ParticleMechanic override = overrides.get(block.getType());
+        if (override != null && projectile.getShooter() != null) {
+            override.display(block.getLocation().add(0.5, 0.5, 0.5));
+            return;
         }
 
         Object data = ReflectionUtil.getMCVersion() < 13 ? new MaterialData(block.getType(), block.getRawData()) : block.getBlockData();
@@ -121,28 +115,34 @@ public class BlockParticleSerializer implements Serializer<BlockParticleSerializ
         // Construct a list of overrides, so you can increase/decrease particles
         // per block. This could also be used to customize every block, so let's
         // take performance into consideration.
-        Map<Material, ParticleConfig> overrides = new EnumMap<>(Material.class);
-        List<String[]> temp = data.ofList("Overrides")
-                .addArgument(Material.class, true)
-                .addArgument(int.class, true)
-                .addArgument(double.class, false)
-                .assertExists().assertList().get();
+        Map<Material, ParticleMechanic> overrides = new EnumMap<>(Material.class);
+        List<?> list = data.config.getList(data.key + ".Overrides");
+        for (int i = 0; i < list.size(); i++) {
+            String str = list.get(i).toString();
+            int split = str.indexOf(" ");
 
-        for (String[] split : temp) {
-            List<Material> materials = EnumUtil.parseEnums(Material.class, split[0]);
-            int customAmount = Integer.parseInt(split[1]);
-            double customSpread = split.length > 2 ? Double.parseDouble(split[2]) : spread;
+            if (split == -1)
+                throw data.listException("Overrides", i, "Override format should be: <Material> <SoundMechanic>", SerializerException.forValue(str));
 
-            ParticleConfig config = new ParticleConfig(customAmount, customSpread);
+            // Extract and parse the data from the string
+            String materialStr = str.substring(0, split);
+            List<Material> materials = EnumUtil.parseEnums(Material.class, materialStr);
+            String mechanicStr = str.substring(split + 1);
+            Mechanic mechanic = new Mechanics().serializeOne(data, mechanicStr);
+
+            if (!(mechanic instanceof ParticleMechanic particleMechanic))
+                throw data.listException("Overrides", i, "Override mechanic should only be ParticleMechanic, not '" + mechanic.getClass().getSimpleName() + "'");
+
+            // Fill the overrides map
             for (Material mat : materials)
-                overrides.put(mat, config);
+                overrides.put(mat, particleMechanic);
         }
 
         // Construct a list of materials that shouldn't have any effects.
         // We use a map since EnumMap is very fast, and there is no EnumSet
         // equivalent.
         Map<Material, Object> materialBlacklist = new EnumMap<>(Material.class);
-        temp = data.ofList("Material_Blacklist")
+        List<String[]> temp = data.ofList("Material_Blacklist")
                 .addArgument(Material.class, true)
                 .assertExists().assertList().get();
 

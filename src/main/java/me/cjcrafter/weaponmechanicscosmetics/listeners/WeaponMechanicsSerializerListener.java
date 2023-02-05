@@ -9,9 +9,12 @@ import me.cjcrafter.weaponmechanicscosmetics.config.CrossbowConfigSerializer;
 import me.cjcrafter.weaponmechanicscosmetics.config.GeneralCosmeticsValidator;
 import me.cjcrafter.weaponmechanicscosmetics.WeaponMechanicsCosmetics;
 import me.cjcrafter.weaponmechanicscosmetics.config.HandValidator;
+import me.cjcrafter.weaponmechanicscosmetics.general.FakeItemMechanic;
 import me.cjcrafter.weaponmechanicscosmetics.timer.TimerValidator;
+import me.cjcrafter.weaponmechanicscosmetics.trails.ParticleMechanic;
 import me.cjcrafter.weaponmechanicscosmetics.trails.Trail;
 import me.deecaad.core.events.QueueSerializerEvent;
+import me.deecaad.core.mechanics.Mechanics;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 
@@ -21,6 +24,9 @@ public class WeaponMechanicsSerializerListener implements Listener {
     public void queueSerializers(QueueSerializerEvent event) {
         if (!event.getSourceName().equals("WeaponMechanics"))
             return;
+
+        Mechanics.MECHANICS.add(new ParticleMechanic());
+        Mechanics.MECHANICS.add(new FakeItemMechanic());
 
         event.addValidators(new TimerValidator());
         event.addValidators(new GeneralCosmeticsValidator());

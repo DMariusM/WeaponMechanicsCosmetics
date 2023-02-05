@@ -8,6 +8,9 @@ package me.cjcrafter.weaponmechanicscosmetics.trails;
 import me.deecaad.core.file.SerializeData;
 import me.deecaad.core.file.Serializer;
 import me.deecaad.core.file.SerializerException;
+import me.deecaad.core.mechanics.Mechanics;
+import me.deecaad.core.mechanics.defaultmechanics.Mechanic;
+import me.deecaad.core.mechanics.targeters.SourceTargeter;
 import me.deecaad.core.utils.NumberUtil;
 import me.cjcrafter.weaponmechanicscosmetics.trails.shape.Shape;
 import me.cjcrafter.weaponmechanicscosmetics.trails.shape.ShapeFactory;
@@ -21,7 +24,7 @@ public class Trail implements Serializer<Trail> {
     private double delta;
     private int skipUpdates;
     private ListChooser chooser;
-    private List<ParticleSerializer> particles;
+    private List<ParticleMechanic> particles;
     private Shape shape;
 
     /**
@@ -30,7 +33,7 @@ public class Trail implements Serializer<Trail> {
     public Trail() {
     }
 
-    public Trail(double delta, int skipUpdates, ListChooser chooser, List<ParticleSerializer> particles, Shape shape) {
+    public Trail(double delta, int skipUpdates, ListChooser chooser, List<ParticleMechanic> particles, Shape shape) {
         this.delta = delta;
         this.skipUpdates = skipUpdates;
         this.chooser = chooser;
@@ -62,11 +65,11 @@ public class Trail implements Serializer<Trail> {
         this.chooser = chooser;
     }
 
-    public List<ParticleSerializer> getParticles() {
+    public List<ParticleMechanic> getParticles() {
         return particles;
     }
 
-    public void setParticles(List<ParticleSerializer> particles) {
+    public void setParticles(List<ParticleMechanic> particles) {
         this.particles = particles;
     }
 
@@ -78,7 +81,7 @@ public class Trail implements Serializer<Trail> {
         this.shape = shape;
     }
 
-    public ParticleSerializer getParticle(int index) {
+    public ParticleMechanic getParticle(int index) {
         return switch (chooser) {
             case LOOP -> particles.get(index % particles.size());
             case RANDOM -> particles.get(NumberUtil.random(particles.size()));
@@ -99,16 +102,17 @@ public class Trail implements Serializer<Trail> {
         int skipUpdates = (int) Math.round(data.of("Hide_Trail_For").assertPositive().getDouble(0.5) / delta);
         ListChooser selector = data.of("Particle_Chooser").getEnum(ListChooser.class, ListChooser.LOOP);
 
-        // We need to serialize a list of ParticleSerializers. The user should
-        // always define at least 1 particle.
-        ConfigurationSection section = data.of("Particles").assertType(ConfigurationSection.class).assertExists().get();
+        List<Mechanic> temp = data.of("Particles").serialize(Mechanics.class).getMechanics();
+        List<ParticleMechanic> particles = new ArrayList<>(temp.size());
+        for (int i = 0; i < temp.size(); i++) {
+            if (!(temp.get(i) instanceof ParticleMechanic particle))
+                throw data.listException("Particles", i, "Expected a Particle, but got a '" + temp.get(i).getClass().getSimpleName() + "'");
+            if (!(particle.getTargeter() instanceof SourceTargeter))
+                throw data.listException("Particles", i, "Targeters are not supported here... You can only use particles");
+            if (!particle.getConditions().isEmpty())
+                throw data.listException("Particles", i, "Conditions are not supported here... You can only use particles");
 
-        // Particles are generally stored like 'Particle_1', 'Particle_2', but
-        // in reality, we don't care what they name it, as long as they use the
-        // particle serializer correctly.
-        List<ParticleSerializer> particles = new ArrayList<>();
-        for (String key : section.getKeys(false)) {
-            particles.add(data.of("Particles." + key).assertExists().serialize(ParticleSerializer.class));
+            particles.add(particle);
         }
 
         String shapeInput = data.of("Shape").get("LINE").trim().toUpperCase(Locale.ROOT);

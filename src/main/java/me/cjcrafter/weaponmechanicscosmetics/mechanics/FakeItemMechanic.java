@@ -1,4 +1,4 @@
-package me.cjcrafter.weaponmechanicscosmetics.general;
+package me.cjcrafter.weaponmechanicscosmetics.mechanics;
 
 import me.cjcrafter.weaponmechanicscosmetics.WeaponMechanicsCosmetics;
 import me.deecaad.core.compatibility.CompatibilityAPI;
@@ -12,12 +12,12 @@ import me.deecaad.core.mechanics.defaultmechanics.Mechanic;
 import org.bukkit.Location;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
 public class FakeItemMechanic extends Mechanic {
 
     private ItemStack item;
-    private VectorSerializer offset;
     private VectorSerializer velocity;
     private int time;
 
@@ -27,19 +27,14 @@ public class FakeItemMechanic extends Mechanic {
     public FakeItemMechanic() {
     }
 
-    public FakeItemMechanic(ItemStack item, VectorSerializer offset, VectorSerializer velocity, int time) {
+    public FakeItemMechanic(ItemStack item, VectorSerializer velocity, int time) {
         this.item = item;
-        this.offset = offset;
         this.velocity = velocity;
         this.time = time;
     }
 
     public ItemStack getItem() {
         return item;
-    }
-
-    public VectorSerializer getOffset() {
-        return offset;
     }
 
     public VectorSerializer getVelocity() {
@@ -52,8 +47,7 @@ public class FakeItemMechanic extends Mechanic {
 
     @Override
     public void use0(CastData cast) {
-        Location location = cast.getTarget() == null ? cast.getTargetLocation() : cast.getTarget().getEyeLocation();
-        location.add(offset.getVector(cast.getTarget()));
+        Location location = cast.hasTargetLocation() ? cast.getTargetLocation() : cast.getTarget().getEyeLocation();
 
         FakeEntity entity = CompatibilityAPI.getEntityCompatibility().generateFakeEntity(location, item);
         entity.setMotion(velocity.getVector(cast.getTarget()).multiply(1.0 / 20.0));
@@ -77,13 +71,15 @@ public class FakeItemMechanic extends Mechanic {
 
     @NotNull
     @Override
-    public FakeItemMechanic serialize(SerializeData data) throws SerializerException {
+    public Mechanic serialize(SerializeData data) throws SerializerException {
 
-        ItemStack item = data.of("Item").assertExists().serialize(new ItemSerializer());
-        int time = data.of("Time").assertExists().getInt();
-        VectorSerializer offset = data.of("Offset").assertExists().serialize(VectorSerializer.class);
-        VectorSerializer velocity = data.of("Velocity").assertExists().serialize(VectorSerializer.class);
+        ItemStack item = new ItemSerializer().serialize(data);
+        int time = data.of("Time").getInt(100);
+        VectorSerializer velocity = data.of("Velocity").serialize(VectorSerializer.class);
 
-        return new FakeItemMechanic(item, offset, velocity, time);
+        if (velocity == null)
+            velocity = VectorSerializer.from(new Vector());
+
+        return applyParentArgs(data, new FakeItemMechanic(item, velocity, time));
     }
 }

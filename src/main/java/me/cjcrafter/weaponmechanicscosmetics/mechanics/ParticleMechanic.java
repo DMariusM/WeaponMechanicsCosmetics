@@ -3,7 +3,7 @@
  * Unauthorized copying of this file, via any medium is strictly prohibited proprietary and confidential.
  */
 
-package me.cjcrafter.weaponmechanicscosmetics.trails;
+package me.cjcrafter.weaponmechanicscosmetics.mechanics;
 
 import me.deecaad.core.file.SerializeData;
 import me.deecaad.core.file.SerializerException;
@@ -106,7 +106,7 @@ public class ParticleMechanic extends Mechanic {
 
     @NotNull
     @Override
-    public ParticleMechanic serialize(SerializeData data) throws SerializerException {
+    public Mechanic serialize(SerializeData data) throws SerializerException {
 
         // This Serializer was developed using information from this thread:
         // https://www.spigotmc.org/threads/comprehensive-particle-spawning-guide-1-13-1-18.343001/
@@ -241,7 +241,7 @@ public class ParticleMechanic extends Mechanic {
         Targeter viewers = data.of("Viewers").getRegistry(Mechanics.TARGETERS, null);
         List<Condition> viewerConditions = data.of("Viewer_Conditions").getRegistryList(Mechanics.CONDITIONS);
 
-        return new ParticleMechanic(particle, count, extra, offset, options, force, viewers, viewerConditions);
+        return applyParentArgs(data, new ParticleMechanic(particle, count, extra, offset, options, force, viewers, viewerConditions));
     }
 
     private void noVelocity(Particle particle, SerializeData data) throws SerializerException {

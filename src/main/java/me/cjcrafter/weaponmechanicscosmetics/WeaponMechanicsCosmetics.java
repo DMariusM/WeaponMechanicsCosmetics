@@ -13,14 +13,11 @@ import me.cjcrafter.weaponmechanicscosmetics.config.BlockBreakParticleSerializer
 import me.cjcrafter.weaponmechanicscosmetics.config.BlockBreakSoundSerializer;
 import me.cjcrafter.weaponmechanicscosmetics.config.BlockParticleSerializer;
 import me.cjcrafter.weaponmechanicscosmetics.config.BlockSoundSerializer;
-import me.cjcrafter.weaponmechanicscosmetics.general.FakeItemMechanic;
 import me.cjcrafter.weaponmechanicscosmetics.listeners.*;
 import me.cjcrafter.weaponmechanicscosmetics.timer.TimerSpawner;
-import me.cjcrafter.weaponmechanicscosmetics.trails.ParticleMechanic;
 import me.deecaad.core.MechanicsCore;
 import me.deecaad.core.file.*;
 import me.deecaad.core.lib.adventure.text.Component;
-import me.deecaad.core.mechanics.Mechanics;
 import me.deecaad.core.utils.Debugger;
 import me.deecaad.core.utils.FileUtil;
 import me.deecaad.core.utils.LogLevel;

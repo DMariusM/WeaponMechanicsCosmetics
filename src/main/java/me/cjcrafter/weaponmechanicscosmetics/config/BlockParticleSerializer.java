@@ -1,6 +1,6 @@
 package me.cjcrafter.weaponmechanicscosmetics.config;
 
-import me.cjcrafter.weaponmechanicscosmetics.trails.ParticleMechanic;
+import me.cjcrafter.weaponmechanicscosmetics.mechanics.ParticleMechanic;
 import me.deecaad.core.file.SerializeData;
 import me.deecaad.core.file.Serializer;
 import me.deecaad.core.file.SerializerException;

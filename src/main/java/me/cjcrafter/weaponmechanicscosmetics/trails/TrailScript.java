@@ -5,6 +5,7 @@
 
 package me.cjcrafter.weaponmechanicscosmetics.trails;
 
+import me.cjcrafter.weaponmechanicscosmetics.mechanics.ParticleMechanic;
 import me.deecaad.core.utils.VectorUtil;
 import me.deecaad.weaponmechanics.WeaponMechanics;
 import me.deecaad.weaponmechanics.weapon.projectile.AProjectile;

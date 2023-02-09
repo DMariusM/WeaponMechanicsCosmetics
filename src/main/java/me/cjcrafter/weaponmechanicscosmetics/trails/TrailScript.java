@@ -51,6 +51,11 @@ public class TrailScript extends ProjectileScript<AProjectile> {
     public void onTickEnd() {
         Vector direction = projectile.getLocation().subtract(projectile.getLastLocation());
         double distance = direction.length();
+
+        // Doesn't happen very often
+        if (distance < 0.0000000001)
+            return;
+
         direction.multiply(1.0 / distance);
         Vector normal = direction.clone();
 
@@ -83,7 +88,7 @@ public class TrailScript extends ProjectileScript<AProjectile> {
                 continue;
             }
 
-            ParticleMechanic particle = trail.getParticle(updates);
+            ParticleMechanic particle = trail.getParticle(updates - trail.getSkipUpdates());
             List<Vec2> points = trail.getShape().getPoint(updates);
 
             for (Vec2 point : points) {

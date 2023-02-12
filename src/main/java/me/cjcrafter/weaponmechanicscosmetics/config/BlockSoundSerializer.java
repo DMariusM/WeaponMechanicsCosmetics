@@ -52,7 +52,9 @@ public class BlockSoundSerializer implements Serializer<BlockSoundSerializer> {
         // Handle sound overrides
         Mechanic override = overrides.get(block.getType());
         if (override != null && projectile.getShooter() != null) {
-            override.use(new CastData(projectile.getShooter(), projectile.getWeaponTitle(), projectile.getWeaponStack()));
+            CastData cast = new CastData(projectile.getShooter(), projectile.getWeaponTitle(), projectile.getWeaponStack());
+            cast.setTargetLocation(loc);
+            override.use(cast);
             return;
         }
 

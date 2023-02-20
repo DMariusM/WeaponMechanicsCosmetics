@@ -43,7 +43,7 @@ public class WeaponSkinListener implements Listener {
 
     @EventHandler (priority = EventPriority.MONITOR)
     public void handSkin(WeaponSkinEvent event) {
-        if (event.getShooter().getType() != EntityType.PLAYER)
+        if (event.isForceDefault() || event.getShooter().getType() != EntityType.PLAYER)
             return;
 
         // When a player is in VR, we should not try to assign an off-hand to
@@ -82,17 +82,5 @@ public class WeaponSkinListener implements Listener {
     public void onEquip(PlayerItemHeldEvent event) {
         // Always update off-hand in case of weapon.Hand.Item
         CompatibilityAPI.getEntityCompatibility().setSlot(event.getPlayer(), EquipmentSlot.OFF_HAND, null);
-
-        ItemStack item = event.getPlayer().getInventory().getItem(event.getNewSlot());
-        if (item == null)
-            return;
-
-        String weaponTitle = WeaponMechanicsAPI.getWeaponTitle(item);
-        if (weaponTitle == null)
-            return;
-
-        // Reapply the skin to the gun.
-        EntityWrapper wrapper = WeaponMechanics.getPlayerWrapper(event.getPlayer());
-        WeaponMechanics.getWeaponHandler().getSkinHandler().tryUse(wrapper, weaponTitle, item, EquipmentSlot.HAND);
     }
 }

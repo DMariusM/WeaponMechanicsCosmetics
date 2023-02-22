@@ -71,11 +71,7 @@ public abstract class FunctionShape implements Shape {
             for (int i = 0; i < loops; i++) {
 
                 double finalTheta = theta + delta * i;
-                double radius = radiusFunction(finalTheta);
-                double x = radius * Math.cos(finalTheta);
-                double y = radius * Math.sin(finalTheta);
-
-                temp.add(new Vec2(x, y));
+                temp.add(offsetFunction(finalTheta));
             }
 
             return temp;
@@ -114,6 +110,11 @@ public abstract class FunctionShape implements Shape {
      */
     public void setLoops(int loops) {
         this.loops = loops;
+    }
+
+    public Vec2 offsetFunction(double theta) {
+        double radius = radiusFunction(theta);
+        return new Vec2(Math.cos(theta) * radius, Math.sin(theta) * radius);
     }
 
     public abstract double radiusFunction(double theta);

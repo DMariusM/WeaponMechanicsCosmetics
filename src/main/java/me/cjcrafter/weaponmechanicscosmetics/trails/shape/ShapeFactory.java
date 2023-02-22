@@ -32,6 +32,12 @@ public final class ShapeFactory extends Factory<Shape> {
                 new Class[]{ int.class, int.class, String.class, boolean.class }
         ));
 
+        INSTANCE.set("PARAMETRIC", INSTANCE.new Arguments(
+                ParametricFunctionShape.class,
+                new String[]{ "Points", "Loops", "Function", "Cache" },
+                new Class[]{ int.class, int.class, String.class, boolean.class }
+        ));
+
     }
 
     private ShapeFactory() {

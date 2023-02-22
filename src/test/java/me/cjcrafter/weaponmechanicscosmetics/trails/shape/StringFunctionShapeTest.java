@@ -6,6 +6,8 @@
 package me.cjcrafter.weaponmechanicscosmetics.trails.shape;
 
 import org.junit.jupiter.api.Test;
+import org.mariuszgromada.math.mxparser.Argument;
+import org.mariuszgromada.math.mxparser.Expression;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -35,6 +37,18 @@ public class StringFunctionShapeTest {
 
             assertEquals(expectedCos[i], cos.radiusFunction(theta), 1E-8, "For index " + i + "(" + theta + ")");
             assertEquals(expectedSin[i], sin.radiusFunction(theta), 1E-8, "For index " + i + "(" + theta + ")");
+        }
+    }
+
+    @Test
+    void exponential() {
+
+        Argument theta = new Argument("theta", 0.0);
+        Expression expression = new Expression("exp(-theta)", theta);
+
+        for (int i = 0; i < 100; i++) {
+            theta.setArgumentValue(theta.getArgumentValue() + 0.025);
+            System.out.println(expression.calculate());
         }
     }
 }

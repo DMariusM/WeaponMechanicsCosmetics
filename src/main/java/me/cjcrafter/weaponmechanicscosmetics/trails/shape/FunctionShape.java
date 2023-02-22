@@ -37,10 +37,7 @@ public abstract class FunctionShape implements Shape {
             for (int j = 0; j < loops; j++) {
 
                 double theta = delta * i + j * spiralDelta;
-                double x = radiusFunction(theta) * Math.cos(theta);
-                double y = radiusFunction(theta) * Math.sin(theta);
-
-                temp.add(new Vec2(x, y));
+                temp.add(offsetFunction(theta));
             }
 
             // Don't let anyone modify

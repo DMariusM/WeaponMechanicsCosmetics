@@ -37,7 +37,7 @@ public class ParametricFunctionShape extends FunctionShape {
         // This method is NEVER called from WMC. Only have the implementation
         // for consistency
         this.theta.setArgumentValue(theta);
-        double x = expressionX.calculate();
+        double x = -expressionX.calculate();
         double y = expressionY.calculate();
         return Math.sqrt(x * x + y * y);
     }

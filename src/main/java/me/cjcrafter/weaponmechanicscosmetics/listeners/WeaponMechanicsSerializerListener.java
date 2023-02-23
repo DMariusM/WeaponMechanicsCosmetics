@@ -25,9 +25,6 @@ public class WeaponMechanicsSerializerListener implements Listener {
         if (!event.getSourceName().equals("WeaponMechanics"))
             return;
 
-        Mechanics.MECHANICS.add(new ParticleMechanic());
-        Mechanics.MECHANICS.add(new FakeItemMechanic());
-
         event.addValidators(new TimerValidator());
         event.addValidators(new GeneralCosmeticsValidator());
         event.addValidators(new HandValidator());

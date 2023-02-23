@@ -14,10 +14,13 @@ import me.cjcrafter.weaponmechanicscosmetics.config.BlockBreakSoundSerializer;
 import me.cjcrafter.weaponmechanicscosmetics.config.BlockParticleSerializer;
 import me.cjcrafter.weaponmechanicscosmetics.config.BlockSoundSerializer;
 import me.cjcrafter.weaponmechanicscosmetics.listeners.*;
+import me.cjcrafter.weaponmechanicscosmetics.mechanics.FakeItemMechanic;
+import me.cjcrafter.weaponmechanicscosmetics.mechanics.ParticleMechanic;
 import me.cjcrafter.weaponmechanicscosmetics.timer.TimerSpawner;
 import me.deecaad.core.MechanicsCore;
 import me.deecaad.core.file.*;
 import me.deecaad.core.lib.adventure.text.Component;
+import me.deecaad.core.mechanics.Mechanics;
 import me.deecaad.core.utils.Debugger;
 import me.deecaad.core.utils.FileUtil;
 import me.deecaad.core.utils.LogLevel;
@@ -68,6 +71,9 @@ public class WeaponMechanicsCosmetics {
             debug.info("Copying files from jar (This process may take up to 30 seconds during the first load!)");
             FileUtil.copyResourcesTo(getClassLoader().getResource("WeaponMechanicsCosmetics"), getDataFolder().toPath());
         }
+
+        Mechanics.MECHANICS.add(new ParticleMechanic());
+        Mechanics.MECHANICS.add(new FakeItemMechanic());
     }
 
     public void onEnable() {

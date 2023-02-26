@@ -51,7 +51,7 @@ Block_Sounds:
   # more impactful sounds.
   #
   # The format is:
-  # <block> <sound> <volume> <pitch> <randomness>
+  # <block> <Sound/CustomSound>
   Overrides:
     - "diamond_block CustomSound{sound=fx.ricochet, noise=0.01}"
     - "iron_block CustomSound{sound=fx.ricochet, noise=0.01}"
@@ -79,9 +79,9 @@ Block_Particles:
   Spread: 0.5
 
   # The format is:
-  # <block> <amount> <spread>
+  # <block> <Particle>
   Overrides:
-    - "$glass Particle{particle=BLOCK_CRACK, amount=8, spread=0.5 0.5 0.5, materialData=GLASS}"
+    - "$glass Particle{particle=BLOCK_CRACK, amount=8, noise=0.5 0.5 0.5, materialData=GLASS}"
   Material_Blacklist:
     - bedrock
   Weapon_Blacklist: []
@@ -107,9 +107,9 @@ Break_Particles:
   Spread: 0.5
 
   # The format is:
-  # <block> <amount> <spread>
+  # <block> <Particle>
   Overrides:
-    - "$glass Particle{particle=BLOCK_CRACK, amount=12, spread=0.5 0.5 0.5, materialData=GLASS}"
+    - "$glass Particle{particle=BLOCK_CRACK, amount=12, noise=0.5 0.5 0.5, materialData=GLASS}"
   Material_Blacklist:
     - bedrock
   Weapon_Blacklist: []

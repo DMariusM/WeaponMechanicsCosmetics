@@ -59,7 +59,9 @@ public class BlockParticleSerializer implements Serializer<BlockParticleSerializ
         // Handle overrides
         ParticleMechanic override = overrides.get(block.getType());
         if (override != null && projectile.getShooter() != null) {
-            override.display(block.getLocation().add(0.5, 0.5, 0.5));
+            if (hitLocation == null)
+                hitLocation = new Vector(block.getX() + 0.5, block.getY() + 0.5, block.getZ() + 0.5);
+            override.display(block.getWorld(), hitLocation.getX(), hitLocation.getY(), hitLocation.getZ(), normal);
             return;
         }
 

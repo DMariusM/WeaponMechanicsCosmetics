@@ -17,7 +17,6 @@ public class ParametricFunctionShape extends FunctionShape {
     public ParametricFunctionShape(int points, int loops, String function, boolean cache) {
         super(points, loops);
 
-
         this.theta = new Argument("theta", 0.0);
         this.expressionX = new Expression(function.split(",")[0].trim(), theta);
         this.expressionY = new Expression(function.split(",")[1].trim(), theta);

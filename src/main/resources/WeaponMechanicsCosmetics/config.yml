@@ -1,6 +1,5 @@
-# Supported languages are "en-US", "fr-FR". More languages will be added,
-# but you will need to let your lang folder regenerate. Did you add a new
-# language? Please, send to me so everybody can use it.
+# Supported languages are "en-US", "fr-FR", "ru-RU", "us-UA"
+# Added your language? Send it to me to have it added!
 Language: "en-US"
 
 # the debug level dictates what is printed to console

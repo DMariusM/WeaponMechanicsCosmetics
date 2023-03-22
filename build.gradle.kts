@@ -49,15 +49,6 @@ repositories {
             password = findProperty("pass").toString()
         }
     }
-
-    maven {
-        name = "GitHubPackages"
-        url = uri("https://maven.pkg.github.com/WeaponMechanics/MechanicsAutoDownload")
-        credentials {
-            username = findProperty("user").toString()
-            password = findProperty("pass").toString()
-        }
-    }
 }
 
 dependencies {
@@ -72,7 +63,6 @@ dependencies {
     compileOnly("com.comphenix.protocol:ProtocolLib:4.7.0")
     compileOnly(files(file("lib/vivecraft/Vivecraft_Spigot_Extensions.jar")))
     implementation("org.bstats:bstats-bukkit:3.0.0")
-    implementation("me.cjcrafter:mechanicsautodownload:1.3.1")
 
     implementation("org.mariuszgromada.math:MathParser.org-mXparser:5.0.7")
 }
@@ -83,9 +73,6 @@ tasks.named<ShadowJar>("shadowJar") {
     configurations = listOf(project.configurations["shadeOnly"], project.configurations["runtimeClasspath"])
 
     dependencies {
-        relocate ("me.cjcrafter.auto", "me.cjcrafter.weaponmechanicscosmetics.lib.auto") {
-            include(dependency("me.cjcrafter:mechanicsautodownload"))
-        }
         relocate ("co.aikar.timings.lib", "me.cjcrafter.weaponmechanicscosmetics.lib.timings") {
             include(dependency("co.aikar:minecraft-timings"))
         }

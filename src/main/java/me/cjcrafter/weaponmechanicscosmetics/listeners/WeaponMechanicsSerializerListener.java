@@ -33,6 +33,6 @@ public class WeaponMechanicsSerializerListener implements Listener {
 
         // Whenever WeaponMechanics reloads, we should also reload
         // WeaponMechanicsCosmetics. TODO Move this to a proper location.
-        WeaponMechanicsCosmetics.getInstance().reloadConfig();
+        WeaponMechanicsCosmetics.getInstance().reloadPlugin();
     }
 }

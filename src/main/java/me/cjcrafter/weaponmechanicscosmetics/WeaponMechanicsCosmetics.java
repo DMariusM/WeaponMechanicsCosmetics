@@ -6,8 +6,6 @@
 package me.cjcrafter.weaponmechanicscosmetics;
 
 import com.comphenix.protocol.ProtocolLibrary;
-import me.cjcrafter.auto.UpdateChecker;
-import me.cjcrafter.auto.UpdateInfo;
 import me.cjcrafter.weaponmechanicscosmetics.commands.SkinCommand;
 import me.cjcrafter.weaponmechanicscosmetics.config.BlockBreakParticleSerializer;
 import me.cjcrafter.weaponmechanicscosmetics.config.BlockBreakSoundSerializer;
@@ -26,15 +24,14 @@ import me.deecaad.core.utils.FileUtil;
 import me.deecaad.core.utils.LogLevel;
 import me.deecaad.core.utils.ReflectionUtil;
 import me.deecaad.weaponmechanics.WeaponMechanics;
+import me.deecaad.weaponmechanics.lib.auto.UpdateChecker;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
-import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.PluginManager;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.File;
@@ -44,24 +41,22 @@ import java.net.URLClassLoader;
 import java.util.*;
 import java.util.logging.Logger;
 
-public class WeaponMechanicsCosmetics {
+public class WeaponMechanicsCosmetics extends JavaPlugin {
 
+    private static JavaPlugin plugin;
     private static WeaponMechanicsCosmetics INSTANCE;
 
-    private WeaponMechanicsCosmeticsLoader plugin;
     private UpdateChecker update;
     private Metrics metrics;
     private Debugger debug;
     private Configuration config;
     private ClassLoader langLoader;
 
-    WeaponMechanicsCosmetics(WeaponMechanicsCosmeticsLoader plugin) {
-        this.plugin = plugin;
-
-        INSTANCE = this;
-    }
-
+    @Override
     public void onLoad() {
+        INSTANCE = this;
+        plugin = this;
+
         int level = getConfig().getInt("Debug_Level", 2);
         boolean printTraces = getConfig().getBoolean("Print_Traces", false);
         debug = new Debugger(getLogger(), level, printTraces);
@@ -76,11 +71,10 @@ public class WeaponMechanicsCosmetics {
         Mechanics.MECHANICS.add(new FakeItemMechanic());
     }
 
+    @Override
     public void onEnable() {
-
         registerDebugger();
         registerBStats();
-        registerUpdateChecker();
 
         // Register commands
         if (ReflectionUtil.getMCVersion() >= 13)
@@ -112,7 +106,7 @@ public class WeaponMechanicsCosmetics {
         pm.registerEvents(new WeaponSkinListener(), plugin);
     }
 
-    public TaskChain reloadConfig() {
+    public TaskChain reloadPlugin() {
         return new TaskChain(plugin)
                 .thenRunAsync(() -> {
 
@@ -166,25 +160,6 @@ public class WeaponMechanicsCosmetics {
                 });
     }
 
-    public void onDisable() {
-    }
-
-    public FileConfiguration getConfig() {
-        return plugin.getConfig();
-    }
-
-    public Logger getLogger() {
-        return plugin.getLogger();
-    }
-
-    public File getDataFolder() {
-        return plugin.getDataFolder();
-    }
-
-    public ClassLoader getClassLoader() {
-        return plugin.getClassLoader0();
-    }
-
     public Debugger getDebug() {
         return debug;
     }
@@ -197,41 +172,6 @@ public class WeaponMechanicsCosmetics {
         debug.permission = "weaponmechanicscosmetics.errorlog";
         debug.msg = "WeaponMechanicsCosmetics had %s error(s) in console.";
         debug.start(plugin);
-    }
-
-    private void registerUpdateChecker() {
-        update = new UpdateChecker(plugin, UpdateChecker.spigot(104539, "WeaponMechanicsCosmetics"));
-        debug.info("UpdateChecker enabled for %%__USER__%%");
-
-        try {
-            UpdateInfo consoleUpdate = update.hasUpdate();
-            if (consoleUpdate != null) {
-                sendLang(Bukkit.getConsoleSender(), "update-checker", Map.of("old", consoleUpdate.current.toString(), "new", consoleUpdate.newest.toString()));
-            }
-        } catch (Throwable ex) {
-            debug.log(LogLevel.DEBUG, "UpdateChecker error", ex);
-            debug.error("UpdateChecker failed to connect: " + ex.getMessage());
-            return;
-        }
-
-        Listener listener = new Listener() {
-            @EventHandler
-            public void onJoin(PlayerJoinEvent event) {
-                if (event.getPlayer().isOp()) {
-                    new TaskChain(plugin)
-                            .thenRunAsync((callback) -> update.hasUpdate())
-                            .thenRunSync((callback) -> {
-                                UpdateInfo update = (UpdateInfo) callback;
-                                if (callback != null)
-                                    sendLang(event.getPlayer(),"update-checker", Map.of("old", update.current.toString(), "new", update.newest.toString()));
-
-                                return null;
-                            });
-                }
-            }
-        };
-
-        Bukkit.getPluginManager().registerEvents(listener, plugin);
     }
 
     private void registerBStats() {
@@ -297,7 +237,7 @@ public class WeaponMechanicsCosmetics {
         MechanicsCore.getPlugin().adventure.sender(sender).sendMessage(component);
     }
 
-    public WeaponMechanicsCosmeticsLoader getPlugin() {
+    public JavaPlugin getPlugin() {
         return plugin;
     }
 

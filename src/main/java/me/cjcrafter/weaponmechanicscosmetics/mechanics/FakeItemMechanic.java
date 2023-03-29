@@ -53,15 +53,14 @@ public class FakeItemMechanic extends Mechanic {
         entity.setMotion(velocity.getVector(cast.getTarget()).multiply(1.0 / 20.0));
         entity.show();
 
+        // We do not need to consume this task since it only serves to delete
+        // the existing entity.
         int task = new BukkitRunnable() {
             @Override
             public void run() {
                 entity.remove();
             }
         }.runTaskLater(WeaponMechanicsCosmetics.getInstance().getPlugin(), time).getTaskId();
-
-        if (cast.getTaskIdConsumer() != null)
-            cast.getTaskIdConsumer().accept(task);
     }
 
     @Override

@@ -1,7 +1,7 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 group = "me.cjcrafter"
-version = "2.0.9"
+version = "2.0.11"
 
 plugins {
     `java-library`
@@ -14,7 +14,7 @@ configurations {
 }
 
 bukkit {
-    main = "me.cjcrafter.weaponmechanicscosmetics.WeaponMechanicsCosmeticsLoader"
+    main = "me.cjcrafter.weaponmechanicscosmetics.WeaponMechanicsCosmetics"
     name = "WeaponMechanicsCosmetics"
     apiVersion = "1.13"
 

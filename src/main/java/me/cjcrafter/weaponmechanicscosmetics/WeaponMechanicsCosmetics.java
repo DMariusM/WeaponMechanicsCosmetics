@@ -12,6 +12,7 @@ import me.cjcrafter.weaponmechanicscosmetics.config.BlockBreakSoundSerializer;
 import me.cjcrafter.weaponmechanicscosmetics.config.BlockParticleSerializer;
 import me.cjcrafter.weaponmechanicscosmetics.config.BlockSoundSerializer;
 import me.cjcrafter.weaponmechanicscosmetics.listeners.*;
+import me.cjcrafter.weaponmechanicscosmetics.mechanics.WardenDisturbanceMechanic;
 import me.cjcrafter.weaponmechanicscosmetics.mechanics.FakeItemMechanic;
 import me.cjcrafter.weaponmechanicscosmetics.mechanics.ParticleMechanic;
 import me.cjcrafter.weaponmechanicscosmetics.timer.TimerSpawner;
@@ -28,7 +29,6 @@ import me.deecaad.weaponmechanics.lib.auto.UpdateChecker;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -39,7 +39,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.*;
-import java.util.logging.Logger;
 
 public class WeaponMechanicsCosmetics extends JavaPlugin {
 
@@ -69,6 +68,7 @@ public class WeaponMechanicsCosmetics extends JavaPlugin {
 
         Mechanics.MECHANICS.add(new ParticleMechanic());
         Mechanics.MECHANICS.add(new FakeItemMechanic());
+        Mechanics.MECHANICS.add(new WardenDisturbanceMechanic());
     }
 
     @Override

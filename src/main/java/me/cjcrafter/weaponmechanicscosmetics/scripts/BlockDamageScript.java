@@ -97,7 +97,7 @@ public class BlockDamageScript extends ProjectileScript<WeaponProjectile> {
                         data.regenerate();
                         data.remove();
                     }
-                }.runTaskLater(WeaponMechanicsCosmetics.getInstance().getPlugin(), regenDelay); // 10 seconds
+                }.runTaskLater(WeaponMechanicsCosmetics.getInstance().getPlugin(), regenDelay);
             }
         } else if (data.isBroken()) {
             data.remove();

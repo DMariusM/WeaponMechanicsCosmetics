@@ -20,7 +20,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
-public class Trail implements Serializer<Trail> {
+public class Trail implements Serializer<Trail>, Cloneable {
 
     private double delta;
     private int skipUpdates;
@@ -130,6 +130,17 @@ public class Trail implements Serializer<Trail> {
         }
 
         return new Trail(delta, skipUpdates, selector, particles, shape);
+    }
+
+    @Override
+    public Trail clone() {
+        try {
+            Trail clone = (Trail) super.clone();
+            clone.particles = new ArrayList<>(clone.particles);
+            return clone;
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
     }
 
     public enum ListChooser {

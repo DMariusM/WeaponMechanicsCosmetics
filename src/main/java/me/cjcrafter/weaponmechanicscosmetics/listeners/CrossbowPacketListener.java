@@ -41,8 +41,10 @@ public class CrossbowPacketListener extends PacketAdapter {
         PacketContainer packet = event.getPacket();
 
         // Get the entity/wrapper who is holding the weapon.
-        LivingEntity entity = (LivingEntity) packet.getEntityModifier(event).read(0);
-        EntityWrapper wrapper = entity == null ? null : WeaponMechanics.getEntityWrapper(entity, true);
+        if (!(packet.getEntityModifier(event).read(0) instanceof LivingEntity entity))
+            return;
+
+        EntityWrapper wrapper = WeaponMechanics.getEntityWrapper(entity, true);
 
         // Wrapper can be null when the entity is from model engine (or any
         // other fake entity plugin), or when the entity does not have a

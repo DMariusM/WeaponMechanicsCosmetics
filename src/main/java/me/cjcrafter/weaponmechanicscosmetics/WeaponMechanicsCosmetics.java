@@ -20,6 +20,12 @@ import me.deecaad.core.MechanicsCore;
 import me.deecaad.core.file.*;
 import me.deecaad.core.lib.adventure.text.Component;
 import me.deecaad.core.mechanics.Mechanics;
+import me.deecaad.core.mechanics.PlayerEffectMechanicList;
+import me.deecaad.core.mechanics.conditions.Condition;
+import me.deecaad.core.mechanics.conditions.MythicMobsEntityCondition;
+import me.deecaad.core.mechanics.conditions.MythicMobsFactionCondition;
+import me.deecaad.core.mechanics.defaultmechanics.Mechanic;
+import me.deecaad.core.mechanics.targeters.Targeter;
 import me.deecaad.core.utils.Debugger;
 import me.deecaad.core.utils.FileUtil;
 import me.deecaad.core.utils.LogLevel;
@@ -35,10 +41,12 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.*;
+import java.util.jar.JarFile;
 
 public class WeaponMechanicsCosmetics extends JavaPlugin {
 
@@ -50,6 +58,8 @@ public class WeaponMechanicsCosmetics extends JavaPlugin {
     private Debugger debug;
     private Configuration config;
     private ClassLoader langLoader;
+
+    private boolean registeredMechanics;
 
     @Override
     public void onLoad() {
@@ -66,9 +76,24 @@ public class WeaponMechanicsCosmetics extends JavaPlugin {
             FileUtil.copyResourcesTo(getClassLoader().getResource("WeaponMechanicsCosmetics"), getDataFolder().toPath());
         }
 
-        Mechanics.MECHANICS.add(new ParticleMechanic());
-        Mechanics.MECHANICS.add(new FakeItemMechanic());
-        Mechanics.MECHANICS.add(new WardenDisturbanceMechanic());
+        // Search the jar file for Mechanics, Targeters, and Conditions. We
+        // need to register them to the Mechanics.class registries.
+        if (!registeredMechanics) {
+            registeredMechanics = true;
+            try {
+                JarSearcher searcher = new JarSearcher(new JarFile(getFile()));
+
+                searcher.findAllSubclasses(Mechanic.class, getClassLoader(), true)
+                        .stream().map(ReflectionUtil::newInstance).forEach(Mechanics.MECHANICS::add);
+                searcher.findAllSubclasses(Targeter.class, getClassLoader(), true)
+                        .stream().map(ReflectionUtil::newInstance).forEach(Mechanics.TARGETERS::add);
+                searcher.findAllSubclasses(Condition.class, getClassLoader(), true)
+                        .stream().map(ReflectionUtil::newInstance).forEach(Mechanics.CONDITIONS::add);
+
+            } catch (IOException ex) {
+                debug.log(LogLevel.ERROR, "Error while searching Jar", ex);
+            }
+        }
     }
 
     @Override

@@ -5,9 +5,14 @@
 
 package me.cjcrafter.weaponmechanicscosmetics.config;
 
+import me.deecaad.core.MechanicsCore;
 import me.deecaad.core.file.*;
+import me.deecaad.core.lib.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import me.deecaad.core.mechanics.Mechanics;
+import me.deecaad.core.utils.StringUtil;
 import me.deecaad.weaponmechanics.weapon.explode.BlockDamage;
+
+import java.util.List;
 
 public class GeneralCosmeticsValidator implements IValidator {
 
@@ -50,5 +55,16 @@ public class GeneralCosmeticsValidator implements IValidator {
 
         // Hit Marker
         configuration.set(key + ".Hit_Marker", data.of("Hit_Marker").getAdventure(null));
+
+        // Death Message Overrides
+        List<String> deathMessages = data.of("Death_Messages").assertType(List.class).get(List.of());
+        for (int i = 0; i < deathMessages.size(); i++) {
+            String deathMessage = deathMessages.get(i);
+
+            deathMessage = StringUtil.colorAdventure(deathMessage);
+            deathMessages.set(i, deathMessage);
+        }
+
+        configuration.set(key + ".Death_Messages", deathMessages);
     }
 }

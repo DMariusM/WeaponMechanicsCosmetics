@@ -1,7 +1,7 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 group = "me.cjcrafter"
-version = "2.2.0"
+version = "2.2.1"
 
 plugins {
     `java-library`
@@ -54,7 +54,7 @@ repositories {
 dependencies {
     compileOnly("org.jetbrains:annotations:24.0.1")
 
-    compileOnly("org.spigotmc:spigot-api:1.20-R0.1-SNAPSHOT")
+    compileOnly("org.spigotmc:spigot-api:1.20.1-R0.1-SNAPSHOT")
     implementation("co.aikar:minecraft-timings:1.0.4")
     testImplementation("org.junit.jupiter:junit-jupiter:5.9.2")
 

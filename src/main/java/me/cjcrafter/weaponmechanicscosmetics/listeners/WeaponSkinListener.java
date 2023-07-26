@@ -3,13 +3,12 @@ package me.cjcrafter.weaponmechanicscosmetics.listeners;
 import me.deecaad.core.compatibility.CompatibilityAPI;
 import me.deecaad.core.file.Configuration;
 import me.deecaad.weaponmechanics.WeaponMechanics;
-import me.deecaad.weaponmechanics.WeaponMechanicsAPI;
+import me.deecaad.weaponmechanics.utils.CustomTag;
 import me.deecaad.weaponmechanics.weapon.skin.Skin;
 import me.deecaad.weaponmechanics.weapon.skin.SkinHandler;
-import me.deecaad.weaponmechanics.weapon.skin.SkinList;
+import me.deecaad.weaponmechanics.weapon.skin.SkinSelector;
 import me.deecaad.weaponmechanics.weapon.stats.WeaponStat;
 import me.deecaad.weaponmechanics.weapon.weaponevents.WeaponSkinEvent;
-import me.deecaad.weaponmechanics.wrappers.EntityWrapper;
 import me.deecaad.weaponmechanics.wrappers.HandData;
 import me.deecaad.weaponmechanics.wrappers.PlayerWrapper;
 import me.deecaad.weaponmechanics.wrappers.StatsData;
@@ -57,8 +56,8 @@ public class WeaponSkinListener implements Listener {
             return;
 
         Configuration config = WeaponMechanics.getConfigurations();
-        SkinList list = config.getObject(event.getWeaponTitle() + ".Hand", SkinList.class);
-        if (list == null)
+        SkinSelector skins = config.getObject(event.getWeaponTitle() + ".Hand", SkinSelector.class);
+        if (skins == null)
             return;
 
         PlayerWrapper wrapper = WeaponMechanics.getPlayerWrapper(player);
@@ -70,9 +69,9 @@ public class WeaponSkinListener implements Listener {
 
             // TODO Determine which hand is holding the weapon, when weapon is in offhand and hand should be in mainhand
             HandData handData = wrapper.getMainHandData();
-            Skin toApply = handler.getSkin(list, skin, handData, event.getWeaponStack(), event.getCause());
             ItemStack handItem = config.getObject(event.getWeaponTitle() + ".Hand.Item", ItemStack.class).clone();
-            toApply.apply(handItem);
+            SkinSelector.SkinAction action = handler.getSkinAction(skins, skin, handData, event.getWeaponStack(), event.getCause());
+            skins.apply(handItem, skin, action, CustomTag.ATTACHMENTS.getStringArray(event.getWeaponStack()));
 
             CompatibilityAPI.getEntityCompatibility().setSlot(wrapper.getPlayer(), EquipmentSlot.OFF_HAND, handItem);
         }

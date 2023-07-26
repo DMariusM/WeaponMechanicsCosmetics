@@ -17,6 +17,7 @@ import me.deecaad.core.lib.adventure.bossbar.BossBar;
 import me.deecaad.core.lib.adventure.text.Component;
 import me.deecaad.core.lib.adventure.title.Title;
 import me.deecaad.core.lib.adventure.util.Ticks;
+import me.deecaad.core.placeholder.PlaceholderAPI;
 import me.deecaad.core.utils.NumberUtil;
 import me.deecaad.core.utils.ReflectionUtil;
 import org.bukkit.Bukkit;
@@ -27,6 +28,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Constructor;
 import java.text.DecimalFormat;
+import java.util.Map;
 
 /**
  * Shows a timer in the item cool down, actionbar, title, boss bar, or
@@ -175,12 +177,12 @@ public class Timer implements Serializer<Timer>{
         String timeCache = ROUND.format((totalTicks - ticks) / 20.0);
 
         if (actionBar != null)
-            audience.sendActionBar(substitute(actionBar, barCache, timeCache));
+            audience.sendActionBar(substitute(player, actionBar, barCache, timeCache));
 
         // Handle showing the title. The title disappears on its own, we don't
         // need to handle its removal.
         if (title != null || subtitle != null) {
-            Title titleComponent = Title.title(substitute(title, barCache, timeCache), substitute(subtitle, barCache, timeCache), TITLE_TIMES);
+            Title titleComponent = Title.title(substitute(player, title, barCache, timeCache), substitute(player, subtitle, barCache, timeCache), TITLE_TIMES);
             audience.showTitle(titleComponent);
         }
 
@@ -188,7 +190,7 @@ public class Timer implements Serializer<Timer>{
         // its own, we have to schedule a task to remove it 1 tick later.
         float progress = NumberUtil.minMax(0.0f, (float) ticks / totalTicks, 1.0f);
         if (bossBar != null) {
-            BossBar bossComponent = BossBar.bossBar(substitute(bossBar, barCache, timeCache), progress, color, style);
+            BossBar bossComponent = BossBar.bossBar(substitute(player, bossBar, barCache, timeCache), progress, color, style);
             audience.showBossBar(bossComponent);
             new BukkitRunnable() {
                 @Override
@@ -233,11 +235,14 @@ public class Timer implements Serializer<Timer>{
      * @param time %time% replacement value.
      * @return The parsed adventure component.
      */
-    private Component substitute(String base, String bar, String time) {
+    private Component substitute(Player player, String base, String bar, String time) {
         if (base == null)
             return Component.empty();
 
+        Map<String, String> customPlaceholders = Map.of("%bar%", bar, "%time%", time);
+
         String content = base.replace("%bar%", bar).replace("%time%", time);
+        PlaceholderAPI.applyPlaceholders(base, player, null, null, null, customPlaceholders); // TODO fill
         return MechanicsCore.getPlugin().message.deserialize(content);
     }
 

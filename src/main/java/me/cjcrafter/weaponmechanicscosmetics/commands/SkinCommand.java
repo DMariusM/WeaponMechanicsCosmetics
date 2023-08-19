@@ -34,7 +34,7 @@ public class SkinCommand {
             PlayerInventory inv = ((Player) data.sender()).getInventory();
             ItemStack weapon = empty(inv.getItemInMainHand()) ? inv.getItemInOffHand() : inv.getItemInMainHand();
             String title = weapon == null ? null : WeaponMechanicsAPI.getWeaponTitle(weapon);
-            SkinSelector skins = WeaponMechanics.getConfigurations().getObject(title + (hand ? ".Hand" : ".Skin"), BaseSkinSelector.class);
+            SkinSelector skins = WeaponMechanics.getConfigurations().getObject(title + (hand ? ".Hand" : ".Skin"), SkinSelector.class);
 
             if (skins == null)
                 return new Tooltip[]{ Tooltip.of("N/A", title + " cannot have a skin") };
@@ -42,6 +42,7 @@ public class SkinCommand {
             // When giving player options, they shouldn't reselect a skin they are
             // already using.
             Set<String> options = skins.getCustomSkins();
+            options.add("default");
             StatsData stats = WeaponMechanics.getPlayerWrapper((Player) data.sender()).getStatsData();
             if (stats != null) {
                 String skin = (String) stats.get(title, WeaponStat.SKIN, null);
@@ -51,7 +52,7 @@ public class SkinCommand {
             if (options.isEmpty())
                 return new Tooltip[]{ Tooltip.of("N/A", title + " only has default skin") };
 
-            return SuggestionsBuilder.from(skins.getCustomSkins()).apply(data);
+            return SuggestionsBuilder.from(options).apply(data);
         };
     }
 
@@ -136,7 +137,7 @@ public class SkinCommand {
             return;
         }
 
-        if (!skins.getCustomSkins().contains(skin)) {
+        if (!skin.equals("default") && !skins.getCustomSkins().contains(skin)) {
             WeaponMechanicsCosmetics.getInstance().sendLang(player, "skin-option", variables);
             return;
         }

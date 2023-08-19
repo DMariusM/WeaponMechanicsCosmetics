@@ -26,7 +26,7 @@ import org.vivecraft.VSE;
 
 public class WeaponSkinListener implements Listener {
 
-    @EventHandler
+    @EventHandler (priority = EventPriority.LOW)
     public void onSkin(WeaponSkinEvent event) {
         if (event.getShooter().getType() != EntityType.PLAYER)
             return;

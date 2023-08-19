@@ -22,6 +22,7 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.permissions.Permission;
+import org.bukkit.permissions.PermissionDefault;
 
 import java.util.*;
 import java.util.function.Function;
@@ -55,10 +56,10 @@ public class SkinCommand {
     }
 
     public static void registerPermissions(String key) {
-        String keyLower = key.toUpperCase(Locale.ROOT);
+        String keyLower = key.toLowerCase(Locale.ROOT);
         Configuration config = WeaponMechanics.getConfigurations();
 
-        Permission global = new Permission("weaponmechanics." + key + ".*");
+        Permission global = new Permission("weaponmechanics." + keyLower + ".*");
         global.setDescription("Ability to use all " + key + "s for any weapon");
 
         for (String weaponTitle : WeaponMechanics.getWeaponHandler().getInfoHandler().getSortedWeaponList()) {
@@ -91,7 +92,7 @@ public class SkinCommand {
     public static void register() {
         new CommandBuilder("skin")
                 .withAliases("skins", "weaponskin")
-                .withPermission("weaponmechanicscosmetics.commands.skin")
+                .withPermission("weaponmechanicscosmetics.commands.skin", PermissionDefault.TRUE)
                 .withDescription("Change the skin for your weapon")
                 .withArgument(new Argument<>("skin", new StringArgumentType()).replace(SKIN_SUGGESTIONS(false)))
                 .executes(CommandExecutor.player((player, args) -> {
@@ -99,7 +100,7 @@ public class SkinCommand {
                 })).register();
 
         new CommandBuilder("handskin")
-                .withPermission("weaponmechanicscosmetics.commands.handskin")
+                .withPermission("weaponmechanicscosmetics.commands.handskin", PermissionDefault.TRUE)
                 .withDescription("Change the skin for your hand")
                 .withArgument(new Argument<>("skin", new StringArgumentType()).replace(SKIN_SUGGESTIONS(true)))
                 .executes(CommandExecutor.player((player, args) -> {

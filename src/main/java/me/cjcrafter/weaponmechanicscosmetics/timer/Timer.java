@@ -11,15 +11,16 @@ import me.deecaad.core.compatibility.CompatibilityAPI;
 import me.deecaad.core.file.SerializeData;
 import me.deecaad.core.file.Serializer;
 import me.deecaad.core.file.SerializerException;
-import me.deecaad.core.file.TaskChain;
 import me.deecaad.core.lib.adventure.audience.Audience;
 import me.deecaad.core.lib.adventure.bossbar.BossBar;
 import me.deecaad.core.lib.adventure.text.Component;
 import me.deecaad.core.lib.adventure.title.Title;
 import me.deecaad.core.lib.adventure.util.Ticks;
-import me.deecaad.core.placeholder.PlaceholderAPI;
+import me.deecaad.core.placeholder.PlaceholderData;
+import me.deecaad.core.placeholder.PlaceholderMessage;
 import me.deecaad.core.utils.NumberUtil;
 import me.deecaad.core.utils.ReflectionUtil;
+import me.deecaad.weaponmechanics.utils.CustomTag;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -50,11 +51,11 @@ public class Timer implements Serializer<Timer>{
     }
 
     private boolean showItemCooldown;
-    private String actionBar;
-    private Component actionBarCancelled;
-    private String title;
-    private String subtitle;
-    private String bossBar;
+    private PlaceholderMessage actionBar;
+    private PlaceholderMessage actionBarCancelled;
+    private PlaceholderMessage title;
+    private PlaceholderMessage subtitle;
+    private PlaceholderMessage bossBar;
     private BossBar.Color color;
     private BossBar.Overlay style;
     private boolean showExp;
@@ -66,15 +67,15 @@ public class Timer implements Serializer<Timer>{
     public Timer() {
     }
 
-    public Timer(boolean showItemCooldown, String actionBar, Component actionBarCancelled, String title, String subtitle,
+    public Timer(boolean showItemCooldown, String actionBar, String actionBarCancelled, String title, String subtitle,
                  String bossBar, BossBar.Color color, BossBar.Overlay style, boolean showExp, StringBar bar) {
 
         this.showItemCooldown = showItemCooldown;
-        this.actionBar = actionBar;
-        this.actionBarCancelled = actionBarCancelled;
-        this.title = title;
-        this.subtitle = subtitle;
-        this.bossBar = bossBar;
+        this.actionBar = actionBar == null ? null : new PlaceholderMessage(actionBar);
+        this.actionBarCancelled = actionBarCancelled == null ? null : new PlaceholderMessage(actionBarCancelled);
+        this.title = title == null ? null : new PlaceholderMessage(title);
+        this.subtitle = subtitle == null ? null : new PlaceholderMessage(subtitle);
+        this.bossBar = bossBar == null ? null : new PlaceholderMessage(bossBar);
         this.color = color;
         this.style = style;
         this.showExp = showExp;
@@ -97,7 +98,7 @@ public class Timer implements Serializer<Timer>{
         if (showItemCooldown && weapon != null)
             CompatibilityAPI.getEntityCompatibility().setCooldown(player, weapon.getType(), totalTicks);
 
-        send(player, 0, totalTicks);
+        send(player, weapon, 0, totalTicks);
 
         int taskId = new BukkitRunnable() {
             int ticks = 0;
@@ -109,7 +110,7 @@ public class Timer implements Serializer<Timer>{
                     return;
                 }
 
-                send(player, ticks, totalTicks);
+                send(player, weapon, ticks, totalTicks);
             }
 
             @Override
@@ -162,27 +163,34 @@ public class Timer implements Serializer<Timer>{
             }
         }
 
+        PlaceholderData data = PlaceholderData.of(player, weapon, CustomTag.WEAPON_TITLE.getString(weapon), null);
+        data.placeholders().put("bar", bar == null ? "N/A" : bar.evaluate(ticks, totalTicks));
+        data.placeholders().put("time", ROUND.format((totalTicks - ticks) / 20.0));
+
         // Make sure player experience is set to their old exp value
         sendExp(player, Float.NaN);
 
         // If the event was cancelled BEFORE it was completed...
         if (ticks < totalTicks && actionBarCancelled != null) {
-            audience.sendActionBar(actionBarCancelled);
+            audience.sendActionBar(actionBarCancelled.replaceAndDeserialize(data));
         }
     }
 
-    public void send(Player player, int ticks, int totalTicks) {
+    public void send(Player player, ItemStack weapon, int ticks, int totalTicks) {
         Audience audience = MechanicsCore.getPlugin().adventure.player(player);
-        String barCache = bar == null ? "N/A" : bar.evaluate(ticks, totalTicks);
-        String timeCache = ROUND.format((totalTicks - ticks) / 20.0);
+        PlaceholderData data = PlaceholderData.of(player, weapon, CustomTag.WEAPON_TITLE.getString(weapon), null);
+        data.placeholders().put("bar", bar == null ? "N/A" : bar.evaluate(ticks, totalTicks));
+        data.placeholders().put("time", ROUND.format((totalTicks - ticks) / 20.0));
 
         if (actionBar != null)
-            audience.sendActionBar(substitute(player, actionBar, barCache, timeCache));
+            audience.sendActionBar(actionBar.replaceAndDeserialize(data));
 
         // Handle showing the title. The title disappears on its own, we don't
         // need to handle its removal.
         if (title != null || subtitle != null) {
-            Title titleComponent = Title.title(substitute(player, title, barCache, timeCache), substitute(player, subtitle, barCache, timeCache), TITLE_TIMES);
+            Component adventureTitle = title == null ? Component.empty() : title.replaceAndDeserialize(data);
+            Component adventureSubtitle = subtitle == null ? Component.empty() : subtitle.replaceAndDeserialize(data);
+            Title titleComponent = Title.title(adventureTitle, adventureSubtitle, TITLE_TIMES);
             audience.showTitle(titleComponent);
         }
 
@@ -190,7 +198,7 @@ public class Timer implements Serializer<Timer>{
         // its own, we have to schedule a task to remove it 1 tick later.
         float progress = NumberUtil.minMax(0.0f, (float) ticks / totalTicks, 1.0f);
         if (bossBar != null) {
-            BossBar bossComponent = BossBar.bossBar(substitute(player, bossBar, barCache, timeCache), progress, color, style);
+            BossBar bossComponent = BossBar.bossBar(bossBar.replaceAndDeserialize(data), progress, color, style);
             audience.showBossBar(bossComponent);
             new BukkitRunnable() {
                 @Override
@@ -226,37 +234,14 @@ public class Timer implements Serializer<Timer>{
         }
     }
 
-    /**
-     * Substitutes the %bar% and %time% variables to the given
-     * <code>base</code> string. Performance could be better, TODO.
-     *
-     * @param base The base string.
-     * @param bar  %bar% replacement value.
-     * @param time %time% replacement value.
-     * @return The parsed adventure component.
-     */
-    private Component substitute(Player player, String base, String bar, String time) {
-        if (base == null)
-            return Component.empty();
-
-        Map<String, String> customPlaceholders = Map.of("%bar%", bar, "%time%", time);
-
-        String content = base.replace("%bar%", bar).replace("%time%", time);
-        PlaceholderAPI.applyPlaceholders(base, player, null, null, null, customPlaceholders); // TODO fill
-        return MechanicsCore.getPlugin().message.deserialize(content);
-    }
-
     @NotNull
     @Override
     public Timer serialize(SerializeData data) throws SerializerException {
 
         String actionBar = data.of("Action_Bar").getAdventure(null);
-        String actionBarCancelledStr = data.of("Action_Bar_Cancelled").getAdventure(null);
+        String actionBarCancelled = data.of("Action_Bar_Cancelled").getAdventure(null);
         String title = data.of("Title").getAdventure(null);
         String subTitle = data.of("Subtitle").getAdventure(null);
-
-        // actionBarComplete is the only message we can actually cache
-        Component actionBarCancelled = actionBarCancelledStr == null ? null : MechanicsCore.getPlugin().message.deserialize(actionBarCancelledStr);
 
         // Bossbar stuff... Set to null first, so we can do assertExists ONLY
         // when the admin uses "Boss_Bar"
@@ -277,7 +262,7 @@ public class Timer implements Serializer<Timer>{
         // So when *NONE* of the messages uses %bar%, but the admin defined it
         // anyway, they probably made a mistake or forgot to delete something.
         if (!contains && data.has("Bar"))
-            throw data.exception("Bar", "You tried to use 'Bar' when you never used '%bar%' in any of your messages");
+            throw data.exception("Bar", "You tried to use 'Bar' when you never used '<bar>' in any of your messages");
 
         StringBar bar = null;
         if (contains)
@@ -290,7 +275,7 @@ public class Timer implements Serializer<Timer>{
     }
 
     private boolean check(String str) {
-        return str != null && str.contains("%bar%");
+        return str != null && str.contains("<bar>");
     }
 
     /**

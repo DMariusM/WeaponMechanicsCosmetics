@@ -3,6 +3,7 @@ package me.cjcrafter.weaponmechanicscosmetics.mechanics.targeters;
 import me.deecaad.core.file.SerializeData;
 import me.deecaad.core.file.SerializerException;
 import me.deecaad.core.mechanics.CastData;
+import me.deecaad.core.mechanics.targeters.ShapeTargeter;
 import me.deecaad.core.mechanics.targeters.Targeter;
 import me.deecaad.core.utils.VectorUtil;
 import org.bukkit.Location;
@@ -10,26 +11,19 @@ import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
 public class SphereTargeter extends ShapeTargeter {
 
-    private final Location[] cache;
-    private final Vector[] points;
+    private Vector[] points;
 
     /**
      * Default constructor for serializer
      */
     public SphereTargeter() {
-        cache = null;
-        points = null;
     }
 
     public SphereTargeter(int points, double radius) {
-        cache = new Location[points];
-        for (int i = 0; i < points; i++) {
-            cache[i] = new Location(null, 0, 0, 0);
-        }
-
         this.points = new Vector[points];
 
         double phi = VectorUtil.GOLDEN_ANGLE;
@@ -49,26 +43,19 @@ public class SphereTargeter extends ShapeTargeter {
     }
 
     @Override
-    public Location[] getPoints(CastData cast) {
-        for (int i = 0; i < points.length; i++) {
+    public Iterator<Vector> getPoints() {
+        return new Iterator<>() {
+            int i = 0;
+            @Override
+            public boolean hasNext() {
+                return i < points.length;
+            }
 
-            // To avoid instantiating 100+ locations every cast, we cache an
-            // array of locations.
-            Location cachedLocation = cache[i];
-            Location sourceLocation = cast.getSourceLocation();
-            cachedLocation.setX(sourceLocation.getX());
-            cachedLocation.setY(sourceLocation.getY());
-            cachedLocation.setZ(sourceLocation.getZ());
-            cachedLocation.setWorld(sourceLocation.getWorld());
-            cache[i] = cachedLocation.add(points[i]);
-        }
-
-        return cache;
-    }
-
-    @Override
-    public boolean isEntity() {
-        return false;
+            @Override
+            public Vector next() {
+                return points[i++];
+            }
+        };
     }
 
     public String getKeyword() {

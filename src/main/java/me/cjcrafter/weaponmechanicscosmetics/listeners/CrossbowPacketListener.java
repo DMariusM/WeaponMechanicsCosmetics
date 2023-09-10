@@ -38,10 +38,15 @@ public class CrossbowPacketListener extends PacketAdapter {
 
     @Override
     public void onPacketSending(PacketEvent event) {
+
+        // No crossbows before 1.14
+        if (ReflectionUtil.getMCVersion() < 14)
+            return;
+
         PacketContainer packet = event.getPacket();
 
         // Get the entity/wrapper who is holding the weapon.
-        if (!(packet.getEntityModifier(event).read(0) instanceof LivingEntity entity))
+        if (!(packet.getEntityModifier(event).readSafely(0) instanceof LivingEntity entity))
             return;
 
         EntityWrapper wrapper = WeaponMechanics.getEntityWrapper(entity, true);

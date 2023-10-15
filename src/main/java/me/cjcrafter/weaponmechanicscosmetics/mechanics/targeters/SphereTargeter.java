@@ -43,7 +43,7 @@ public class SphereTargeter extends ShapeTargeter {
     }
 
     @Override
-    public Iterator<Vector> getPoints() {
+    public @NotNull Iterator<Vector> getPoints(@NotNull CastData data) {
         return new Iterator<>() {
             int i = 0;
             @Override

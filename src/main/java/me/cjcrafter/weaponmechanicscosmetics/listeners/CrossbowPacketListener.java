@@ -49,6 +49,11 @@ public class CrossbowPacketListener extends PacketAdapter {
         if (!(packet.getEntityModifier(event).readSafely(0) instanceof LivingEntity entity))
             return;
 
+        // I don't see why this check is needed, but it prevents the offhand
+        // weapon from visually appearing as a crossbow for the holder...
+        if (entity.equals(event.getPlayer()))
+            return;
+
         EntityWrapper wrapper = WeaponMechanics.getEntityWrapper(entity, true);
 
         // Wrapper can be null when the entity is from model engine (or any

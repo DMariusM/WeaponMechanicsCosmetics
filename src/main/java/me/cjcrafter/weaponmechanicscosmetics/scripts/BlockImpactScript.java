@@ -10,6 +10,7 @@ import me.cjcrafter.weaponmechanicscosmetics.config.BlockParticleSerializer;
 import me.cjcrafter.weaponmechanicscosmetics.config.BlockSoundSerializer;
 import me.deecaad.core.file.*;
 import me.deecaad.core.utils.Debugger;
+import me.deecaad.core.utils.ray.BlockTraceResult;
 import me.deecaad.core.utils.ray.RayTraceResult;
 import me.deecaad.weaponmechanics.weapon.projectile.ProjectileScript;
 import me.deecaad.weaponmechanics.weapon.projectile.weaponprojectile.WeaponProjectile;
@@ -79,10 +80,10 @@ public class BlockImpactScript extends ProjectileScript<WeaponProjectile> {
 
     @Override
     public void onCollide(@NotNull RayTraceResult hit) {
-        if (!hit.isBlock() || hit.getBlock().isLiquid())
+        if (!(hit instanceof BlockTraceResult blockHit) || blockHit.getBlock().isLiquid())
             return;
 
-        BlockState state = hit.getBlock().getState();
+        BlockState state = blockHit.getBlock().getState();
         sound.play(projectile, state);
         particles.play(projectile, state, hit.getHitLocation(), faceVectorMap.get(hit.getHitFace()));
     }

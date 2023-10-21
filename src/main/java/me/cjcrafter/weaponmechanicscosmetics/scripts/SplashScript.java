@@ -9,12 +9,14 @@ import me.deecaad.core.file.Configuration;
 import me.deecaad.core.mechanics.CastData;
 import me.deecaad.core.mechanics.Mechanics;
 import me.deecaad.core.utils.ReflectionUtil;
+import me.deecaad.core.utils.ray.BlockTraceResult;
 import me.deecaad.core.utils.ray.RayTraceResult;
 import me.deecaad.weaponmechanics.WeaponMechanics;
 import me.deecaad.weaponmechanics.weapon.projectile.ProjectileScript;
 import me.deecaad.weaponmechanics.weapon.projectile.weaponprojectile.WeaponProjectile;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 
@@ -57,9 +59,13 @@ public class SplashScript extends ProjectileScript<WeaponProjectile> {
 
     @Override
     public void onCollide(@NotNull RayTraceResult hit) {
-        if (hit.isBlock() && isWater(hit.getBlock()) && !wasInWater) {
-            CastData cast = new CastData(projectile.getShooter(), projectile.getWeaponTitle(), projectile.getWeaponStack());
-            cast.setTargetLocation(hit.getHitLocation().toLocation(hit.getBlock().getWorld()));
+        LivingEntity shooter = projectile.getShooter();
+        if (shooter == null)
+            return;
+
+        if (hit instanceof BlockTraceResult blockHit && isWater(blockHit.getBlock()) && !wasInWater) {
+            CastData cast = new CastData(shooter, projectile.getWeaponTitle(), projectile.getWeaponStack());
+            cast.setTargetLocation(hit.getHitLocation().toLocation(projectile.getWorld()));
             mechanics.use(cast);
         }
     }

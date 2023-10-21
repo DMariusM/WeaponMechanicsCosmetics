@@ -9,6 +9,7 @@ import me.cjcrafter.weaponmechanicscosmetics.WeaponMechanicsCosmetics;
 import me.cjcrafter.weaponmechanicscosmetics.config.BlockParticleSerializer;
 import me.cjcrafter.weaponmechanicscosmetics.config.BlockSoundSerializer;
 import me.deecaad.core.file.Configuration;
+import me.deecaad.core.utils.ray.BlockTraceResult;
 import me.deecaad.core.utils.ray.RayTraceResult;
 import me.deecaad.weaponmechanics.WeaponMechanics;
 import me.deecaad.weaponmechanics.weapon.damage.BlockDamageData;
@@ -70,15 +71,15 @@ public class BlockDamageScript extends ProjectileScript<WeaponProjectile> {
 
     @Override
     public void onCollide(@NotNull RayTraceResult hit) {
-        if (!hit.isBlock() || damage == null || hit.getBlock().isLiquid())
+        if (damage == null || !(hit instanceof BlockTraceResult blockHit) || blockHit.getBlock().isLiquid())
             return;
 
         // Save the state of the block before it is broken
-        BlockState state = hit.getBlock().getState();
+        BlockState state = blockHit.getBlockState();
 
         LivingEntity shooter = projectile.getShooter();
         Player player = shooter != null && shooter.getType() == EntityType.PLAYER ? (Player) shooter : null;
-        BlockDamageData.DamageData data = damage.damage(hit.getBlock(), player, regenDelay != -1);
+        BlockDamageData.DamageData data = damage.damage(blockHit.getBlock(), player, regenDelay != -1);
 
         // Didn't damage block
         if (data == null)

@@ -84,9 +84,10 @@ public final class CrossbowConfigSerializer implements Serializer<CrossbowConfig
             // TODO this is hacky AF... Add late pass serializer
             String weaponTitle = data.key.split("\\.")[0];
             int model = (Integer) data.config.get(weaponTitle + ".Skin.Default.Custom_Model_Data", -1);
+            if (model == -1) model = (Integer) data.config.get(weaponTitle + ".Skin.Default", -1);
 
             if (model == -1) {
-                throw data.exception("Could not infer model data for '" + weaponTitle + "'",
+                throw data.exception(null, "Could not infer model data for '" + weaponTitle + "'",
                         "Make sure you have a skin defined at '" + weaponTitle + ".Skin.Default.Custom_Model_Data'",
                         "If your Skin is located in a different file then your weapon, you will have to define 'Item' manually.");
             }

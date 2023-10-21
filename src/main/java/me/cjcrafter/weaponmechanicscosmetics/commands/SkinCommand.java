@@ -11,7 +11,8 @@ import me.deecaad.core.commands.arguments.StringArgumentType;
 import me.deecaad.core.file.Configuration;
 import me.deecaad.weaponmechanics.WeaponMechanics;
 import me.deecaad.weaponmechanics.WeaponMechanicsAPI;
-import me.deecaad.weaponmechanics.weapon.skin.SkinList;
+import me.deecaad.weaponmechanics.weapon.skin.BaseSkinSelector;
+import me.deecaad.weaponmechanics.weapon.skin.SkinSelector;
 import me.deecaad.weaponmechanics.weapon.stats.WeaponStat;
 import me.deecaad.weaponmechanics.wrappers.PlayerWrapper;
 import me.deecaad.weaponmechanics.wrappers.StatsData;
@@ -21,6 +22,7 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.permissions.Permission;
+import org.bukkit.permissions.PermissionDefault;
 
 import java.util.*;
 import java.util.function.Function;
@@ -32,14 +34,15 @@ public class SkinCommand {
             PlayerInventory inv = ((Player) data.sender()).getInventory();
             ItemStack weapon = empty(inv.getItemInMainHand()) ? inv.getItemInOffHand() : inv.getItemInMainHand();
             String title = weapon == null ? null : WeaponMechanicsAPI.getWeaponTitle(weapon);
-            SkinList skins = WeaponMechanics.getConfigurations().getObject(title + (hand ? ".Hand" : ".Skin"), SkinList.class);
+            SkinSelector skins = WeaponMechanics.getConfigurations().getObject(title + (hand ? ".Hand" : ".Skin"), SkinSelector.class);
 
             if (skins == null)
                 return new Tooltip[]{ Tooltip.of("N/A", title + " cannot have a skin") };
 
             // When giving player options, they shouldn't reselect a skin they are
             // already using.
-            Set<String> options = skins.getSkins();
+            Set<String> options = skins.getCustomSkins();
+            options.add("default");
             StatsData stats = WeaponMechanics.getPlayerWrapper((Player) data.sender()).getStatsData();
             if (stats != null) {
                 String skin = (String) stats.get(title, WeaponStat.SKIN, null);
@@ -49,29 +52,29 @@ public class SkinCommand {
             if (options.isEmpty())
                 return new Tooltip[]{ Tooltip.of("N/A", title + " only has default skin") };
 
-            return SuggestionsBuilder.from(skins.getSkins()).apply(data);
+            return SuggestionsBuilder.from(options).apply(data);
         };
     }
 
     public static void registerPermissions(String key) {
-        String keyLower = key.toUpperCase(Locale.ROOT);
+        String keyLower = key.toLowerCase(Locale.ROOT);
         Configuration config = WeaponMechanics.getConfigurations();
 
-        Permission global = new Permission("weaponmechanics." + key + ".*");
+        Permission global = new Permission("weaponmechanics." + keyLower + ".*");
         global.setDescription("Ability to use all " + key + "s for any weapon");
 
         for (String weaponTitle : WeaponMechanics.getWeaponHandler().getInfoHandler().getSortedWeaponList()) {
-            SkinList skins = config.getObject(weaponTitle + "." + keyLower, SkinList.class);
+            SkinSelector skins = config.getObject(weaponTitle + "." + keyLower, SkinSelector.class);
             if (skins == null)
                 continue;
 
             Permission weapon = new Permission("weaponmechanics." + keyLower + "." + weaponTitle + ".*");
             weapon.setDescription("Ability to use all " + key + "s for " + weaponTitle);
 
-            for (String skin : skins.getSkins()) {
+            for (String skin : skins.getCustomSkins()) {
 
                 // Default skin can be used by everyone, since it is default.
-                if ("default".equals(skin))
+                if ("default".equalsIgnoreCase(skin))
                     continue;
 
                 Permission permission = new Permission("weaponmechanics." + keyLower + "." + weaponTitle + "." + skin);
@@ -90,7 +93,7 @@ public class SkinCommand {
     public static void register() {
         new CommandBuilder("skin")
                 .withAliases("skins", "weaponskin")
-                .withPermission("weaponmechanicscosmetics.commands.skin")
+                .withPermission("weaponmechanicscosmetics.commands.skin", PermissionDefault.TRUE)
                 .withDescription("Change the skin for your weapon")
                 .withArgument(new Argument<>("skin", new StringArgumentType()).replace(SKIN_SUGGESTIONS(false)))
                 .executes(CommandExecutor.player((player, args) -> {
@@ -98,7 +101,7 @@ public class SkinCommand {
                 })).register();
 
         new CommandBuilder("handskin")
-                .withPermission("weaponmechanicscosmetics.commands.handskin")
+                .withPermission("weaponmechanicscosmetics.commands.handskin", PermissionDefault.TRUE)
                 .withDescription("Change the skin for your hand")
                 .withArgument(new Argument<>("skin", new StringArgumentType()).replace(SKIN_SUGGESTIONS(true)))
                 .executes(CommandExecutor.player((player, args) -> {
@@ -128,13 +131,13 @@ public class SkinCommand {
             return;
         }
 
-        SkinList list = WeaponMechanics.getConfigurations().getObject(title + "." + key, SkinList.class);
-        if (list == null) {
+        SkinSelector skins = WeaponMechanics.getConfigurations().getObject(title + "." + key, SkinSelector.class);
+        if (skins == null) {
             WeaponMechanicsCosmetics.getInstance().sendLang(player, "skin-list", variables);
             return;
         }
 
-        if (list.getSkin(skin, null) == null) {
+        if (!skin.equals("default") && !skins.getCustomSkins().contains(skin)) {
             WeaponMechanicsCosmetics.getInstance().sendLang(player, "skin-option", variables);
             return;
         }

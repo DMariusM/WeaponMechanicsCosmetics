@@ -180,7 +180,7 @@ public class ParticleMechanic extends Mechanic {
 
             // In pre 1.13 versions, these 3 particle types took a MaterialData
             // argument instead of a BlockData argument.
-            case "BLOCK_CRACK", "BLOCK_DUST", "FALLING_DUST" -> {
+            case "BLOCK_CRACK", "BLOCK_DUST", "FALLING_DUST", "BLOCK_MARKER" -> {
                 noVelocity(particle, data);
                 noColor(particle, data);
                 noFade(particle, data);

@@ -37,6 +37,18 @@ public class BoxTargeter extends ShapeTargeter {
         this.points = outlineBox(min, max, delta);
     }
 
+    public double getWidth() {
+        return width;
+    }
+
+    public double getHeight() {
+        return height;
+    }
+
+    public double getDelta() {
+        return delta;
+    }
+
     @Override
     public @NotNull String getKey() {
         return "Box";

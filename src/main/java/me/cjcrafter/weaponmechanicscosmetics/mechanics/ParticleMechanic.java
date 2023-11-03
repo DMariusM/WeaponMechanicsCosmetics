@@ -7,6 +7,7 @@ package me.cjcrafter.weaponmechanicscosmetics.mechanics;
 
 import me.deecaad.core.file.SerializeData;
 import me.deecaad.core.file.SerializerException;
+import me.deecaad.core.file.SerializerTypeException;
 import me.deecaad.core.file.serializers.ColorSerializer;
 import me.deecaad.core.file.serializers.ItemSerializer;
 import me.deecaad.core.file.serializers.VectorSerializer;
@@ -21,6 +22,9 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.World;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.BlockDataMeta;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -124,6 +128,15 @@ public class ParticleMechanic extends Mechanic {
         if (data.has("Velocity") && data.has("Noise"))
             throw data.exception(null, "Cannot use both 'Velocity' and 'Noise' at the same time!");
 
+        ItemStack item = null;
+        if (data.has("Material_Data")) {
+            try {
+                item = data.of("Material_Data").assertExists().getImplied(new ItemSerializer());
+            } catch (ClassCastException ex) {
+                item = new ItemStack(data.of("Material_Data").assertExists().getEnum(Material.class));
+            }
+        }
+
         // Dust transition was added in 1.17, which accompanies the skulk
         // sensor. It can fade from one color to another color. Can also
         // modify particle size.
@@ -134,6 +147,7 @@ public class ParticleMechanic extends Mechanic {
                 float size = (float) data.of("Size").assertPositive().getDouble(1.0);
                 noVelocity(particle, data);
                 noBlock(particle, data);
+                offset = parseVector(data, "Noise");
 
                 options = new Particle.DustTransition(color, fade, size);
             }
@@ -146,6 +160,7 @@ public class ParticleMechanic extends Mechanic {
                 noVelocity(particle, data);
                 noFade(particle, data);
                 noBlock(particle, data);
+                offset = parseVector(data, "Noise");
 
                 options = new Particle.DustOptions(color, size);
             }
@@ -175,7 +190,13 @@ public class ParticleMechanic extends Mechanic {
                 noVelocity(particle, data);
                 noColor(particle, data);
                 noFade(particle, data);
-                options = data.of("Material_Data").assertExists().serialize(new ItemSerializer());
+                offset = parseVector(data, "Noise");
+                options = item;
+
+                if (item == null) {
+                    throw data.exception("Material_Data", "When using an item particle, you must specify an item!",
+                            "For example, try using 'materialData=STONE'");
+                }
             }
 
             // In pre 1.13 versions, these 3 particle types took a MaterialData
@@ -184,10 +205,23 @@ public class ParticleMechanic extends Mechanic {
                 noVelocity(particle, data);
                 noColor(particle, data);
                 noFade(particle, data);
+                offset = parseVector(data, "Noise");
+
+                if (item == null) {
+                    throw data.exception("Material_Data", "When using a block particle, you must specify a block!",
+                            "For example, try using 'materialData=STONE'");
+                }
+
                 if (ReflectionUtil.getMCVersion() < 13) {
-                    options = data.of("Material_Data").assertExists().serialize(new ItemSerializer()).getData();
+                    options = item.getData();
                 } else {
-                    options = data.of("Material_Data").assertExists().getEnum(Material.class).createBlockData();
+                    ItemMeta meta = item.getItemMeta();
+                    if (!(meta instanceof BlockDataMeta blockMeta)) {
+                        throw data.exception("Material_Data", "When using a block particle, the material must be a block!",
+                                "You used '" + item.getType() + "' which is not a block!",
+                                "For example, try using 'materialData=STONE'");
+                    }
+                    options = blockMeta.getBlockData(item.getType());
                 }
             }
 

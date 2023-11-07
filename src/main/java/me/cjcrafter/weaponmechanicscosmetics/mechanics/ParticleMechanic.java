@@ -221,7 +221,10 @@ public class ParticleMechanic extends Mechanic {
                                 "You used '" + item.getType() + "' which is not a block!",
                                 "For example, try using 'materialData=STONE'");
                     }
-                    options = blockMeta.getBlockData(item.getType());
+                    if (blockMeta.hasBlockData())
+                        options = blockMeta.getBlockData(item.getType());
+                    else
+                        options = item.getType().createBlockData();
                 }
             }
 

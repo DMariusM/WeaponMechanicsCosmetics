@@ -9,9 +9,11 @@ import me.deecaad.core.MechanicsCore;
 import me.deecaad.core.file.*;
 import me.deecaad.core.lib.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import me.deecaad.core.mechanics.Mechanics;
+import me.deecaad.core.placeholder.PlaceholderMessage;
 import me.deecaad.core.utils.StringUtil;
 import me.deecaad.weaponmechanics.weapon.explode.BlockDamage;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class GeneralCosmeticsValidator implements IValidator {
@@ -41,7 +43,12 @@ public class GeneralCosmeticsValidator implements IValidator {
         configuration.set(key + ".Explosion_Effects", data.of("Explosion_Effects").getBool(false));
 
         Mechanics splashMechanics = data.of("Splash_Mechanics").serialize(new Mechanics());
-        configuration.set(key + ".Splash_Mechanics", splashMechanics);
+        if (splashMechanics != null)
+            configuration.set(key + ".Splash_Mechanics", splashMechanics);
+
+        Mechanics blockHitMechanics = data.of("Block_Hit_Mechanics").serialize(new Mechanics());
+        if (blockHitMechanics != null)
+            configuration.set(key + ".Block_Hit_Mechanics", blockHitMechanics);
 
         // Value should be less than 8 for good results, but we'll *allow*
         // larger values for experimentation.
@@ -54,15 +61,20 @@ public class GeneralCosmeticsValidator implements IValidator {
         configuration.set(key + ".Block_Damage.Ticks_Before_Regenerate", data.of("Block_Damage.Ticks_Before_Regenerate").assertRange(-1, 20 * 60 * 60).getInt(-1));
 
         // Hit Marker
-        configuration.set(key + ".Hit_Marker", data.of("Hit_Marker").getAdventure(null));
+        String adventure = data.of("Hit_Marker").getAdventure(null);
+        if (adventure != null) {
+            PlaceholderMessage msg = new PlaceholderMessage(adventure);
+            configuration.set(key + ".Hit_Marker", msg);
+        }
 
         // Death Message Overrides
         List<String> deathMessages = data.of("Death_Messages").assertType(List.class).get(List.of());
+        List<PlaceholderMessage> placeholderMessages = new ArrayList<>(deathMessages.size());
         for (int i = 0; i < deathMessages.size(); i++) {
             String deathMessage = deathMessages.get(i);
 
             deathMessage = StringUtil.colorAdventure(deathMessage);
-            deathMessages.set(i, deathMessage);
+            placeholderMessages.add(new PlaceholderMessage(deathMessage));
         }
 
         configuration.set(key + ".Death_Messages", deathMessages);

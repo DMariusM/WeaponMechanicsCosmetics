@@ -75,7 +75,7 @@ public class SplashScript extends ProjectileScript<WeaponProjectile> {
         return isWater(block);
     }
 
-    public boolean isWater(Block block) {
+    public static boolean isWater(Block block) {
         // Weird water check for version compatibility... "STATIONARY_WATER"
         if (ReflectionUtil.getMCVersion() < 13)
             return block.isLiquid() && block.getType().name().endsWith("WATER");

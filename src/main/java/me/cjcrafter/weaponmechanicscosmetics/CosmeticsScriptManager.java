@@ -48,6 +48,9 @@ public class CosmeticsScriptManager extends ProjectileScriptManager {
             // splash effects (entities have splash effects in vanilla mc)
             if (config.containsKey(projectile.getWeaponTitle() + ".Cosmetics.Splash_Mechanics"))
                 projectile.addProjectileScript(new SplashScript(getPlugin(), projectile));
+
+            if (config.containsKey(projectile.getWeaponTitle() + ".Cosmetics.Block_Hit_Mechanics"))
+                projectile.addProjectileScript(new BlockHitMechanicsScript(getPlugin(), projectile));
         }
     }
 }

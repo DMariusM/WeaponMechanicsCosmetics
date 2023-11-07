@@ -2,8 +2,11 @@ package me.cjcrafter.weaponmechanicscosmetics.listeners;
 
 import me.deecaad.core.MechanicsCore;
 import me.deecaad.core.file.Configuration;
+import me.deecaad.core.lib.adventure.text.Component;
 import me.deecaad.core.lib.adventure.text.serializer.gson.GsonComponentSerializer;
 import me.deecaad.core.lib.adventure.text.serializer.legacy.LegacyComponentSerializer;
+import me.deecaad.core.placeholder.PlaceholderData;
+import me.deecaad.core.placeholder.PlaceholderMessage;
 import me.deecaad.core.utils.NumberUtil;
 import me.deecaad.core.utils.ReflectionUtil;
 import me.deecaad.weaponmechanics.WeaponMechanics;
@@ -62,16 +65,23 @@ public class DeathMessageListener implements Listener {
             return;
 
         Configuration config = WeaponMechanics.getConfigurations();
-        List<String> deathMessages = config.getList(killData.getWeaponTitle() + ".Cosmetics.Death_Messages");
+        List<PlaceholderMessage> deathMessages = config.getObject(killData.getWeaponTitle() + ".Cosmetics.Death_Messages", List.class);
 
-        String deathMessage = NumberUtil.random(deathMessages);
-        deathMessage = deathMessage.replace("%victim%", killData.getVictim().getName());
-        deathMessage = deathMessage.replace("%shooter%", killData.getShooter().getName());
+        PlaceholderMessage deathMessage = NumberUtil.random(deathMessages);
+        PlaceholderData placeholderData = PlaceholderData.builder()
+                .setItem(killData.getWeaponStack())
+                .setItemTitle(killData.getWeaponTitle())
+                .setPlayer(event.getEntity())
+                .setPlaceholder("target_name", killData.getVictim().getName())
+                .setPlaceholder("source_name", killData.getShooter().getName());
+
+        Component component = deathMessage.replaceAndDeserialize(placeholderData);
+        String newMessage;
         if (ReflectionUtil.getMCVersion() < 16)
-            deathMessage = LEGACY.serialize(MechanicsCore.getPlugin().message.deserialize(deathMessage));
+            newMessage = LEGACY.serialize(component);
         else
-            deathMessage = HEX.serialize(MechanicsCore.getPlugin().message.deserialize(deathMessage));
+            newMessage = HEX.serialize(component);
 
-        event.setDeathMessage(deathMessage);
+        event.setDeathMessage(newMessage);
     }
 }

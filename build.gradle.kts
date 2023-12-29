@@ -1,7 +1,7 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 group = "me.cjcrafter"
-version = "3.1.0"
+version = "3.1.1"
 
 plugins {
     `java-library`
@@ -19,7 +19,8 @@ bukkit {
     apiVersion = "1.13"
 
     authors = listOf("CJCrafter", "DeeCaaD")
-    depend = listOf("MechanicsCore", "WeaponMechanics")
+    depend = listOf("ProtocolLib", "MechanicsCore", "WeaponMechanics")
+    softDepend = listOf("VivecraftSpigot")
 }
 
 repositories {
@@ -40,15 +41,6 @@ repositories {
     maven {
         url = uri("https://repo.aikar.co/content/groups/aikar/")
     }
-
-    maven {
-        name = "GitHubPackages"
-        url = uri("https://maven.pkg.github.com/WeaponMechanics/MechanicsMain")
-        credentials {
-            username = findProperty("user").toString()
-            password = findProperty("pass").toString()
-        }
-    }
 }
 
 dependencies {
@@ -57,12 +49,17 @@ dependencies {
     compileOnly("org.spigotmc:spigot-api:1.20.2-R0.1-SNAPSHOT")
     testImplementation("org.junit.jupiter:junit-jupiter:5.9.2")
 
-    compileOnly("me.deecaad:mechanicscore:3.1.1")
-    compileOnly("me.deecaad:weaponmechanics:3.1.0")
-    compileOnly("com.comphenix.protocol:ProtocolLib:5.1.0")
-    compileOnly(files(file("lib/vivecraft/Vivecraft_Spigot_Extensions.jar")))
-    implementation("org.bstats:bstats-bukkit:3.0.1")
+    compileOnly("net.kyori:adventure-api:4.15.0")
+    compileOnly("net.kyori:adventure-platform-bukkit:4.3.1")
+    compileOnly("net.kyori:adventure-text-serializer-legacy:4.15.0")
+    compileOnly("net.kyori:adventure-text-minimessage:4.15.0")
 
+    compileOnly("com.cjcrafter:mechanicscore:1.0.0")
+    compileOnly("com.cjcrafter:weaponmechanics:1.0.0")
+    compileOnly("com.cjcrafter:vivecraft:3.0.0")
+    compileOnly("com.comphenix.protocol:ProtocolLib:5.1.0")
+
+    implementation("org.bstats:bstats-bukkit:3.0.1")
     implementation("org.mariuszgromada.math:MathParser.org-mXparser:5.2.1")
 }
 
@@ -81,6 +78,9 @@ tasks.named<ShadowJar>("shadowJar") {
         relocate ("org.bstats", "me.cjcrafter.weaponmechanicscosmetics.lib.bstats") {
             include(dependency("org.bstats:"))
         }
+
+        // Relocate to MechanicsCore adventure locations, so we use their shaded version
+        relocate("net.kyori", "me.deecaad.core.lib")
     }
 }
 

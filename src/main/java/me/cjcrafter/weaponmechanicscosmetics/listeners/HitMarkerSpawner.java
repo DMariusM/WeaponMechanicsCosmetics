@@ -1,18 +1,16 @@
 package me.cjcrafter.weaponmechanicscosmetics.listeners;
 
 import me.cjcrafter.weaponmechanicscosmetics.WeaponMechanicsCosmetics;
-import me.deecaad.core.MechanicsCore;
 import me.deecaad.core.compatibility.CompatibilityAPI;
 import me.deecaad.core.compatibility.entity.FakeEntity;
 import me.deecaad.core.file.Configuration;
-import me.deecaad.core.lib.adventure.text.Component;
-import me.deecaad.core.lib.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import me.deecaad.core.placeholder.PlaceholderData;
 import me.deecaad.core.placeholder.PlaceholderMessage;
 import me.deecaad.core.utils.NumberUtil;
 import me.deecaad.weaponmechanics.WeaponMechanics;
-import me.deecaad.weaponmechanics.compatibility.WeaponCompatibilityAPI;
 import me.deecaad.weaponmechanics.weapon.weaponevents.WeaponDamageEntityEvent;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Location;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;

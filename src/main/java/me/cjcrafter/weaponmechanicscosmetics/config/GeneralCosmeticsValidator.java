@@ -5,9 +5,7 @@
 
 package me.cjcrafter.weaponmechanicscosmetics.config;
 
-import me.deecaad.core.MechanicsCore;
 import me.deecaad.core.file.*;
-import me.deecaad.core.lib.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import me.deecaad.core.mechanics.Mechanics;
 import me.deecaad.core.placeholder.PlaceholderMessage;
 import me.deecaad.core.utils.StringUtil;

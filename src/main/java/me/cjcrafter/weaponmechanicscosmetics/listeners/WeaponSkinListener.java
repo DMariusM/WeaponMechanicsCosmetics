@@ -22,7 +22,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
-import org.vivecraft.VSE;
+import com.cjcrafter.vivecraft.VSE;
 
 public class WeaponSkinListener implements Listener {
 
@@ -48,7 +48,7 @@ public class WeaponSkinListener implements Listener {
         // When a player is in VR, we should not try to assign an off-hand to
         // them (Since they already have a visual hand).
         Player player = (Player) event.getShooter();
-        if (Bukkit.getPluginManager().getPlugin("Vivecraft-Spigot-Extensions") != null && VSE.isVive(player))
+        if (Bukkit.getPluginManager().getPlugin("VivecraftSpigot") != null && VSE.isVive(player))
             return;
 
         // Creative players cause item duplication

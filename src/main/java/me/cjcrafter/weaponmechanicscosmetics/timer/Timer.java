@@ -11,16 +11,16 @@ import me.deecaad.core.compatibility.CompatibilityAPI;
 import me.deecaad.core.file.SerializeData;
 import me.deecaad.core.file.Serializer;
 import me.deecaad.core.file.SerializerException;
-import me.deecaad.core.lib.adventure.audience.Audience;
-import me.deecaad.core.lib.adventure.bossbar.BossBar;
-import me.deecaad.core.lib.adventure.text.Component;
-import me.deecaad.core.lib.adventure.title.Title;
-import me.deecaad.core.lib.adventure.util.Ticks;
 import me.deecaad.core.placeholder.PlaceholderData;
 import me.deecaad.core.placeholder.PlaceholderMessage;
 import me.deecaad.core.utils.NumberUtil;
 import me.deecaad.core.utils.ReflectionUtil;
 import me.deecaad.weaponmechanics.utils.CustomTag;
+import net.kyori.adventure.audience.Audience;
+import net.kyori.adventure.bossbar.BossBar;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.title.Title;
+import net.kyori.adventure.util.Ticks;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -29,7 +29,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Constructor;
 import java.text.DecimalFormat;
-import java.util.Map;
 
 /**
  * Shows a timer in the item cool down, actionbar, title, boss bar, or

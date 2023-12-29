@@ -1,10 +1,6 @@
 package me.cjcrafter.weaponmechanicscosmetics.listeners;
 
-import me.deecaad.core.MechanicsCore;
 import me.deecaad.core.file.Configuration;
-import me.deecaad.core.lib.adventure.text.Component;
-import me.deecaad.core.lib.adventure.text.serializer.gson.GsonComponentSerializer;
-import me.deecaad.core.lib.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import me.deecaad.core.placeholder.PlaceholderData;
 import me.deecaad.core.placeholder.PlaceholderMessage;
 import me.deecaad.core.utils.NumberUtil;
@@ -12,7 +8,8 @@ import me.deecaad.core.utils.ReflectionUtil;
 import me.deecaad.weaponmechanics.WeaponMechanics;
 import me.deecaad.weaponmechanics.events.WeaponMechanicsEntityDamageByEntityEvent;
 import me.deecaad.weaponmechanics.weapon.weaponevents.WeaponDamageEntityEvent;
-import me.deecaad.weaponmechanics.weapon.weaponevents.WeaponKillEntityEvent;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.EventHandler;
@@ -26,9 +23,9 @@ import java.util.Map;
 
 public class DeathMessageListener implements Listener {
 
-    private Map<LivingEntity, WeaponDamageEntityEvent> killMap = new IdentityHashMap<>(); // identity for performance
-    private LegacyComponentSerializer LEGACY = LegacyComponentSerializer.legacySection();
-    private LegacyComponentSerializer HEX = LegacyComponentSerializer.builder()
+    private final Map<LivingEntity, WeaponDamageEntityEvent> killMap = new IdentityHashMap<>(); // identity for performance
+    private final LegacyComponentSerializer LEGACY = LegacyComponentSerializer.legacySection();
+    private final LegacyComponentSerializer HEX = LegacyComponentSerializer.builder()
             .character(LegacyComponentSerializer.SECTION_CHAR)
             .hexCharacter('#')
             .hexColors()

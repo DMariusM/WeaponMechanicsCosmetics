@@ -5,7 +5,10 @@
 
 package me.cjcrafter.weaponmechanicscosmetics.config;
 
-import me.deecaad.core.file.*;
+import me.deecaad.core.file.Configuration;
+import me.deecaad.core.file.IValidator;
+import me.deecaad.core.file.SerializeData;
+import me.deecaad.core.file.SerializerException;
 import me.deecaad.core.mechanics.Mechanics;
 import me.deecaad.core.placeholder.PlaceholderMessage;
 import me.deecaad.core.utils.StringUtil;

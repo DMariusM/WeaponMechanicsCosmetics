@@ -5,16 +5,13 @@
 
 package me.cjcrafter.weaponmechanicscosmetics.listeners;
 
+import me.cjcrafter.weaponmechanicscosmetics.WeaponMechanicsCosmetics;
 import me.cjcrafter.weaponmechanicscosmetics.config.CrossbowConfigSerializer;
 import me.cjcrafter.weaponmechanicscosmetics.config.GeneralCosmeticsValidator;
-import me.cjcrafter.weaponmechanicscosmetics.WeaponMechanicsCosmetics;
 import me.cjcrafter.weaponmechanicscosmetics.config.HandValidator;
-import me.cjcrafter.weaponmechanicscosmetics.mechanics.FakeItemMechanic;
 import me.cjcrafter.weaponmechanicscosmetics.timer.TimerValidator;
-import me.cjcrafter.weaponmechanicscosmetics.mechanics.ParticleMechanic;
 import me.cjcrafter.weaponmechanicscosmetics.trails.Trail;
 import me.deecaad.core.events.QueueSerializerEvent;
-import me.deecaad.core.mechanics.Mechanics;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 

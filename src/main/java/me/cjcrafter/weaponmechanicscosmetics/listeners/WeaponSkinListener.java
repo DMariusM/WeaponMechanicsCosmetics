@@ -1,10 +1,10 @@
 package me.cjcrafter.weaponmechanicscosmetics.listeners;
 
+import com.cjcrafter.vivecraft.VSE;
 import me.deecaad.core.compatibility.CompatibilityAPI;
 import me.deecaad.core.file.Configuration;
 import me.deecaad.weaponmechanics.WeaponMechanics;
 import me.deecaad.weaponmechanics.utils.CustomTag;
-import me.deecaad.weaponmechanics.weapon.skin.Skin;
 import me.deecaad.weaponmechanics.weapon.skin.SkinHandler;
 import me.deecaad.weaponmechanics.weapon.skin.SkinSelector;
 import me.deecaad.weaponmechanics.weapon.stats.WeaponStat;
@@ -22,7 +22,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
-import com.cjcrafter.vivecraft.VSE;
 
 public class WeaponSkinListener implements Listener {
 

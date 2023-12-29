@@ -6,11 +6,11 @@
 package me.cjcrafter.weaponmechanicscosmetics.trails;
 
 import me.cjcrafter.weaponmechanicscosmetics.mechanics.ParticleMechanic;
+import me.cjcrafter.weaponmechanicscosmetics.trails.shape.Vec2;
 import me.deecaad.core.utils.VectorUtil;
 import me.deecaad.weaponmechanics.WeaponMechanics;
 import me.deecaad.weaponmechanics.weapon.projectile.AProjectile;
 import me.deecaad.weaponmechanics.weapon.projectile.ProjectileScript;
-import me.cjcrafter.weaponmechanicscosmetics.trails.shape.Vec2;
 import me.deecaad.weaponmechanics.weapon.projectile.weaponprojectile.WeaponProjectile;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.util.Vector;

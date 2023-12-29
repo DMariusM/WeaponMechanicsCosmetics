@@ -6,6 +6,8 @@
 package me.cjcrafter.weaponmechanicscosmetics.trails;
 
 import me.cjcrafter.weaponmechanicscosmetics.mechanics.ParticleMechanic;
+import me.cjcrafter.weaponmechanicscosmetics.trails.shape.Shape;
+import me.cjcrafter.weaponmechanicscosmetics.trails.shape.ShapeFactory;
 import me.deecaad.core.file.SerializeData;
 import me.deecaad.core.file.Serializer;
 import me.deecaad.core.file.SerializerException;
@@ -13,8 +15,6 @@ import me.deecaad.core.mechanics.Mechanics;
 import me.deecaad.core.mechanics.defaultmechanics.Mechanic;
 import me.deecaad.core.mechanics.targeters.SourceTargeter;
 import me.deecaad.core.utils.NumberUtil;
-import me.cjcrafter.weaponmechanicscosmetics.trails.shape.Shape;
-import me.cjcrafter.weaponmechanicscosmetics.trails.shape.ShapeFactory;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 

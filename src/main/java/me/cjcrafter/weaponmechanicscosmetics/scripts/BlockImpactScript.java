@@ -8,7 +8,7 @@ package me.cjcrafter.weaponmechanicscosmetics.scripts;
 import me.cjcrafter.weaponmechanicscosmetics.WeaponMechanicsCosmetics;
 import me.cjcrafter.weaponmechanicscosmetics.config.BlockParticleSerializer;
 import me.cjcrafter.weaponmechanicscosmetics.config.BlockSoundSerializer;
-import me.deecaad.core.file.*;
+import me.deecaad.core.file.Configuration;
 import me.deecaad.core.utils.Debugger;
 import me.deecaad.core.utils.ray.BlockTraceResult;
 import me.deecaad.core.utils.ray.RayTraceResult;

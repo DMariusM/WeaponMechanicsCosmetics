@@ -8,7 +8,6 @@ import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.wrappers.EnumWrappers;
 import com.comphenix.protocol.wrappers.Pair;
 import me.cjcrafter.weaponmechanicscosmetics.config.CrossbowConfigSerializer;
-import me.deecaad.core.file.Configuration;
 import me.deecaad.core.utils.ReflectionUtil;
 import me.deecaad.weaponmechanics.WeaponMechanics;
 import me.deecaad.weaponmechanics.utils.CustomTag;

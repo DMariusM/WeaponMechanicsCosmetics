@@ -11,7 +11,6 @@ import me.deecaad.core.commands.arguments.StringArgumentType;
 import me.deecaad.core.file.Configuration;
 import me.deecaad.weaponmechanics.WeaponMechanics;
 import me.deecaad.weaponmechanics.WeaponMechanicsAPI;
-import me.deecaad.weaponmechanics.weapon.skin.BaseSkinSelector;
 import me.deecaad.weaponmechanics.weapon.skin.SkinSelector;
 import me.deecaad.weaponmechanics.weapon.stats.WeaponStat;
 import me.deecaad.weaponmechanics.wrappers.PlayerWrapper;
@@ -24,7 +23,10 @@ import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionDefault;
 
-import java.util.*;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.function.Function;
 
 public class SkinCommand {

@@ -6,11 +6,11 @@
 package me.cjcrafter.weaponmechanicscosmetics;
 
 import me.cjcrafter.weaponmechanicscosmetics.scripts.*;
+import me.cjcrafter.weaponmechanicscosmetics.trails.TrailScript;
 import me.deecaad.core.file.Configuration;
 import me.deecaad.weaponmechanics.WeaponMechanics;
 import me.deecaad.weaponmechanics.weapon.projectile.AProjectile;
 import me.deecaad.weaponmechanics.weapon.projectile.ProjectileScriptManager;
-import me.cjcrafter.weaponmechanicscosmetics.trails.TrailScript;
 import me.deecaad.weaponmechanics.weapon.projectile.weaponprojectile.WeaponProjectile;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;

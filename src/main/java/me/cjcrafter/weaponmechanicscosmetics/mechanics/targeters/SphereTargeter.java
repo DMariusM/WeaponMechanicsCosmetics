@@ -6,11 +6,9 @@ import me.deecaad.core.mechanics.CastData;
 import me.deecaad.core.mechanics.targeters.ShapeTargeter;
 import me.deecaad.core.mechanics.targeters.Targeter;
 import me.deecaad.core.utils.VectorUtil;
-import org.bukkit.Location;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 
 public class SphereTargeter extends ShapeTargeter {

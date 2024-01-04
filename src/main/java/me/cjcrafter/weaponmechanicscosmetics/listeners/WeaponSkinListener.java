@@ -4,16 +4,20 @@ import com.cjcrafter.vivecraft.VSE;
 import me.deecaad.core.compatibility.CompatibilityAPI;
 import me.deecaad.core.file.Configuration;
 import me.deecaad.weaponmechanics.WeaponMechanics;
+import me.deecaad.weaponmechanics.WeaponMechanicsAPI;
 import me.deecaad.weaponmechanics.utils.CustomTag;
 import me.deecaad.weaponmechanics.weapon.skin.SkinHandler;
 import me.deecaad.weaponmechanics.weapon.skin.SkinSelector;
 import me.deecaad.weaponmechanics.weapon.stats.WeaponStat;
+import me.deecaad.weaponmechanics.weapon.weaponevents.WeaponGenerateEvent;
 import me.deecaad.weaponmechanics.weapon.weaponevents.WeaponSkinEvent;
 import me.deecaad.weaponmechanics.wrappers.HandData;
 import me.deecaad.weaponmechanics.wrappers.PlayerWrapper;
 import me.deecaad.weaponmechanics.wrappers.StatsData;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -25,10 +29,42 @@ import org.bukkit.inventory.ItemStack;
 
 public class WeaponSkinListener implements Listener {
 
+    @EventHandler
+    public void onGiveWeapon(WeaponGenerateEvent event) {
+        CommandSender sender = event.getSender();
+        String skin = event.getOrDefault("skin", null);
+        if (skin == null)
+            return;
+
+        SkinSelector selector = WeaponMechanics.getConfigurations().getObject(event.getWeaponTitle() + ".Skin", SkinSelector.class);
+        if (selector == null) {
+            if (sender != null)
+                sender.sendMessage(ChatColor.RED + event.getWeaponTitle() + " does not use skins");
+            return;
+        }
+
+        if (!selector.getCustomSkins().contains(skin)) {
+            if (sender != null) {
+                sender.sendMessage(ChatColor.RED + skin + " is not a valid skin for " + event.getWeaponTitle());
+                sender.sendMessage(ChatColor.RED + "Valid skins: " + selector.getCustomSkins());
+            }
+            return;
+        }
+
+        CustomTag.WEAPON_SKIN.setString(event.getWeaponStack(), skin);
+    }
+
     @EventHandler (priority = EventPriority.LOW)
     public void onSkin(WeaponSkinEvent event) {
         if (event.getShooter().getType() != EntityType.PLAYER)
             return;
+
+        // Check for per-item overrides
+        String override = CustomTag.WEAPON_SKIN.getString(event.getWeaponStack());
+        if (override != null) {
+            event.setSkin(override);
+            return;
+        }
 
         StatsData stats = WeaponMechanics.getPlayerWrapper((Player) event.getShooter()).getStatsData();
         if (stats != null) {

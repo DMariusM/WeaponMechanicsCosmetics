@@ -66,11 +66,11 @@ public class PumpkinScopeOverlay implements Listener {
         ZoomData off = wrapper.getOffHandData().getZoomData();
 
         // 2 ticks are needed, 1 doesn't work
-        if (main.isZooming() || off.isZooming()) {
+        if ((main.isZooming() || off.isZooming()) && injectedPlayers.contains(player)) {
             new BukkitRunnable() {
                 @Override
                 public void run() {
-                    if (main.isZooming() || off.isZooming() && injectedPlayers.contains(player))
+                    if ((main.isZooming() || off.isZooming()) && injectedPlayers.contains(player))
                         sendPumpkin(player);
                 }
             }.runTaskLater(WeaponMechanicsCosmetics.getInstance().getPlugin(), 2L);

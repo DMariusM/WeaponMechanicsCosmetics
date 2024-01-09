@@ -1,7 +1,7 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 group = "me.cjcrafter"
-version = "3.2.0"
+version = "3.2.1"
 
 plugins {
     `java-library`
@@ -54,8 +54,8 @@ dependencies {
     compileOnly("net.kyori:adventure-text-serializer-legacy:4.15.0")
     compileOnly("net.kyori:adventure-text-minimessage:4.15.0")
 
-    compileOnly("com.cjcrafter:mechanicscore:1.0.0")
-    compileOnly("com.cjcrafter:weaponmechanics:1.0.0")
+    compileOnly("com.cjcrafter:mechanicscore:3.2.5")
+    compileOnly("com.cjcrafter:weaponmechanics:3.2.6")
     compileOnly("com.cjcrafter:vivecraft:3.0.0")
     compileOnly("com.comphenix.protocol:ProtocolLib:5.1.0")
 

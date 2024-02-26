@@ -1,16 +1,10 @@
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-
 group = "me.cjcrafter"
-version = "3.2.1"
+version = "3.2.3"
 
 plugins {
     `java-library`
-    id("com.github.johnrengelman.shadow") version "7.1.0"
+    id("com.github.johnrengelman.shadow") version "8.1.1"
     id("net.minecrell.plugin-yml.bukkit") version "0.5.1"
-}
-
-configurations {
-    compileClasspath.get().extendsFrom(create("shadeOnly"))
 }
 
 bukkit {
@@ -63,10 +57,8 @@ dependencies {
     implementation("org.mariuszgromada.math:MathParser.org-mXparser:5.2.1")
 }
 
-tasks.named<ShadowJar>("shadowJar") {
-    classifier = null;
+tasks.shadowJar {
     archiveFileName.set("WeaponMechanicsCosmetics-${project.version}.jar")
-    configurations = listOf(project.configurations["shadeOnly"], project.configurations["runtimeClasspath"])
 
     dependencies {
         relocate ("co.aikar.timings.lib", "me.cjcrafter.weaponmechanicscosmetics.lib.timings") {
@@ -82,10 +74,6 @@ tasks.named<ShadowJar>("shadowJar") {
         // Relocate to MechanicsCore adventure locations, so we use their shaded version
         relocate("net.kyori", "me.deecaad.core.lib")
     }
-}
-
-tasks.named("assemble").configure {
-    dependsOn("shadowJar")
 }
 
 java {

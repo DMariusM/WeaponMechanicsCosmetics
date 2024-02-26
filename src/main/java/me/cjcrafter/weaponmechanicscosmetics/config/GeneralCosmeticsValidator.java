@@ -78,6 +78,6 @@ public class GeneralCosmeticsValidator implements IValidator {
             placeholderMessages.add(new PlaceholderMessage(deathMessage));
         }
 
-        configuration.set(key + ".Death_Messages", deathMessages);
+        configuration.set(key + ".Death_Messages", placeholderMessages);
     }
 }

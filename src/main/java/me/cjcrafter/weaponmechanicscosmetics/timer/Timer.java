@@ -95,7 +95,7 @@ public class Timer implements Serializer<Timer>{
      */
     public TimerData play(Player player, ItemStack weapon, int totalTicks) {
         if (showItemCooldown && weapon != null)
-            CompatibilityAPI.getEntityCompatibility().setCooldown(player, weapon.getType(), totalTicks);
+            player.setCooldown(weapon.getType(), totalTicks);
 
         send(player, weapon, 0, totalTicks);
 
@@ -148,15 +148,15 @@ public class Timer implements Serializer<Timer>{
 
         // Remove any cooldown if the player still has one (*should*
         // only happen when the event is cancelled).
-        if (weapon != null && CompatibilityAPI.getEntityCompatibility().hasCooldown(player, weapon.getType())) {
+        if (weapon != null && player.hasCooldown(weapon.getType())) {
 
             if (Bukkit.isPrimaryThread()) {
-                CompatibilityAPI.getEntityCompatibility().setCooldown(player, weapon.getType(), 0);
+                player.setCooldown(weapon.getType(), 0);
             } else {
                 new BukkitRunnable() {
                     @Override
                     public void run() {
-                        CompatibilityAPI.getEntityCompatibility().setCooldown(player, weapon.getType(), 0);
+                       player.setCooldown(weapon.getType(), 0);
                     }
                 }.runTask(WeaponMechanicsCosmetics.getInstance().getPlugin());
             }
@@ -195,7 +195,7 @@ public class Timer implements Serializer<Timer>{
 
         // Handle showing the bossbar. Since the bossbar doesn't disappear on
         // its own, we have to schedule a task to remove it 1 tick later.
-        float progress = NumberUtil.minMax(0.0f, (float) ticks / totalTicks, 1.0f);
+        float progress = NumberUtil.clamp01((float) ticks / totalTicks);
         if (bossBar != null) {
             BossBar bossComponent = BossBar.bossBar(bossBar.replaceAndDeserialize(data), progress, color, style);
             audience.showBossBar(bossComponent);
@@ -224,7 +224,7 @@ public class Timer implements Serializer<Timer>{
         if (Float.isNaN(progress))
             progress = player.getExp();
 
-        progress = NumberUtil.minMax(0.0f, progress, 1.0f);
+        progress = NumberUtil.clamp01(progress);
 
         if (ReflectionUtil.getMCVersion() < 15) {
             CompatibilityAPI.getCompatibility().sendPackets(player, ReflectionUtil.newInstance(packetPlayOutExperienceConstructor, progress, player.getTotalExperience(), player.getLevel()));

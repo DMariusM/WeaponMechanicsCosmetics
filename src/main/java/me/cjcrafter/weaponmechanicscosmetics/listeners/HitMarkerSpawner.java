@@ -7,6 +7,7 @@ import me.deecaad.core.file.Configuration;
 import me.deecaad.core.placeholder.PlaceholderData;
 import me.deecaad.core.placeholder.PlaceholderMessage;
 import me.deecaad.core.utils.NumberUtil;
+import me.deecaad.core.utils.RandomUtil;
 import me.deecaad.weaponmechanics.WeaponMechanics;
 import me.deecaad.weaponmechanics.weapon.weaponevents.WeaponDamageEntityEvent;
 import net.kyori.adventure.text.Component;
@@ -43,9 +44,9 @@ public class HitMarkerSpawner implements Listener {
         Component component = format.replaceAndDeserialize(placeholderData);
         String display = LegacyComponentSerializer.legacySection().serialize(component);
 
-        double width = CompatibilityAPI.getEntityCompatibility().getWidth(event.getVictim());
+        double width = event.getVictim().getWidth();
         Location pos = event.getVictim().getEyeLocation();
-        pos.add(NumberUtil.random(-width, width), -2, NumberUtil.random(-width, width));
+        pos.add(RandomUtil.range(-width, width), -2, RandomUtil.range(-width, width));
         FakeEntity entity = CompatibilityAPI.getEntityCompatibility().generateFakeEntity(pos, EntityType.ARMOR_STAND, null);
         entity.setInvisible(true);
         entity.setGravity(false);

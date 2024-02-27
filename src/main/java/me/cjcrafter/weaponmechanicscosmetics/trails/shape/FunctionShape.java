@@ -6,6 +6,7 @@
 package me.cjcrafter.weaponmechanicscosmetics.trails.shape;
 
 import me.cjcrafter.weaponmechanicscosmetics.trails.Trail;
+import me.deecaad.core.utils.NumberUtil;
 import me.deecaad.core.utils.VectorUtil;
 
 import java.util.ArrayList;
@@ -60,8 +61,8 @@ public abstract class FunctionShape implements Shape {
         // [0, period], where period is usually 2pi (though it can be changed
         // for some functions).
         if (cache == null) {
-            double theta = VectorUtil.PI_2 * index / points;
-            double delta = VectorUtil.PI_2 / loops;
+            double theta = NumberUtil.TAU_DOUBLE * index / points;
+            double delta = NumberUtil.TAU_DOUBLE / loops;
 
             // todo consider storing a list
             List<Vec2> temp = new ArrayList<>(loops);

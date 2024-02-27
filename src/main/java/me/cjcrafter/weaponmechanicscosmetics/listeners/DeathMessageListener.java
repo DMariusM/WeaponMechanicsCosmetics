@@ -4,12 +4,13 @@ import me.deecaad.core.file.Configuration;
 import me.deecaad.core.placeholder.PlaceholderData;
 import me.deecaad.core.placeholder.PlaceholderMessage;
 import me.deecaad.core.utils.NumberUtil;
+import me.deecaad.core.utils.RandomUtil;
 import me.deecaad.core.utils.ReflectionUtil;
 import me.deecaad.weaponmechanics.WeaponMechanics;
-import me.deecaad.weaponmechanics.events.WeaponMechanicsEntityDamageByEntityEvent;
 import me.deecaad.weaponmechanics.weapon.weaponevents.WeaponDamageEntityEvent;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.EventHandler;
@@ -48,7 +49,10 @@ public class DeathMessageListener implements Listener {
 
     @EventHandler
     public void onVanillaDamage(EntityDamageByEntityEvent event) {
-        if (event instanceof WeaponMechanicsEntityDamageByEntityEvent)
+
+        // Skip damage by WM, since we want to detect when WM kills entities
+        Entity entity = event.getEntity();
+        if (entity.hasMetadata("doing-weapon-damage"))
             return;
 
         killMap.remove(event.getEntity());
@@ -64,7 +68,7 @@ public class DeathMessageListener implements Listener {
         Configuration config = WeaponMechanics.getConfigurations();
         List<PlaceholderMessage> deathMessages = config.getObject(killData.getWeaponTitle() + ".Cosmetics.Death_Messages", List.class);
 
-        PlaceholderMessage deathMessage = NumberUtil.random(deathMessages);
+        PlaceholderMessage deathMessage = RandomUtil.element(deathMessages);
         PlaceholderData placeholderData = PlaceholderData.builder()
                 .setItem(killData.getWeaponStack())
                 .setItemTitle(killData.getWeaponTitle())

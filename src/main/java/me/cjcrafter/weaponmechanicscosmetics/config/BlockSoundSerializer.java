@@ -10,6 +10,7 @@ import me.deecaad.core.mechanics.Mechanics;
 import me.deecaad.core.mechanics.defaultmechanics.Mechanic;
 import me.deecaad.core.utils.EnumUtil;
 import me.deecaad.core.utils.NumberUtil;
+import me.deecaad.core.utils.RandomUtil;
 import me.deecaad.core.utils.ReflectionUtil;
 import me.deecaad.weaponmechanics.WeaponMechanics;
 import me.deecaad.weaponmechanics.weapon.projectile.weaponprojectile.WeaponProjectile;
@@ -67,7 +68,7 @@ public class BlockSoundSerializer implements Serializer<BlockSoundSerializer> {
     }
 
     public void play(Location loc, String sound, float volume, float pitch, float randomness) {
-        pitch += (float) NumberUtil.random(-randomness, randomness);
+        pitch += RandomUtil.range(-randomness, randomness);
         if (ReflectionUtil.getMCVersion() < 11) {
             loc.getWorld().playSound(loc, sound, volume, pitch);
         } else {
@@ -76,7 +77,7 @@ public class BlockSoundSerializer implements Serializer<BlockSoundSerializer> {
     }
 
     public void play(Location loc, Sound sound, float volume, float pitch, float randomness) {
-        pitch += (float) NumberUtil.random(-randomness, randomness);
+        pitch += RandomUtil.range(-randomness, randomness);
         if (ReflectionUtil.getMCVersion() < 11) {
             loc.getWorld().playSound(loc, sound, volume, pitch);
         } else {

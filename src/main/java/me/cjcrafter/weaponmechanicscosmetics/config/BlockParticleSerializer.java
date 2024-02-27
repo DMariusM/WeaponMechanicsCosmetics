@@ -7,6 +7,7 @@ import me.deecaad.core.file.SerializerException;
 import me.deecaad.core.mechanics.Mechanics;
 import me.deecaad.core.mechanics.defaultmechanics.Mechanic;
 import me.deecaad.core.utils.EnumUtil;
+import me.deecaad.core.utils.RandomUtil;
 import me.deecaad.core.utils.ReflectionUtil;
 import me.deecaad.core.utils.VectorUtil;
 import me.deecaad.weaponmechanics.WeaponMechanics;
@@ -85,7 +86,7 @@ public class BlockParticleSerializer implements Serializer<BlockParticleSerializ
         else {
             Location spawnLoc = hitLocation.toLocation(world);
             for (int i = 0; i < amount; i++) {
-                Vector direction = VectorUtil.random(spread).add(normal);
+                Vector direction = RandomUtil.onUnitSphere().multiply(spread).add(normal);
                 world.spawnParticle(Particle.BLOCK_CRACK, spawnLoc, 0, direction.getX(), direction.getY(), direction.getZ(), data);
             }
         }

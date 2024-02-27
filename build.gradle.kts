@@ -1,5 +1,5 @@
 group = "me.cjcrafter"
-version = "3.2.3"
+version = "3.2.4"
 
 plugins {
     `java-library`
@@ -20,27 +20,16 @@ bukkit {
 repositories {
     mavenLocal()
 
-    maven {
-        url = uri("https://hub.spigotmc.org/nexus/content/repositories/snapshots/")
-    }
-
-    maven {
-        url = uri("https://repo.maven.apache.org/maven2/")
-    }
-
-    maven {
-        url = uri("https://jitpack.io")
-    }
-
-    maven {
-        url = uri("https://repo.aikar.co/content/groups/aikar/")
-    }
+    maven(url = "https://hub.spigotmc.org/nexus/content/repositories/snapshots/")
+    maven(url = "https://repo.maven.apache.org/maven2/")
+    maven(url = "https://jitpack.io")
+    maven(url = "https://repo.aikar.co/content/groups/aikar/")
 }
 
 dependencies {
     compileOnly("org.jetbrains:annotations:24.0.1")
 
-    compileOnly("org.spigotmc:spigot-api:1.20.2-R0.1-SNAPSHOT")
+    compileOnly("org.spigotmc:spigot-api:1.20.4-R0.1-SNAPSHOT")
     testImplementation("org.junit.jupiter:junit-jupiter:5.9.2")
 
     compileOnly("net.kyori:adventure-api:4.15.0")
@@ -48,8 +37,8 @@ dependencies {
     compileOnly("net.kyori:adventure-text-serializer-legacy:4.15.0")
     compileOnly("net.kyori:adventure-text-minimessage:4.15.0")
 
-    compileOnly("com.cjcrafter:mechanicscore:3.2.5")
-    compileOnly("com.cjcrafter:weaponmechanics:3.2.6")
+    compileOnly("com.cjcrafter:mechanicscore:3.3.0")
+    compileOnly("com.cjcrafter:weaponmechanics:3.3.0")
     compileOnly("com.cjcrafter:vivecraft:3.0.0")
     compileOnly("com.comphenix.protocol:ProtocolLib:5.1.0")
 

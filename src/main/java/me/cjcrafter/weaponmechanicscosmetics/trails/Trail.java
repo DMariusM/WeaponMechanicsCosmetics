@@ -15,6 +15,7 @@ import me.deecaad.core.mechanics.Mechanics;
 import me.deecaad.core.mechanics.defaultmechanics.Mechanic;
 import me.deecaad.core.mechanics.targeters.SourceTargeter;
 import me.deecaad.core.utils.NumberUtil;
+import me.deecaad.core.utils.RandomUtil;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 
@@ -85,7 +86,7 @@ public class Trail implements Serializer<Trail>, Cloneable {
     public ParticleMechanic getParticle(int index) {
         return switch (chooser) {
             case LOOP -> particles.get(index % particles.size());
-            case RANDOM -> particles.get(NumberUtil.random(particles.size()));
+            case RANDOM -> RandomUtil.element(particles);
             case STOP -> particles.get(Math.min(index, particles.size() - 1));
         };
     }

@@ -11,6 +11,7 @@ import me.deecaad.core.file.IValidator;
 import me.deecaad.core.file.SerializeData;
 import me.deecaad.core.file.SerializerException;
 import me.deecaad.core.utils.NumberUtil;
+import me.deecaad.core.utils.RandomUtil;
 import me.deecaad.weaponmechanics.WeaponMechanics;
 import me.deecaad.weaponmechanics.weapon.weaponevents.ProjectileExplodeEvent;
 import org.bukkit.Location;
@@ -49,12 +50,12 @@ public class ExplosionEffectSpawner implements Listener {
         for (Block block : event.getBlocks()) {
             block.getLocation(reuse);
 
-            if (NumberUtil.chance(explosionDensity)) {
+            if (RandomUtil.chance(explosionDensity)) {
                 world.spawnParticle(Particle.EXPLOSION_LARGE, reuse, 1, explosionSpread, explosionSpread, explosionSpread);
             }
 
-            if (NumberUtil.chance(smokeDensity)) {
-                Vector between = reuse.toVector().subtract(event.getLocation().toVector()).normalize().multiply(NumberUtil.random(0.01, 0.1));
+            if (RandomUtil.chance(smokeDensity)) {
+                Vector between = reuse.toVector().subtract(event.getLocation().toVector()).normalize().multiply(RandomUtil.range(0.01, 0.1));
                 world.spawnParticle(Particle.SMOKE_NORMAL, reuse, 0, between.getX(), between.getY(), between.getZ());
             }
         }

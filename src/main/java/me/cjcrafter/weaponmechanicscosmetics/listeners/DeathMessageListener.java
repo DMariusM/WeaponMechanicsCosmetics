@@ -3,6 +3,7 @@ package me.cjcrafter.weaponmechanicscosmetics.listeners;
 import me.deecaad.core.file.Configuration;
 import me.deecaad.core.placeholder.PlaceholderData;
 import me.deecaad.core.placeholder.PlaceholderMessage;
+import me.deecaad.core.utils.MinecraftVersions;
 import me.deecaad.core.utils.NumberUtil;
 import me.deecaad.core.utils.RandomUtil;
 import me.deecaad.core.utils.ReflectionUtil;
@@ -78,10 +79,10 @@ public class DeathMessageListener implements Listener {
 
         Component component = deathMessage.replaceAndDeserialize(placeholderData);
         String newMessage;
-        if (ReflectionUtil.getMCVersion() < 16)
-            newMessage = LEGACY.serialize(component);
-        else
+        if (MinecraftVersions.NETHER_UPDATE.isAtLeast())
             newMessage = HEX.serialize(component);
+        else
+            newMessage = LEGACY.serialize(component);
 
         event.setDeathMessage(newMessage);
     }

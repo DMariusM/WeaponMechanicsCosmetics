@@ -22,6 +22,7 @@ import me.deecaad.core.mechanics.targeters.Targeter;
 import me.deecaad.core.utils.Debugger;
 import me.deecaad.core.utils.FileUtil;
 import me.deecaad.core.utils.LogLevel;
+import me.deecaad.core.utils.MinecraftVersions;
 import me.deecaad.core.utils.ReflectionUtil;
 import me.deecaad.weaponmechanics.WeaponMechanics;
 import net.kyori.adventure.text.Component;
@@ -94,7 +95,7 @@ public class WeaponMechanicsCosmetics extends JavaPlugin {
         registerBStats();
 
         // Register commands
-        if (ReflectionUtil.getMCVersion() >= 13)
+        if (MinecraftVersions.UPDATE_AQUATIC.isAtLeast())
             SkinCommand.register();
 
         // Separate from registerListeners

@@ -9,6 +9,7 @@ import me.cjcrafter.weaponmechanicscosmetics.WeaponMechanicsCosmetics;
 import me.deecaad.core.file.Configuration;
 import me.deecaad.core.mechanics.CastData;
 import me.deecaad.core.mechanics.Mechanics;
+import me.deecaad.core.utils.MinecraftVersions;
 import me.deecaad.core.utils.VectorUtil;
 import me.deecaad.weaponmechanics.WeaponMechanics;
 import me.deecaad.weaponmechanics.weapon.projectile.ProjectileScript;
@@ -30,6 +31,10 @@ import java.util.Collection;
 import java.util.LinkedList;
 
 public class ZipScript extends ProjectileScript<WeaponProjectile> {
+
+    private static final Particle REDSTONE = MinecraftVersions.TRAILS_AND_TAILS.get(5).isAtLeast()
+        ? Particle.DUST
+        : Particle.valueOf("REDSTONE");
 
     private double distanceSquared;
     private Mechanics mechanics;
@@ -159,7 +164,7 @@ public class ZipScript extends ProjectileScript<WeaponProjectile> {
                 if (count-- < 0)
                     cancel();
 
-                world.spawnParticle(Particle.REDSTONE, point.getX(), point.getY(), point.getZ(), 1, options);
+                world.spawnParticle(REDSTONE, point.getX(), point.getY(), point.getZ(), 1, options);
             }
         }.runTaskTimerAsynchronously(WeaponMechanicsCosmetics.getInstance().getPlugin(), 0, 1);
     }

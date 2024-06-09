@@ -8,6 +8,7 @@ import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.wrappers.EnumWrappers;
 import com.comphenix.protocol.wrappers.Pair;
 import me.cjcrafter.weaponmechanicscosmetics.config.CrossbowConfigSerializer;
+import me.deecaad.core.utils.MinecraftVersions;
 import me.deecaad.core.utils.ReflectionUtil;
 import me.deecaad.weaponmechanics.WeaponMechanics;
 import me.deecaad.weaponmechanics.utils.CustomTag;
@@ -39,7 +40,7 @@ public class CrossbowPacketListener extends PacketAdapter {
     public void onPacketSending(PacketEvent event) {
 
         // No crossbows before 1.14
-        if (ReflectionUtil.getMCVersion() < 14)
+        if (!MinecraftVersions.VILLAGE_AND_PILLAGE.isAtLeast())
             return;
 
         PacketContainer packet = event.getPacket();
@@ -63,7 +64,7 @@ public class CrossbowPacketListener extends PacketAdapter {
 
         // From 1.9 -> 1.15, the SetEquipment packet had 3 variables: id, slot,
         // and item.
-        if (ReflectionUtil.getMCVersion() <= 15) {
+        if (!MinecraftVersions.NETHER_UPDATE.isAtLeast()) {
             EnumWrappers.ItemSlot slot = packet.getItemSlots().read(0);
             ItemStack equipment = packet.getItemModifier().read(0);
             packet.getItemModifier().write(0, getCrossbow(slot, equipment, wrapper));

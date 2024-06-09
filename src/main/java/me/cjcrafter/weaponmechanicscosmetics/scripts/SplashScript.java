@@ -8,6 +8,7 @@ package me.cjcrafter.weaponmechanicscosmetics.scripts;
 import me.deecaad.core.file.Configuration;
 import me.deecaad.core.mechanics.CastData;
 import me.deecaad.core.mechanics.Mechanics;
+import me.deecaad.core.utils.MinecraftVersions;
 import me.deecaad.core.utils.ReflectionUtil;
 import me.deecaad.core.utils.ray.BlockTraceResult;
 import me.deecaad.core.utils.ray.RayTraceResult;
@@ -77,9 +78,9 @@ public class SplashScript extends ProjectileScript<WeaponProjectile> {
 
     public static boolean isWater(Block block) {
         // Weird water check for version compatibility... "STATIONARY_WATER"
-        if (ReflectionUtil.getMCVersion() < 13)
-            return block.isLiquid() && block.getType().name().endsWith("WATER");
-        else
+        if (MinecraftVersions.UPDATE_AQUATIC.isAtLeast())
             return block.isLiquid() && block.getType() == Material.WATER;
+        else
+            return block.isLiquid() && block.getType().name().endsWith("WATER");
     }
 }

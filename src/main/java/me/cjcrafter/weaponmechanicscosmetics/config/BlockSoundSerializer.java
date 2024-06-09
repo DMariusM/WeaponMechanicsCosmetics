@@ -9,6 +9,7 @@ import me.deecaad.core.mechanics.CastData;
 import me.deecaad.core.mechanics.Mechanics;
 import me.deecaad.core.mechanics.defaultmechanics.Mechanic;
 import me.deecaad.core.utils.EnumUtil;
+import me.deecaad.core.utils.MinecraftVersions;
 import me.deecaad.core.utils.NumberUtil;
 import me.deecaad.core.utils.RandomUtil;
 import me.deecaad.core.utils.ReflectionUtil;
@@ -36,7 +37,7 @@ public class BlockSoundSerializer implements Serializer<BlockSoundSerializer> {
     }
 
     public BlockSoundSerializer(BlockCompatibility.SoundType type, float randomness, Map<Material, Mechanic> overrides,
-                      Map<Material, Object> materialBlacklist, Set<String> weaponBlacklist) {
+                                Map<Material, Object> materialBlacklist, Set<String> weaponBlacklist) {
         this.type = type;
         this.randomness = randomness;
         this.overrides = overrides;
@@ -62,27 +63,19 @@ public class BlockSoundSerializer implements Serializer<BlockSoundSerializer> {
         }
 
         // Play default block sound
-        Object data = ReflectionUtil.getMCVersion() < 13 ? new MaterialData(block.getType(), block.getRawData()) : block.getBlockData();
+        Object data = MinecraftVersions.UPDATE_AQUATIC.isAtLeast() ? block.getBlockData() : new MaterialData(block.getType(), block.getRawData());
         BlockCompatibility.SoundData sound = CompatibilityAPI.getBlockCompatibility().getBlockSound(data, type);
         play(loc, sound.sound, sound.volume, sound.pitch, randomness);
     }
 
     public void play(Location loc, String sound, float volume, float pitch, float randomness) {
         pitch += RandomUtil.range(-randomness, randomness);
-        if (ReflectionUtil.getMCVersion() < 11) {
-            loc.getWorld().playSound(loc, sound, volume, pitch);
-        } else {
-            loc.getWorld().playSound(loc, sound, SoundCategory.BLOCKS, volume, pitch);
-        }
+        loc.getWorld().playSound(loc, sound, SoundCategory.BLOCKS, volume, pitch);
     }
 
     public void play(Location loc, Sound sound, float volume, float pitch, float randomness) {
         pitch += RandomUtil.range(-randomness, randomness);
-        if (ReflectionUtil.getMCVersion() < 11) {
-            loc.getWorld().playSound(loc, sound, volume, pitch);
-        } else {
-            loc.getWorld().playSound(loc, sound, SoundCategory.BLOCKS, volume, pitch);
-        }
+        loc.getWorld().playSound(loc, sound, SoundCategory.BLOCKS, volume, pitch);
     }
 
     @NotNull

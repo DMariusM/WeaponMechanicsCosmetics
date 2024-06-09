@@ -146,16 +146,4 @@ public class TimerSpawner implements Listener {
 
         task.cancel();
     }
-
-    @EventHandler
-    public void onDequip(PlayerItemHeldEvent event) {
-        if (ReflectionUtil.getMCVersion() > 10)
-            return;
-
-        TimerData task = tasks.remove(event.getPlayer());
-        if (task == null)
-            return;
-
-        task.cancel();
-    }
 }

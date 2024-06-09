@@ -13,6 +13,7 @@ import me.deecaad.core.file.Serializer;
 import me.deecaad.core.file.SerializerException;
 import me.deecaad.core.placeholder.PlaceholderData;
 import me.deecaad.core.placeholder.PlaceholderMessage;
+import me.deecaad.core.utils.MinecraftVersions;
 import me.deecaad.core.utils.NumberUtil;
 import me.deecaad.core.utils.ReflectionUtil;
 import me.deecaad.weaponmechanics.utils.CustomTag;
@@ -44,7 +45,7 @@ public class Timer implements Serializer<Timer>{
     private static Constructor<?> packetPlayOutExperienceConstructor;
 
     static {
-        if (ReflectionUtil.getMCVersion() < 15) {
+        if (!MinecraftVersions.BUZZY_BEES.isAtLeast()) {
             packetPlayOutExperienceConstructor = ReflectionUtil.getConstructor(ReflectionUtil.getPacketClass("PacketPlayOutExperience"), float.class, int.class, int.class);
         }
     }
@@ -226,10 +227,10 @@ public class Timer implements Serializer<Timer>{
 
         progress = NumberUtil.clamp01(progress);
 
-        if (ReflectionUtil.getMCVersion() < 15) {
-            CompatibilityAPI.getCompatibility().sendPackets(player, ReflectionUtil.newInstance(packetPlayOutExperienceConstructor, progress, player.getTotalExperience(), player.getLevel()));
-        } else {
+        if (MinecraftVersions.BUZZY_BEES.isAtLeast()) {
             player.sendExperienceChange(progress, player.getLevel());
+        } else {
+            CompatibilityAPI.getCompatibility().sendPackets(player, ReflectionUtil.newInstance(packetPlayOutExperienceConstructor, progress, player.getTotalExperience(), player.getLevel()));
         }
     }
 

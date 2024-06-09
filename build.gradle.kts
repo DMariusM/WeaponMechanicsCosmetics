@@ -1,5 +1,5 @@
 group = "me.cjcrafter"
-version = "3.2.4"
+version = "3.3.1"
 
 plugins {
     `java-library`
@@ -29,7 +29,7 @@ repositories {
 dependencies {
     compileOnly("org.jetbrains:annotations:24.0.1")
 
-    compileOnly("org.spigotmc:spigot-api:1.20.4-R0.1-SNAPSHOT")
+    compileOnly("org.spigotmc:spigot-api:1.20.6-R0.1-SNAPSHOT")
     testImplementation("org.junit.jupiter:junit-jupiter:5.9.2")
 
     compileOnly("net.kyori:adventure-api:4.15.0")
@@ -37,10 +37,11 @@ dependencies {
     compileOnly("net.kyori:adventure-text-serializer-legacy:4.15.0")
     compileOnly("net.kyori:adventure-text-minimessage:4.15.0")
 
-    compileOnly("com.cjcrafter:mechanicscore:3.3.0")
-    compileOnly("com.cjcrafter:weaponmechanics:3.3.0")
+    compileOnly("com.cjcrafter:mechanicscore:3.4.1")
+    compileOnly("com.cjcrafter:weaponmechanics:3.4.1")
     compileOnly("com.cjcrafter:vivecraft:3.0.0")
     compileOnly("com.comphenix.protocol:ProtocolLib:5.1.0")
+    compileOnly("com.github.cryptomorin:XSeries:11.0.0")
 
     implementation("org.bstats:bstats-bukkit:3.0.1")
     implementation("org.mariuszgromada.math:MathParser.org-mXparser:5.2.1")
@@ -62,12 +63,13 @@ tasks.shadowJar {
 
         // Relocate to MechanicsCore adventure locations, so we use their shaded version
         relocate("net.kyori", "me.deecaad.core.lib")
+        relocate("com.cryptomorin.xseries", "me.deecaad.core.lib.xseries")
     }
 }
 
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(17))
+        languageVersion.set(JavaLanguageVersion.of(21))
     }
 }
 

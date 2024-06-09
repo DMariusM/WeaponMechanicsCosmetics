@@ -4,6 +4,7 @@ import me.deecaad.core.file.SerializeData;
 import me.deecaad.core.file.Serializer;
 import me.deecaad.core.file.SerializerException;
 import me.deecaad.core.file.serializers.ItemSerializer;
+import me.deecaad.core.utils.MinecraftVersions;
 import me.deecaad.core.utils.ReflectionUtil;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
@@ -65,7 +66,7 @@ public final class CrossbowConfigSerializer implements Serializer<CrossbowConfig
             // I check IF the item is a crossbow since I figured someone might
             // find a creative use-case for this. We need the arrow in the crossbow
             // in order for it to be "charged" when the user holds it.
-            if (ReflectionUtil.getMCVersion() >= 14 && item.getType() == Material.CROSSBOW) {
+            if (MinecraftVersions.VILLAGE_AND_PILLAGE.isAtLeast() && item.getType() == Material.CROSSBOW) {
                 CrossbowMeta meta = (CrossbowMeta) item.getItemMeta();
                 meta.setChargedProjectiles(List.of(new ItemStack(Material.ARROW)));
                 item.setItemMeta(meta);
@@ -74,8 +75,8 @@ public final class CrossbowConfigSerializer implements Serializer<CrossbowConfig
 
         // CROSSBOW was only added in Minecraft 1.14. If people explicitly set
         // item, they are allowed to use this feature (Maybe they'll get creative?)
-        else if (ReflectionUtil.getMCVersion() < 14) {
-            throw data.exception(null, "Cannot use 'CROSSBOW' in Minecraft '" + ReflectionUtil.getMCVersion() + "'",
+        else if (!MinecraftVersions.VILLAGE_AND_PILLAGE.isAtLeast()) {
+            throw data.exception(null, "Cannot use 'CROSSBOW' in Minecraft '" + MinecraftVersions.getCURRENT() + "'",
                     "Crossbows were added in Minecraft 1.14, the 'Village and Pillage' update. Update your server to use the Crossbow feature.");
         }
 

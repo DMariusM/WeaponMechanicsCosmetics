@@ -7,6 +7,7 @@ import me.deecaad.core.file.SerializerException;
 import me.deecaad.core.mechanics.Mechanics;
 import me.deecaad.core.mechanics.defaultmechanics.Mechanic;
 import me.deecaad.core.utils.EnumUtil;
+import me.deecaad.core.utils.MinecraftVersions;
 import me.deecaad.core.utils.RandomUtil;
 import me.deecaad.core.utils.ReflectionUtil;
 import me.deecaad.core.utils.VectorUtil;
@@ -25,6 +26,10 @@ import javax.annotation.Nullable;
 import java.util.*;
 
 public class BlockParticleSerializer implements Serializer<BlockParticleSerializer> {
+
+    private static final Particle BLOCK_CRACK = MinecraftVersions.TRAILS_AND_TAILS.get(5).isAtLeast()
+        ? Particle.BLOCK
+        : Particle.valueOf("BLOCK_CRACK");
 
     private int amount;
     private double spread;
@@ -66,14 +71,14 @@ public class BlockParticleSerializer implements Serializer<BlockParticleSerializ
             return;
         }
 
-        Object data = ReflectionUtil.getMCVersion() < 13 ? new MaterialData(block.getType(), block.getRawData()) : block.getBlockData();
+        Object data = MinecraftVersions.UPDATE_AQUATIC.isAtLeast() ? block.getBlockData() : new MaterialData(block.getType(), block.getRawData());
 
         // When there is no precise hit/normal, assume the block has been broken.
         // In this case, we want to spawn particles in all directions from the
         // center fo the block.
         if (hitLocation == null && normal == null) {
             Location spawnLoc = block.getLocation().add(0.5, 0.5, 0.5);
-            world.spawnParticle(Particle.BLOCK_CRACK, spawnLoc, amount, spread, spread, spread, data);
+            world.spawnParticle(BLOCK_CRACK, spawnLoc, amount, spread, spread, spread, data);
         }
 
         // We need both...
@@ -87,7 +92,7 @@ public class BlockParticleSerializer implements Serializer<BlockParticleSerializ
             Location spawnLoc = hitLocation.toLocation(world);
             for (int i = 0; i < amount; i++) {
                 Vector direction = RandomUtil.onUnitSphere().multiply(spread).add(normal);
-                world.spawnParticle(Particle.BLOCK_CRACK, spawnLoc, 0, direction.getX(), direction.getY(), direction.getZ(), data);
+                world.spawnParticle(BLOCK_CRACK, spawnLoc, 0, direction.getX(), direction.getY(), direction.getZ(), data);
             }
         }
     }

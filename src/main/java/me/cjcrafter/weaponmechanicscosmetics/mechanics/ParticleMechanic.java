@@ -5,6 +5,7 @@
 
 package me.cjcrafter.weaponmechanicscosmetics.mechanics;
 
+import com.cryptomorin.xseries.particles.XParticle;
 import me.deecaad.core.file.SerializeData;
 import me.deecaad.core.file.SerializerException;
 import me.deecaad.core.file.serializers.ColorSerializer;
@@ -15,7 +16,7 @@ import me.deecaad.core.mechanics.Mechanics;
 import me.deecaad.core.mechanics.conditions.Condition;
 import me.deecaad.core.mechanics.defaultmechanics.Mechanic;
 import me.deecaad.core.mechanics.targeters.Targeter;
-import me.deecaad.core.utils.ReflectionUtil;
+import me.deecaad.core.utils.MinecraftVersions;
 import org.bukkit.*;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BlockDataMeta;
@@ -25,6 +26,10 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static com.cryptomorin.xseries.particles.XParticle.*;
 
 public class ParticleMechanic extends Mechanic {
 
@@ -82,10 +87,10 @@ public class ParticleMechanic extends Mechanic {
         Vector offset = this.offset.getVector(relative);
         double extra = this.extra == -11 ? offset.length() / 20 : this.extra;
 
-        if (ReflectionUtil.getMCVersion() < 13)
-            world.spawnParticle(particle, x, y, z, count, offset.getX(), offset.getY(), offset.getZ(), extra, options);
-        else
+        if (MinecraftVersions.UPDATE_AQUATIC.isAtLeast())
             world.spawnParticle(particle, x, y, z, count, offset.getX(), offset.getY(), offset.getZ(), extra, options, force);
+        else
+            world.spawnParticle(particle, x, y, z, count, offset.getX(), offset.getY(), offset.getZ(), extra, options);
     }
 
     @Override
@@ -112,7 +117,7 @@ public class ParticleMechanic extends Mechanic {
         // Big thanks to Esophose who compiled all of that information for
         // anybody to use.
 
-        Particle particle = data.of("Particle").assertExists().getEnum(Particle.class);
+        Particle particle = data.of("Particle").assertExists().getParticle(null);
         int count = data.of("Count").assertPositive().getInt(-1);
         double extra = 0.0;
         VectorSerializer offset = VectorSerializer.from(new Vector());
@@ -132,11 +137,10 @@ public class ParticleMechanic extends Mechanic {
             }
         }
 
-        // Dust transition was added in 1.17, which accompanies the skulk
-        // sensor. It can fade from one color to another color. Can also
-        // modify particle size.
-        switch (particle.name()) {
-            case "DUST_COLOR_TRANSITION" -> {
+        XParticle xParticle = XParticle.of(particle);
+        switch (xParticle) {
+            // Takes 2 colors, and a size scalar
+            case DUST_COLOR_TRANSITION -> {
                 Color color = data.of("Color").assertExists().serialize(new ColorSerializer()).getColor();
                 Color fade = data.of("Fade_Color").assertExists().serialize(new ColorSerializer()).getColor();
                 float size = (float) data.of("Size").assertPositive().getDouble(1.0);
@@ -147,9 +151,8 @@ public class ParticleMechanic extends Mechanic {
                 options = new Particle.DustTransition(color, fade, size);
             }
 
-            // Redstone dust can be colored to any rgb value. This uses the
-            // DustOptions class. Can also modify particle size.
-            case "REDSTONE" -> {
+            // Takes 1 color, and a size scalar
+            case DUST -> {
                 Color color = data.of("Color").assertExists().serialize(new ColorSerializer()).getColor();
                 float size = (float) data.of("Size").assertPositive().getDouble(1.0);
                 noVelocity(particle, data);
@@ -160,16 +163,13 @@ public class ParticleMechanic extends Mechanic {
                 options = new Particle.DustOptions(color, size);
             }
 
-            // mob_spells can use colors, but instead of using the extra data,
-            // the color is stored in the offset vector. This means we should warn
-            // the user about using offset with the mob_spell particle. Note that
-            // extra=1 and count=0
-            case "SPELL_MOB" -> {
+            // Takes a color, but stores it in the offset vector.
+            case ENTITY_EFFECT -> {
                 Color color = data.of("Color").assertExists().serialize(new ColorSerializer()).getColor();
                 if (data.has("Count"))
-                    throw data.exception("Count", "'SPELL_MOB' cannot use the 'Count' argument!", "Consider using 'REDSTONE' particles instead.");
+                    throw data.exception("Count", "'" + ENTITY_EFFECT.get() + "' cannot use the 'Count' argument!", "Consider using '" + DUST.get() + "' particles instead.");
                 if (data.has("Noise"))
-                    throw data.exception("Noise", "'SPELL_MOB' cannot use the 'Noise' argument!", "Consider using 'REDSTONE' particles instead.");
+                    throw data.exception("Noise", "'" + ENTITY_EFFECT.get() + "' cannot use the 'Noise' argument!", "Consider using '" + DUST.get() + "' particles instead.");
                 noVelocity(particle, data);
                 noFade(particle, data);
                 noBlock(particle, data);
@@ -179,9 +179,8 @@ public class ParticleMechanic extends Mechanic {
                 offset = VectorSerializer.from(new Vector(color.getRed() / 255.0, color.getGreen() / 255.0, color.getBlue() / 255.0));
             }
 
-            // Shows the item breaking animation (tools running out of durability,
-            // for example). In all versions, this simply took a bukkit ItemStack.
-            case "ITEM_CRACK" -> {
+            // Takes an ItemStack
+            case ITEM -> {
                 noVelocity(particle, data);
                 noColor(particle, data);
                 noFade(particle, data);
@@ -190,13 +189,11 @@ public class ParticleMechanic extends Mechanic {
 
                 if (item == null) {
                     throw data.exception("Material_Data", "When using an item particle, you must specify an item!",
-                            "For example, try using 'materialData=STONE'");
+                        "For example, try using 'materialData=STONE'");
                 }
             }
 
-            // In pre 1.13 versions, these 3 particle types took a MaterialData
-            // argument instead of a BlockData argument.
-            case "BLOCK_CRACK", "BLOCK_DUST", "FALLING_DUST", "BLOCK_MARKER" -> {
+            case BLOCK, FALLING_DUST, BLOCK_MARKER, DUST_PILLAR -> {
                 noVelocity(particle, data);
                 noColor(particle, data);
                 noFade(particle, data);
@@ -204,28 +201,33 @@ public class ParticleMechanic extends Mechanic {
 
                 if (item == null) {
                     throw data.exception("Material_Data", "When using a block particle, you must specify a block!",
-                            "For example, try using 'materialData=STONE'");
+                        "For example, try using 'materialData=STONE'");
                 }
 
-                if (ReflectionUtil.getMCVersion() < 13) {
-                    options = item.getData();
-                } else {
+                if (MinecraftVersions.UPDATE_AQUATIC.isAtLeast()) {
                     ItemMeta meta = item.getItemMeta();
                     if (!(meta instanceof BlockDataMeta blockMeta)) {
                         throw data.exception("Material_Data", "When using a block particle, the material must be a block!",
-                                "You used '" + item.getType() + "' which is not a block!",
-                                "For example, try using 'materialData=STONE'");
+                            "You used '" + item.getType() + "' which is not a block!",
+                            "For example, try using 'materialData=STONE'");
                     }
                     if (blockMeta.hasBlockData())
                         options = blockMeta.getBlockData(item.getType());
                     else
                         options = item.getType().createBlockData();
+                } else {
+                    options = item.getData();
                 }
             }
 
             // All of these particles can be directional by setting count=0.
             // This means that instead of using offset, we should use velocity.
-            case "BUBBLE_COLUMN_UP", "BUBBLE_POP", "CAMPFIRE_COZY_SMOKE", "CAMPFIRE_SIGNAL_SMOKE", "CLOUD", "CRIT", "CRIT_MAGIC", "DAMAGE_INDICATOR", "DRAGON_BREATH", "ELECTRIC_SPARK", "ENCHANTMENT_TABLE", "END_ROD", "EXPLOSION_NORMAL", "FIREWORKS_SPARK", "FLAME", "NAUTILUS", "PORTAL", "REVERSE_PORTAL", "SCRAPE", "SCULK_CHARGE", "SCULK_CHARGE_POP", "SCULK_SOUL", "SMALL_FLAME", "SMOKE_LARGE", "SMOKE_NORMAL", "SOUL", "SOUL_FIRE_FLAME", "SPIT", "SQUID_INK", "TOTEM", "WATER_BUBBLE", "WATER_WAKE", "WAX_OFF", "WAX_ON" -> {
+            case BUBBLE_COLUMN_UP, BUBBLE_POP, CAMPFIRE_COSY_SMOKE, CAMPFIRE_SIGNAL_SMOKE, CLOUD, CRIT,
+                 ENCHANTED_HIT, DAMAGE_INDICATOR, DRAGON_BREATH, ELECTRIC_SPARK, ENCHANT, END_ROD, EXPLOSION,
+                 FIREWORK, FLAME, NAUTILUS, PORTAL, REVERSE_PORTAL, SCRAPE, SCULK_CHARGE, SCULK_CHARGE_POP,
+                 SCULK_SOUL, SMALL_FLAME, LARGE_SMOKE, SMOKE, SOUL, SOUL_FIRE_FLAME, SPIT, SQUID_INK,
+                 TOTEM_OF_UNDYING, BUBBLE, WAX_OFF, WAX_ON -> {
+
                 noBlock(particle, data);
                 noColor(particle, data);
                 noFade(particle, data);
@@ -252,8 +254,6 @@ public class ParticleMechanic extends Mechanic {
                 }
             }
 
-            // Now that we have run out of special cases, lets make sure the user
-            // did not try to add any extra data.
             default -> {
                 noVelocity(particle, data);
                 noBlock(particle, data);
@@ -278,23 +278,46 @@ public class ParticleMechanic extends Mechanic {
 
     private void noVelocity(Particle particle, SerializeData data) throws SerializerException {
         if (data.has("Velocity")) {
+            String velocityParticles = Stream.of(BUBBLE_COLUMN_UP, BUBBLE_POP, CAMPFIRE_COSY_SMOKE, CAMPFIRE_SIGNAL_SMOKE, CLOUD, CRIT,
+                ENCHANTED_HIT, DAMAGE_INDICATOR, DRAGON_BREATH, ELECTRIC_SPARK, ENCHANT, END_ROD, EXPLOSION,
+                FIREWORK, FLAME, NAUTILUS, PORTAL, REVERSE_PORTAL, SCRAPE, SCULK_CHARGE, SCULK_CHARGE_POP,
+                SCULK_SOUL, SMALL_FLAME, LARGE_SMOKE, SMOKE, SOUL, SOUL_FIRE_FLAME, SPIT, SQUID_INK,
+                TOTEM_OF_UNDYING, BUBBLE, WAX_OFF, WAX_ON)
+                .map(XParticle::get)
+                .map(Particle::name)
+                .map(String::toLowerCase)
+                .map(s -> "'" + s + "'")
+                .collect(Collectors.joining(", "));
+
             throw data.exception("Velocity", "'" + particle + "' cannot use the 'Velocity' argument.",
-                    "Only 'EXPLOSION_NORMAL', 'FIREWORKS_SPARK', 'WATER_BUBBLE', 'WATER_WAKE', 'CRIT', 'CRIT_MAGIC', 'SMOKE_NORMAL', 'SMOKE_LARGE', 'PORTAL', 'ENCHANTMENT_TABLE', 'FLAME', 'CLOUD', 'DRAGON_BREATH', 'END_ROD', 'DAMAGE_INDICATOR', 'TOTEM', 'SPIT', 'SQUID_INK', and 'BUBBLE_POP' can use the 'Velocity' argument",
+                    "Only " + velocityParticles + " can use 'Velocity'.",
                     "Note that not all of the above particles may be available in your MC version.");
         }
     }
 
     private void noBlock(Particle particle, SerializeData data) throws SerializerException {
         if (data.has("Material_Data")) {
+            String itemParticles = Stream.of(ITEM, BLOCK, FALLING_DUST, BLOCK_MARKER, DUST_PILLAR)
+                .map(XParticle::get)
+                .map(Particle::name)
+                .map(String::toLowerCase)
+                .map(s -> "'" + s + "'")
+                .collect(Collectors.joining(", "));
             throw data.exception("Material_Data", "'" + particle + "' cannot use the 'Material_Data' argument",
-                    "Only 'BLOCK_CRACK', 'ITEM_CRACK', 'BLOCK_DUST', and 'FALLING_DUST' can use 'Material_Data'");
+                    "Only " + itemParticles + " can use 'Material_Data'");
         }
     }
 
     private void noColor(Particle particle, SerializeData data) throws SerializerException {
         if (data.has("Color")) {
+            String colorParticles = Stream.of(DUST, DUST_COLOR_TRANSITION, ENTITY_EFFECT)
+                .map(XParticle::get)
+                .map(Particle::name)
+                .map(String::toLowerCase)
+                .map(s -> "'" + s + "'")
+                .collect(Collectors.joining(", "));
             throw data.exception("Color", "'" + particle + "' cannot use the 'Color' argument",
-                    "Only 'REDSTONE', 'SPELL_MOB', and 'DUST_COLOR_TRANSITION'(1.17+) can use 'Color'");
+                    "Only " + colorParticles + " can use 'Color'");
         }
     }
 

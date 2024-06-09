@@ -9,6 +9,7 @@ import me.cjcrafter.weaponmechanicscosmetics.WeaponMechanicsCosmetics;
 import me.deecaad.core.compatibility.CompatibilityAPI;
 import me.deecaad.core.compatibility.block.BlockCompatibility;
 import me.deecaad.core.file.Configuration;
+import me.deecaad.core.utils.MinecraftVersions;
 import me.deecaad.core.utils.ReflectionUtil;
 import me.deecaad.weaponmechanics.weapon.projectile.AProjectile;
 import me.deecaad.weaponmechanics.weapon.projectile.ProjectileScript;
@@ -29,6 +30,10 @@ import org.jetbrains.annotations.NotNull;
  */
 public class FallingBlockScript extends ProjectileScript<AProjectile> {
 
+    private static final Particle BLOCK_CRACK = MinecraftVersions.TRAILS_AND_TAILS.get(5).isAtLeast()
+        ? Particle.BLOCK
+        : Particle.valueOf("BLOCK_CRACK");
+
     private Object data; // either BlockData (1.13+) or MaterialData (1.12-)
 
     public FallingBlockScript(@NotNull Plugin owner, @NotNull AProjectile projectile) {
@@ -45,9 +50,9 @@ public class FallingBlockScript extends ProjectileScript<AProjectile> {
     }
 
     public void setData(Object data) {
-        if (ReflectionUtil.getMCVersion() >= 13 && !(data instanceof BlockData))
+        if (MinecraftVersions.UPDATE_AQUATIC.isAtLeast() && !(data instanceof BlockData))
             throw new RuntimeException("Invalid type: " + data);
-        if (ReflectionUtil.getMCVersion() < 13 && !(data instanceof MaterialData))
+        if (MinecraftVersions.UPDATE_AQUATIC.isAtLeast() && !(data instanceof MaterialData))
             throw new RuntimeException("Invalid type: " + data);
 
         this.data = data;
@@ -77,15 +82,12 @@ public class FallingBlockScript extends ProjectileScript<AProjectile> {
         Location location = projectile.getLocation().toLocation(world);
 
         if (amount != 0) {
-            world.spawnParticle(Particle.BLOCK_CRACK, location, amount, spread, spread, spread, data);
+            world.spawnParticle(BLOCK_CRACK, location, amount, spread, spread, spread, data);
         }
 
         if (playSound) {
             BlockCompatibility.SoundData sound = CompatibilityAPI.getBlockCompatibility().getBlockSound(data, BlockCompatibility.SoundType.BREAK);
-            if (ReflectionUtil.getMCVersion() >= 11)
-                world.playSound(location, sound.sound, SoundCategory.BLOCKS, sound.volume, sound.pitch);
-            else
-                world.playSound(location, sound.sound, sound.volume, sound.pitch);
+            world.playSound(location, sound.sound, sound.volume, sound.pitch);
         }
     }
 }

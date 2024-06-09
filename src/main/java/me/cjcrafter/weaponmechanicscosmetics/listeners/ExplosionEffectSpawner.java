@@ -10,6 +10,7 @@ import me.deecaad.core.file.Configuration;
 import me.deecaad.core.file.IValidator;
 import me.deecaad.core.file.SerializeData;
 import me.deecaad.core.file.SerializerException;
+import me.deecaad.core.utils.MinecraftVersions;
 import me.deecaad.core.utils.NumberUtil;
 import me.deecaad.core.utils.RandomUtil;
 import me.deecaad.weaponmechanics.WeaponMechanics;
@@ -28,6 +29,14 @@ import java.util.List;
 import java.util.Set;
 
 public class ExplosionEffectSpawner implements Listener {
+
+    private static final Particle EXPLOSION_LARGE = MinecraftVersions.TRAILS_AND_TAILS.get(5).isAtLeast()
+        ? Particle.EXPLOSION_EMITTER
+        : Particle.valueOf("EXPLOSION_LARGE");
+
+    private static final Particle SMOKE_NORMAL = MinecraftVersions.TRAILS_AND_TAILS.get(5).isAtLeast()
+        ? Particle.SMOKE
+        : Particle.valueOf("SMOKE_NORMAL");
 
     @EventHandler (ignoreCancelled = true, priority = EventPriority.HIGH)
     public void onExplode(ProjectileExplodeEvent event) {
@@ -51,12 +60,12 @@ public class ExplosionEffectSpawner implements Listener {
             block.getLocation(reuse);
 
             if (RandomUtil.chance(explosionDensity)) {
-                world.spawnParticle(Particle.EXPLOSION_LARGE, reuse, 1, explosionSpread, explosionSpread, explosionSpread);
+                world.spawnParticle(EXPLOSION_LARGE, reuse, 1, explosionSpread, explosionSpread, explosionSpread);
             }
 
             if (RandomUtil.chance(smokeDensity)) {
                 Vector between = reuse.toVector().subtract(event.getLocation().toVector()).normalize().multiply(RandomUtil.range(0.01, 0.1));
-                world.spawnParticle(Particle.SMOKE_NORMAL, reuse, 0, between.getX(), between.getY(), between.getZ());
+                world.spawnParticle(SMOKE_NORMAL, reuse, 0, between.getX(), between.getY(), between.getZ());
             }
         }
     }

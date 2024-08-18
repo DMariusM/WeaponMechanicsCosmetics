@@ -105,7 +105,7 @@ public class ParticleMechanic extends Mechanic {
 
     @Override
     public @Nullable String getWikiLink() {
-        return "https://github.com/WeaponMechanics/MechanicsMain/wiki/ParticleMechanic";
+        return "https://cjcrafter.gitbook.io/mechanics/mechanics/particle";
     }
 
     @NotNull

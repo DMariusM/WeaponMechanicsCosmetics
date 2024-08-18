@@ -5,6 +5,9 @@
 
 package me.cjcrafter.weaponmechanicscosmetics.timer;
 
+import com.cjcrafter.foliascheduler.MinecraftVersions;
+import com.cjcrafter.foliascheduler.ServerImplementation;
+import com.cjcrafter.foliascheduler.TaskImplementation;
 import me.cjcrafter.weaponmechanicscosmetics.WeaponMechanicsCosmetics;
 import me.deecaad.core.MechanicsCore;
 import me.deecaad.core.compatibility.CompatibilityAPI;
@@ -13,7 +16,6 @@ import me.deecaad.core.file.Serializer;
 import me.deecaad.core.file.SerializerException;
 import me.deecaad.core.placeholder.PlaceholderData;
 import me.deecaad.core.placeholder.PlaceholderMessage;
-import me.deecaad.core.utils.MinecraftVersions;
 import me.deecaad.core.utils.NumberUtil;
 import me.deecaad.core.utils.ReflectionUtil;
 import me.deecaad.weaponmechanics.utils.CustomTag;
@@ -22,14 +24,13 @@ import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
 import net.kyori.adventure.util.Ticks;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Constructor;
 import java.text.DecimalFormat;
+import java.util.function.Consumer;
 
 /**
  * Shows a timer in the item cool down, actionbar, title, boss bar, or
@@ -39,7 +40,7 @@ import java.text.DecimalFormat;
 public class Timer implements Serializer<Timer>{
 
     public static final DecimalFormat ROUND = new DecimalFormat("0.0");
-    public static final int DEFAULT_TICK_RATE = 1; // 0.1 seconds between updates
+    public static final int DEFAULT_TICK_RATE = 1;
     public static final Title.Times TITLE_TIMES = Title.Times.times(Ticks.duration(0), Ticks.duration(2), Ticks.duration(5));
 
     private static Constructor<?> packetPlayOutExperienceConstructor;
@@ -100,28 +101,22 @@ public class Timer implements Serializer<Timer>{
 
         send(player, weapon, 0, totalTicks);
 
-        int taskId = new BukkitRunnable() {
+        ServerImplementation scheduler = WeaponMechanicsCosmetics.getInstance().getScheduler();
+        TaskImplementation<Void> task = scheduler.async().runAtFixedRate(new Consumer<>() {
             int ticks = 0;
 
             @Override
-            public void run() {
+            public void accept(TaskImplementation<Void> voidTaskImplementation) {
                 if ((ticks += DEFAULT_TICK_RATE) >= totalTicks) {
-                    cancel();
+                    Timer.this.cancel(player, weapon, ticks, totalTicks);
+                    voidTaskImplementation.cancel();
                     return;
                 }
-
                 send(player, weapon, ticks, totalTicks);
             }
+        }, 0, DEFAULT_TICK_RATE);
 
-            @Override
-            public void cancel() {
-                super.cancel();
-
-                Timer.this.cancel(player, weapon, ticks, totalTicks);
-            }
-        }.runTaskTimerAsynchronously(WeaponMechanicsCosmetics.getInstance().getPlugin(), 0, DEFAULT_TICK_RATE).getTaskId();
-
-        return new TimerData(this, player, weapon, taskId, totalTicks);
+        return new TimerData(this, player, weapon, task, totalTicks);
     }
 
     /**
@@ -150,17 +145,8 @@ public class Timer implements Serializer<Timer>{
         // Remove any cooldown if the player still has one (*should*
         // only happen when the event is cancelled).
         if (weapon != null && player.hasCooldown(weapon.getType())) {
-
-            if (Bukkit.isPrimaryThread()) {
-                player.setCooldown(weapon.getType(), 0);
-            } else {
-                new BukkitRunnable() {
-                    @Override
-                    public void run() {
-                       player.setCooldown(weapon.getType(), 0);
-                    }
-                }.runTask(WeaponMechanicsCosmetics.getInstance().getPlugin());
-            }
+            ServerImplementation scheduler = WeaponMechanicsCosmetics.getInstance().getScheduler();
+            scheduler.entity(player).run(() -> player.setCooldown(weapon.getType(), 0));
         }
 
         PlaceholderData data = PlaceholderData.of(player, weapon, CustomTag.WEAPON_TITLE.getString(weapon), null);
@@ -200,12 +186,8 @@ public class Timer implements Serializer<Timer>{
         if (bossBar != null) {
             BossBar bossComponent = BossBar.bossBar(bossBar.replaceAndDeserialize(data), progress, color, style);
             audience.showBossBar(bossComponent);
-            new BukkitRunnable() {
-                @Override
-                public void run() {
-                    audience.hideBossBar(bossComponent);
-                }
-            }.runTaskLaterAsynchronously(WeaponMechanicsCosmetics.getInstance().getPlugin(), 1);
+            ServerImplementation scheduler = WeaponMechanicsCosmetics.getInstance().getScheduler();
+            scheduler.async().runDelayed(() -> audience.hideBossBar(bossComponent), 1);
         }
 
         // Handle showing experience

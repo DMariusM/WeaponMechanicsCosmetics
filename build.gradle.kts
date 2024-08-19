@@ -63,10 +63,15 @@ tasks.shadowJar {
             include(dependency("org.bstats:"))
         }
 
+        // TODO remove this when MechanicsCore is updated
+        relocate("com.cjcrafter.foliascheduler", "me.cjcrafter.weaponmechanicscosmetics.lib.scheduler") {
+            include(dependency("com.cjcrafter:foliascheduler"))
+        }
+
         // Relocate to MechanicsCore adventure locations, so we use their shaded version
         relocate("net.kyori", "me.deecaad.core.lib")
         relocate("com.cryptomorin.xseries", "me.deecaad.core.lib.xseries")
-        relocate("com.cjcrafter.foliascheduler", "me.deecaad.core.lib.scheduler")
+        //relocate("com.cjcrafter.foliascheduler", "me.deecaad.core.lib.scheduler")
     }
 }
 

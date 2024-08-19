@@ -7,11 +7,11 @@ package me.cjcrafter.weaponmechanicscosmetics.scripts;
 
 import com.cjcrafter.foliascheduler.ServerImplementation;
 import com.cjcrafter.foliascheduler.TaskImplementation;
+import com.cryptomorin.xseries.particles.XParticle;
 import me.cjcrafter.weaponmechanicscosmetics.WeaponMechanicsCosmetics;
 import me.deecaad.core.file.Configuration;
 import me.deecaad.core.mechanics.CastData;
 import me.deecaad.core.mechanics.Mechanics;
-import me.deecaad.core.utils.MinecraftVersions;
 import me.deecaad.core.utils.VectorUtil;
 import me.deecaad.weaponmechanics.WeaponMechanics;
 import me.deecaad.weaponmechanics.weapon.projectile.ProjectileScript;
@@ -33,10 +33,6 @@ import java.util.LinkedList;
 import java.util.function.Consumer;
 
 public class ZipScript extends ProjectileScript<WeaponProjectile> {
-
-    private static final Particle REDSTONE = MinecraftVersions.TRAILS_AND_TAILS.get(5).isAtLeast()
-        ? Particle.DUST
-        : Particle.valueOf("REDSTONE");
 
     private double distanceSquared;
     private Mechanics mechanics;
@@ -160,7 +156,7 @@ public class ZipScript extends ProjectileScript<WeaponProjectile> {
                 if (count-- < 0)
                     scheduledTask.cancel();
 
-                world.spawnParticle(REDSTONE, point.getX(), point.getY(), point.getZ(), 1, options);
+                world.spawnParticle(XParticle.DUST.get(), point.getX(), point.getY(), point.getZ(), 1, options);
             }
         }, 0, 1);
     }

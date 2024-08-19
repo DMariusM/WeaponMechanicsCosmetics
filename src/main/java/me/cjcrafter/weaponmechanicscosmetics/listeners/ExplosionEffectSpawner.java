@@ -5,13 +5,13 @@
 
 package me.cjcrafter.weaponmechanicscosmetics.listeners;
 
+import com.cjcrafter.foliascheduler.MinecraftVersions;
+import com.cryptomorin.xseries.particles.XParticle;
 import me.cjcrafter.weaponmechanicscosmetics.WeaponMechanicsCosmetics;
 import me.deecaad.core.file.Configuration;
 import me.deecaad.core.file.IValidator;
 import me.deecaad.core.file.SerializeData;
 import me.deecaad.core.file.SerializerException;
-import me.deecaad.core.utils.MinecraftVersions;
-import me.deecaad.core.utils.NumberUtil;
 import me.deecaad.core.utils.RandomUtil;
 import me.deecaad.weaponmechanics.WeaponMechanics;
 import me.deecaad.weaponmechanics.weapon.weaponevents.ProjectileExplodeEvent;
@@ -60,12 +60,12 @@ public class ExplosionEffectSpawner implements Listener {
             block.getLocation(reuse);
 
             if (RandomUtil.chance(explosionDensity)) {
-                world.spawnParticle(EXPLOSION_LARGE, reuse, 1, explosionSpread, explosionSpread, explosionSpread);
+                world.spawnParticle(XParticle.EXPLOSION_EMITTER.get(), reuse, 1, explosionSpread, explosionSpread, explosionSpread);
             }
 
             if (RandomUtil.chance(smokeDensity)) {
                 Vector between = reuse.toVector().subtract(event.getLocation().toVector()).normalize().multiply(RandomUtil.range(0.01, 0.1));
-                world.spawnParticle(SMOKE_NORMAL, reuse, 0, between.getX(), between.getY(), between.getZ());
+                world.spawnParticle(XParticle.SMOKE.get(), reuse, 0, between.getX(), between.getY(), between.getZ());
             }
         }
     }

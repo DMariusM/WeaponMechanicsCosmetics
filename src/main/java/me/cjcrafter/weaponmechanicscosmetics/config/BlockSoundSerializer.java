@@ -1,5 +1,6 @@
 package me.cjcrafter.weaponmechanicscosmetics.config;
 
+import com.cjcrafter.foliascheduler.MinecraftVersions;
 import me.deecaad.core.compatibility.CompatibilityAPI;
 import me.deecaad.core.compatibility.block.BlockCompatibility;
 import me.deecaad.core.file.SerializeData;
@@ -9,10 +10,7 @@ import me.deecaad.core.mechanics.CastData;
 import me.deecaad.core.mechanics.Mechanics;
 import me.deecaad.core.mechanics.defaultmechanics.Mechanic;
 import me.deecaad.core.utils.EnumUtil;
-import me.deecaad.core.utils.MinecraftVersions;
-import me.deecaad.core.utils.NumberUtil;
 import me.deecaad.core.utils.RandomUtil;
-import me.deecaad.core.utils.ReflectionUtil;
 import me.deecaad.weaponmechanics.WeaponMechanics;
 import me.deecaad.weaponmechanics.weapon.projectile.weaponprojectile.WeaponProjectile;
 import org.bukkit.*;
@@ -63,7 +61,9 @@ public class BlockSoundSerializer implements Serializer<BlockSoundSerializer> {
         }
 
         // Play default block sound
-        Object data = MinecraftVersions.UPDATE_AQUATIC.isAtLeast() ? block.getBlockData() : new MaterialData(block.getType(), block.getRawData());
+        Object data = MinecraftVersions.UPDATE_AQUATIC.isAtLeast()
+            ? block.getBlockData()
+            : new MaterialData(block.getType(), block.getRawData());
         BlockCompatibility.SoundData sound = CompatibilityAPI.getBlockCompatibility().getBlockSound(data, type);
         play(loc, sound.sound, sound.volume, sound.pitch, randomness);
     }

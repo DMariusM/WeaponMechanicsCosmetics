@@ -1,11 +1,10 @@
 package me.cjcrafter.weaponmechanicscosmetics.mechanics;
 
+import com.cjcrafter.foliascheduler.MinecraftVersions;
 import me.deecaad.core.file.SerializeData;
 import me.deecaad.core.file.SerializerException;
 import me.deecaad.core.mechanics.CastData;
 import me.deecaad.core.mechanics.defaultmechanics.Mechanic;
-import me.deecaad.core.utils.MinecraftVersions;
-import me.deecaad.core.utils.ReflectionUtil;
 import me.deecaad.weaponmechanics.compatibility.WeaponCompatibilityAPI;
 import org.bukkit.entity.LivingEntity;
 import org.jetbrains.annotations.NotNull;
@@ -48,7 +47,7 @@ public class FlinchMechanic extends Mechanic {
 
         // ShowToEveryone is forced below 1.19.4, since Spigot only added the
         // method in 1.19.4. All previous versions must hide it.
-        showToEveryone |= !MinecraftVersions.WILD_UPDATE.isAtLeast();
+        showToEveryone |= MinecraftVersions.WILD_UPDATE.isBelow();
 
         return applyParentArgs(data, new FlinchMechanic(showToEveryone));
     }

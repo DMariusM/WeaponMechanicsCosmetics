@@ -1,5 +1,7 @@
 package me.cjcrafter.weaponmechanicscosmetics.config;
 
+import com.cjcrafter.foliascheduler.MinecraftVersions;
+import com.cryptomorin.xseries.particles.XParticle;
 import me.cjcrafter.weaponmechanicscosmetics.mechanics.ParticleMechanic;
 import me.deecaad.core.file.SerializeData;
 import me.deecaad.core.file.Serializer;
@@ -7,15 +9,11 @@ import me.deecaad.core.file.SerializerException;
 import me.deecaad.core.mechanics.Mechanics;
 import me.deecaad.core.mechanics.defaultmechanics.Mechanic;
 import me.deecaad.core.utils.EnumUtil;
-import me.deecaad.core.utils.MinecraftVersions;
 import me.deecaad.core.utils.RandomUtil;
-import me.deecaad.core.utils.ReflectionUtil;
-import me.deecaad.core.utils.VectorUtil;
 import me.deecaad.weaponmechanics.WeaponMechanics;
 import me.deecaad.weaponmechanics.weapon.projectile.weaponprojectile.WeaponProjectile;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.Particle;
 import org.bukkit.World;
 import org.bukkit.block.BlockState;
 import org.bukkit.material.MaterialData;
@@ -26,10 +24,6 @@ import javax.annotation.Nullable;
 import java.util.*;
 
 public class BlockParticleSerializer implements Serializer<BlockParticleSerializer> {
-
-    private static final Particle BLOCK_CRACK = MinecraftVersions.TRAILS_AND_TAILS.get(5).isAtLeast()
-        ? Particle.BLOCK
-        : Particle.valueOf("BLOCK_CRACK");
 
     private int amount;
     private double spread;
@@ -71,14 +65,16 @@ public class BlockParticleSerializer implements Serializer<BlockParticleSerializ
             return;
         }
 
-        Object data = MinecraftVersions.UPDATE_AQUATIC.isAtLeast() ? block.getBlockData() : new MaterialData(block.getType(), block.getRawData());
+        Object data = MinecraftVersions.UPDATE_AQUATIC.isAtLeast()
+            ? block.getBlockData()
+            : new MaterialData(block.getType(), block.getRawData());
 
         // When there is no precise hit/normal, assume the block has been broken.
         // In this case, we want to spawn particles in all directions from the
         // center fo the block.
         if (hitLocation == null && normal == null) {
             Location spawnLoc = block.getLocation().add(0.5, 0.5, 0.5);
-            world.spawnParticle(BLOCK_CRACK, spawnLoc, amount, spread, spread, spread, data);
+            world.spawnParticle(XParticle.BLOCK.get(), spawnLoc, amount, spread, spread, spread, data);
         }
 
         // We need both...
@@ -92,7 +88,7 @@ public class BlockParticleSerializer implements Serializer<BlockParticleSerializ
             Location spawnLoc = hitLocation.toLocation(world);
             for (int i = 0; i < amount; i++) {
                 Vector direction = RandomUtil.onUnitSphere().multiply(spread).add(normal);
-                world.spawnParticle(BLOCK_CRACK, spawnLoc, 0, direction.getX(), direction.getY(), direction.getZ(), data);
+                world.spawnParticle(XParticle.BLOCK.get(), spawnLoc, 0, direction.getX(), direction.getY(), direction.getZ(), data);
             }
         }
     }

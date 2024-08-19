@@ -66,7 +66,7 @@ tasks.shadowJar {
         // Relocate to MechanicsCore adventure locations, so we use their shaded version
         relocate("net.kyori", "me.deecaad.core.lib")
         relocate("com.cryptomorin.xseries", "me.deecaad.core.lib.xseries")
-        relocate("com.cjcrafter.foliascheduler", "me.deecaad.core.lib.foliascheduler")
+        relocate("com.cjcrafter.foliascheduler", "me.deecaad.core.lib.scheduler")
     }
 }
 

@@ -5,7 +5,7 @@
 
 package me.cjcrafter.weaponmechanicscosmetics.listeners;
 
-import com.cjcrafter.foliascheduler.MinecraftVersions;
+import com.cjcrafter.foliascheduler.util.MinecraftVersions;
 import com.cryptomorin.xseries.particles.XParticle;
 import me.cjcrafter.weaponmechanicscosmetics.WeaponMechanicsCosmetics;
 import me.deecaad.core.file.Configuration;

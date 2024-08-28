@@ -5,7 +5,7 @@
 
 package me.cjcrafter.weaponmechanicscosmetics.timer;
 
-import com.cjcrafter.foliascheduler.MinecraftVersions;
+import com.cjcrafter.foliascheduler.util.MinecraftVersions;
 import com.cjcrafter.foliascheduler.ServerImplementation;
 import com.cjcrafter.foliascheduler.TaskImplementation;
 import me.cjcrafter.weaponmechanicscosmetics.WeaponMechanicsCosmetics;

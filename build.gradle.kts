@@ -1,5 +1,5 @@
 group = "me.cjcrafter"
-version = "3.4.0"
+version = "3.4.1"
 
 plugins {
     `java-library`
@@ -45,7 +45,7 @@ dependencies {
     compileOnly("com.github.cryptomorin:XSeries:11.0.0")
 
     implementation("org.bstats:bstats-bukkit:3.0.1")
-    implementation("com.cjcrafter:foliascheduler:0.4.5")
+    implementation("com.cjcrafter:foliascheduler:0.4.7")
     implementation("org.mariuszgromada.math:MathParser.org-mXparser:5.2.1")
 }
 

@@ -5,7 +5,7 @@
 
 package me.cjcrafter.weaponmechanicscosmetics.mechanics;
 
-import com.cjcrafter.foliascheduler.MinecraftVersions;
+import com.cjcrafter.foliascheduler.util.MinecraftVersions;
 import com.cryptomorin.xseries.particles.XParticle;
 import me.deecaad.core.file.SerializeData;
 import me.deecaad.core.file.SerializerException;

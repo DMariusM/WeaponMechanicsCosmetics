@@ -1,6 +1,6 @@
 package me.cjcrafter.weaponmechanicscosmetics.config;
 
-import com.cjcrafter.foliascheduler.MinecraftVersions;
+import com.cjcrafter.foliascheduler.util.MinecraftVersions;
 import me.deecaad.core.compatibility.CompatibilityAPI;
 import me.deecaad.core.compatibility.block.BlockCompatibility;
 import me.deecaad.core.file.SerializeData;

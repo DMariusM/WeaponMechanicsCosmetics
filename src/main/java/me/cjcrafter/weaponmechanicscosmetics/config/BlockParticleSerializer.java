@@ -1,6 +1,6 @@
 package me.cjcrafter.weaponmechanicscosmetics.config;
 
-import com.cjcrafter.foliascheduler.MinecraftVersions;
+import com.cjcrafter.foliascheduler.util.MinecraftVersions;
 import com.cryptomorin.xseries.particles.XParticle;
 import me.cjcrafter.weaponmechanicscosmetics.mechanics.ParticleMechanic;
 import me.deecaad.core.file.SerializeData;

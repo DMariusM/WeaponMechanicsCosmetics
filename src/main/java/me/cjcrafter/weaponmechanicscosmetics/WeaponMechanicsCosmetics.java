@@ -6,7 +6,7 @@
 package me.cjcrafter.weaponmechanicscosmetics;
 
 import com.cjcrafter.foliascheduler.FoliaCompatibility;
-import com.cjcrafter.foliascheduler.MinecraftVersions;
+import com.cjcrafter.foliascheduler.util.MinecraftVersions;
 import com.cjcrafter.foliascheduler.ServerImplementation;
 import com.cjcrafter.foliascheduler.TaskImplementation;
 import com.comphenix.protocol.ProtocolLibrary;

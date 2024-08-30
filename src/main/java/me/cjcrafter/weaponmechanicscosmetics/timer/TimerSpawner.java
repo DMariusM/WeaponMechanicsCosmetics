@@ -99,7 +99,7 @@ public class TimerSpawner implements Listener {
         if (timer == null)
             return;
 
-        TimerData task = timer.play((Player) event.getShooter(), event.getWeaponStack(), ticks);
+        TimerData task = timer.play((Player) event.getShooter(), event.getWeaponStack().clone(), ticks);
         TimerData old = tasks.put(task.player, task);
         if (old != null)
             old.cancel();

@@ -1,5 +1,5 @@
 group = "me.cjcrafter"
-version = "3.4.2"
+version = "3.4.3"
 
 plugins {
     `java-library`

@@ -28,7 +28,7 @@ public class MuzzleFlashSpawner implements Listener {
     @EventHandler
     public void onShoot(WeaponShootEvent event) {
         Configuration config = WeaponMechanics.getConfigurations();
-        if (!config.getBool(event.getWeaponTitle() + ".Cosmetics.Muzzle_Flash"))
+        if (!config.getBoolean(event.getWeaponTitle() + ".Cosmetics.Muzzle_Flash"))
             return;
 
         FakeEntity entity = CompatibilityAPI.getEntityCompatibility().generateFakeEntity(event.getShooter().getLocation(), light);

@@ -41,7 +41,7 @@ public class DeathMessageListener implements Listener {
         // Since Spigot does not provide a way to check who killed an entity,
         // we have to hack this shit together.
         Configuration config = WeaponMechanics.getConfigurations();
-        List<String> deathMessages = config.getList(event.getWeaponTitle() + ".Cosmetics.Death_Messages");
+        List<String> deathMessages = config.getObject(event.getWeaponTitle() + ".Cosmetics.Death_Messages", List.class);
         if (!deathMessages.isEmpty())
             killMap.put(event.getVictim(), event);
     }

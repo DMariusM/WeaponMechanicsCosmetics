@@ -71,7 +71,7 @@ public class FallingBlockScript extends ProjectileScript<AProjectile> {
         Configuration config = WeaponMechanicsCosmetics.getInstance().getConfiguration();
         int amount = config.getInt("Explosion_Effects.Falling_Block_Break.Amount");
         double spread = config.getDouble("Explosion_Effects.Falling_Block_Break.Spread");
-        boolean playSound = config.getBool("Explosion_Effects.Falling_Block_Break.Play_Break_Sound");
+        boolean playSound = config.getBoolean("Explosion_Effects.Falling_Block_Break.Play_Break_Sound");
 
         World world = projectile.getWorld();
         Location location = projectile.getLocation().toLocation(world);

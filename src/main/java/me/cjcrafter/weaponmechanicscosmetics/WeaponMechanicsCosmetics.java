@@ -170,7 +170,7 @@ public class WeaponMechanicsCosmetics extends JavaPlugin {
             reader.usePathToSerializersAndValidators(config);
 
             debug.info("Reloading plugin");
-            WeaponMechanics.getProjectilesRunnable().addScriptManager(new CosmeticsScriptManager(plugin));
+            WeaponMechanics.getProjectileSpawner().addScriptManager(new CosmeticsScriptManager(plugin));
             registerListeners();
 
             // Reload packet listeners

@@ -1,5 +1,6 @@
 package me.cjcrafter.weaponmechanicscosmetics.listeners;
 
+import com.cjcrafter.foliascheduler.util.MinecraftVersions;
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.events.ListenerPriority;
 import com.comphenix.protocol.events.PacketAdapter;
@@ -8,8 +9,6 @@ import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.wrappers.EnumWrappers;
 import com.comphenix.protocol.wrappers.Pair;
 import me.cjcrafter.weaponmechanicscosmetics.config.CrossbowConfigSerializer;
-import me.deecaad.core.utils.MinecraftVersions;
-import me.deecaad.core.utils.ReflectionUtil;
 import me.deecaad.weaponmechanics.WeaponMechanics;
 import me.deecaad.weaponmechanics.utils.CustomTag;
 import me.deecaad.weaponmechanics.wrappers.EntityWrapper;

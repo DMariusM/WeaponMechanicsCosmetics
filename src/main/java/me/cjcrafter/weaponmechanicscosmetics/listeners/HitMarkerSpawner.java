@@ -1,12 +1,12 @@
 package me.cjcrafter.weaponmechanicscosmetics.listeners;
 
+import com.cjcrafter.foliascheduler.ServerImplementation;
 import me.cjcrafter.weaponmechanicscosmetics.WeaponMechanicsCosmetics;
 import me.deecaad.core.compatibility.CompatibilityAPI;
 import me.deecaad.core.compatibility.entity.FakeEntity;
 import me.deecaad.core.file.Configuration;
 import me.deecaad.core.placeholder.PlaceholderData;
 import me.deecaad.core.placeholder.PlaceholderMessage;
-import me.deecaad.core.utils.NumberUtil;
 import me.deecaad.core.utils.RandomUtil;
 import me.deecaad.weaponmechanics.WeaponMechanics;
 import me.deecaad.weaponmechanics.weapon.weaponevents.WeaponDamageEntityEvent;
@@ -18,7 +18,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import java.text.DecimalFormat;
 
@@ -56,11 +55,7 @@ public class HitMarkerSpawner implements Listener {
 
         entity.setPosition(pos.getX(), pos.getY() + 1.0, pos.getZ());
 
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                entity.remove();
-            }
-        }.runTaskLater(WeaponMechanicsCosmetics.getInstance().getPlugin(), 20);
+        ServerImplementation scheduler = WeaponMechanicsCosmetics.getInstance().getScheduler();
+        scheduler.region(pos).runDelayed(() -> entity.remove(), 20);
     }
 }

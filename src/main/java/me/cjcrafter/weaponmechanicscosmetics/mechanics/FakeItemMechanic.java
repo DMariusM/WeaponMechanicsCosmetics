@@ -11,7 +11,6 @@ import me.deecaad.core.mechanics.CastData;
 import me.deecaad.core.mechanics.defaultmechanics.Mechanic;
 import org.bukkit.Location;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
@@ -55,12 +54,7 @@ public class FakeItemMechanic extends Mechanic {
 
         // We do not need to consume this task since it only serves to delete
         // the existing entity.
-        int task = new BukkitRunnable() {
-            @Override
-            public void run() {
-                entity.remove();
-            }
-        }.runTaskLater(WeaponMechanicsCosmetics.getInstance().getPlugin(), time).getTaskId();
+        WeaponMechanicsCosmetics.getInstance().getScheduler().region(location).runDelayed(() -> entity.remove(), time);
     }
 
     @Override

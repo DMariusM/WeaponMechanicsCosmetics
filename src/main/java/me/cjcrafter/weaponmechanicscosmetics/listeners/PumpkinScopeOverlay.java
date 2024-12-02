@@ -1,12 +1,12 @@
 package me.cjcrafter.weaponmechanicscosmetics.listeners;
 
+import com.cjcrafter.foliascheduler.ServerImplementation;
 import me.cjcrafter.weaponmechanicscosmetics.WeaponMechanicsCosmetics;
 import me.deecaad.core.compatibility.CompatibilityAPI;
 import me.deecaad.core.file.Configuration;
 import me.deecaad.core.file.serializers.ItemSerializer;
 import me.deecaad.core.utils.Debugger;
 import me.deecaad.weaponmechanics.WeaponMechanics;
-import me.deecaad.weaponmechanics.WeaponMechanicsAPI;
 import me.deecaad.weaponmechanics.weapon.weaponevents.WeaponScopeEvent;
 import me.deecaad.weaponmechanics.wrappers.PlayerWrapper;
 import me.deecaad.weaponmechanics.wrappers.ZoomData;
@@ -19,7 +19,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -67,13 +66,11 @@ public class PumpkinScopeOverlay implements Listener {
 
         // 2 ticks are needed, 1 doesn't work
         if ((main.isZooming() || off.isZooming()) && injectedPlayers.contains(player)) {
-            new BukkitRunnable() {
-                @Override
-                public void run() {
-                    if ((main.isZooming() || off.isZooming()) && injectedPlayers.contains(player))
-                        sendPumpkin(player);
-                }
-            }.runTaskLater(WeaponMechanicsCosmetics.getInstance().getPlugin(), 2L);
+            ServerImplementation scheduler = WeaponMechanicsCosmetics.getInstance().getScheduler();
+            scheduler.entity(player).runDelayed(() -> {
+                if ((main.isZooming() || off.isZooming()) && injectedPlayers.contains(player))
+                    sendPumpkin(player);
+            }, 2L);
         }
     }
 

@@ -35,21 +35,21 @@ public class CosmeticsScriptManager extends ProjectileScriptManager {
         if (aProjectile instanceof WeaponProjectile projectile) {
             projectile.addProjectileScript(new BlockImpactScript(getPlugin(), projectile));
 
-            if (config.containsKey(projectile.getWeaponTitle() + ".Trail"))
+            if (config.contains(projectile.getWeaponTitle() + ".Trail"))
                 projectile.addProjectileScript(new TrailScript(getPlugin(), projectile));
 
-            if (config.containsKey(projectile.getWeaponTitle() + ".Cosmetics.Bullet_Zip.Sounds"))
+            if (config.contains(projectile.getWeaponTitle() + ".Cosmetics.Bullet_Zip.Sounds"))
                 projectile.addProjectileScript(new ZipScript(getPlugin(), projectile));
 
-            if (config.containsKey(projectile.getWeaponTitle() + ".Cosmetics.Block_Damage"))
+            if (config.contains(projectile.getWeaponTitle() + ".Cosmetics.Block_Damage"))
                 projectile.addProjectileScript(new BlockDamageScript(getPlugin(), projectile));
 
             // If the projectile has a disguise, then there is no need to show
             // splash effects (entities have splash effects in vanilla mc)
-            if (config.containsKey(projectile.getWeaponTitle() + ".Cosmetics.Splash_Mechanics"))
+            if (config.contains(projectile.getWeaponTitle() + ".Cosmetics.Splash_Mechanics"))
                 projectile.addProjectileScript(new SplashScript(getPlugin(), projectile));
 
-            if (config.containsKey(projectile.getWeaponTitle() + ".Cosmetics.Block_Hit_Mechanics"))
+            if (config.contains(projectile.getWeaponTitle() + ".Cosmetics.Block_Hit_Mechanics"))
                 projectile.addProjectileScript(new BlockHitMechanicsScript(getPlugin(), projectile));
         }
     }

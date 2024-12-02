@@ -5,6 +5,7 @@
 
 package me.cjcrafter.weaponmechanicscosmetics.scripts;
 
+import com.cjcrafter.foliascheduler.ServerImplementation;
 import me.cjcrafter.weaponmechanicscosmetics.WeaponMechanicsCosmetics;
 import me.cjcrafter.weaponmechanicscosmetics.config.BlockParticleSerializer;
 import me.cjcrafter.weaponmechanicscosmetics.config.BlockSoundSerializer;
@@ -21,7 +22,6 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 
 public class BlockDamageScript extends ProjectileScript<WeaponProjectile> {
@@ -93,12 +93,11 @@ public class BlockDamageScript extends ProjectileScript<WeaponProjectile> {
 
         if (regenDelay != -1) {
             if (damage.getBreakMode(state.getType()) == BlockDamage.BreakMode.BREAK && data.isBroken()) {
-                new BukkitRunnable() {
-                    public void run() {
-                        data.regenerate();
-                        data.remove();
-                    }
-                }.runTaskLater(WeaponMechanicsCosmetics.getInstance().getPlugin(), regenDelay);
+                ServerImplementation scheduler = WeaponMechanicsCosmetics.getInstance().getScheduler();
+                scheduler.region(state.getLocation()).runDelayed(() -> {
+                    data.regenerate();
+                    data.remove();
+                }, regenDelay);
             }
         } else if (data.isBroken()) {
             data.remove();

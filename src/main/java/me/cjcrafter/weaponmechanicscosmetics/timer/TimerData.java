@@ -5,6 +5,7 @@
 
 package me.cjcrafter.weaponmechanicscosmetics.timer;
 
+import com.cjcrafter.foliascheduler.TaskImplementation;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -19,16 +20,16 @@ public class TimerData {
     public final Player player;
     public final World world;
     public final ItemStack weapon;
-    public final int taskId;
+    public final TaskImplementation<Void> task;
     public final long startTicks;
     public final int totalTicks;
 
-    public TimerData(Timer timer, Player player, ItemStack weapon, int taskId, int totalTicks) {
+    public TimerData(Timer timer, Player player, ItemStack weapon, TaskImplementation<Void> task, int totalTicks) {
         this.timer = timer;
         this.player = player;
         this.world = player.getWorld();
         this.weapon = weapon;
-        this.taskId = taskId;
+        this.task = task;
         this.startTicks = world.getFullTime();
         this.totalTicks = totalTicks;
     }
@@ -43,10 +44,10 @@ public class TimerData {
 
     public void cancel() {
         // First check if the event is cancelled already
-        if (!Bukkit.getScheduler().isQueued(taskId))
+        if (task.isCancelled())
             return;
 
-        Bukkit.getScheduler().cancelTask(taskId);
+        task.cancel();
         timer.cancel(this);
     }
 }

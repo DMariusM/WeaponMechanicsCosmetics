@@ -5,6 +5,10 @@
 
 package me.cjcrafter.weaponmechanicscosmetics;
 
+import com.cjcrafter.foliascheduler.FoliaCompatibility;
+import com.cjcrafter.foliascheduler.util.MinecraftVersions;
+import com.cjcrafter.foliascheduler.ServerImplementation;
+import com.cjcrafter.foliascheduler.TaskImplementation;
 import com.comphenix.protocol.ProtocolLibrary;
 import me.cjcrafter.weaponmechanicscosmetics.commands.SkinCommand;
 import me.cjcrafter.weaponmechanicscosmetics.config.BlockBreakParticleSerializer;
@@ -22,7 +26,6 @@ import me.deecaad.core.mechanics.targeters.Targeter;
 import me.deecaad.core.utils.Debugger;
 import me.deecaad.core.utils.FileUtil;
 import me.deecaad.core.utils.LogLevel;
-import me.deecaad.core.utils.MinecraftVersions;
 import me.deecaad.core.utils.ReflectionUtil;
 import me.deecaad.weaponmechanics.WeaponMechanics;
 import net.kyori.adventure.text.Component;
@@ -32,7 +35,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.File;
 import java.io.IOException;
@@ -40,6 +42,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.jar.JarFile;
 
 public class WeaponMechanicsCosmetics extends JavaPlugin {
@@ -50,6 +53,7 @@ public class WeaponMechanicsCosmetics extends JavaPlugin {
     private Metrics metrics;
     private Debugger debug;
     private Configuration config;
+    private ServerImplementation scheduler;
     private ClassLoader langLoader;
 
     private boolean registeredMechanics;
@@ -87,6 +91,8 @@ public class WeaponMechanicsCosmetics extends JavaPlugin {
                 debug.log(LogLevel.ERROR, "Error while searching Jar", ex);
             }
         }
+
+        scheduler = new FoliaCompatibility(this).getServerImplementation();
     }
 
     @Override
@@ -102,13 +108,10 @@ public class WeaponMechanicsCosmetics extends JavaPlugin {
         Bukkit.getPluginManager().registerEvents(new WeaponMechanicsSerializerListener(), plugin);
 
         // Register permissions 2 ticks after server startup
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                SkinCommand.registerPermissions("Skin");
-                SkinCommand.registerPermissions("Hand");
-            }
-        }.runTaskLater(plugin, 2);
+        scheduler.global().runDelayed(() -> {
+            SkinCommand.registerPermissions("Skin");
+            SkinCommand.registerPermissions("Hand");
+        }, 2);
     }
 
     private void registerListeners() {
@@ -125,58 +128,55 @@ public class WeaponMechanicsCosmetics extends JavaPlugin {
         pm.registerEvents(new WeaponSkinListener(), plugin);
     }
 
-    public TaskChain reloadPlugin() {
-        return new TaskChain(plugin)
-                .thenRunAsync(() -> {
+    public CompletableFuture<TaskImplementation<Void>> reloadPlugin() {
+        return scheduler.async().runNow(() -> {
 
-                    // Writes files
-                    if (!getDataFolder().exists() || getDataFolder().listFiles() == null || getDataFolder().listFiles().length == 0) {
-                        debug.info("Copying files from jar (This process may take up to 30 seconds during the first load!)");
-                        FileUtil.copyResourcesTo(getClassLoader().getResource("WeaponMechanicsCosmetics"), getDataFolder().toPath());
-                    }
+            // Writes files
+            if (!getDataFolder().exists() || getDataFolder().listFiles() == null || getDataFolder().listFiles().length == 0) {
+                debug.info("Copying files from jar (This process may take up to 30 seconds during the first load!)");
+                FileUtil.copyResourcesTo(getClassLoader().getResource("WeaponMechanicsCosmetics"), getDataFolder().toPath());
+            }
 
-                    // Make sure config.yml exists
-                    File config = new File(getDataFolder(), "config.yml");
-                    FileUtil.ensureDefaults(getClassLoader().getResource("WeaponMechanicsCosmetics/config.yml"), config);
+            // Make sure config.yml exists
+            File config = new File(getDataFolder(), "config.yml");
+            FileUtil.ensureDefaults(getClassLoader().getResource("WeaponMechanicsCosmetics/config.yml"), config);
 
-                    // Make sure the lang folder exists, and save resource locations
-                    File langFolder = new File(getDataFolder(), "lang");
-                    if (!langFolder.exists() || langFolder.listFiles() == null || langFolder.listFiles().length == 0) {
-                        FileUtil.copyResourcesTo(getClassLoader().getResource("WeaponMechanicsCosmetics/lang"), langFolder.toPath());
-                    }
-                    try {
-                        langLoader = new URLClassLoader(new URL[]{ langFolder.toURI().toURL() });
-                    } catch (MalformedURLException e) {
-                        debug.log(LogLevel.ERROR, "Error while loading Lang", e);
-                    }
-                })
-                .thenRunSync(() -> {
+            // Make sure the lang folder exists, and save resource locations
+            File langFolder = new File(getDataFolder(), "lang");
+            if (!langFolder.exists() || langFolder.listFiles() == null || langFolder.listFiles().length == 0) {
+                FileUtil.copyResourcesTo(getClassLoader().getResource("WeaponMechanicsCosmetics/lang"), langFolder.toPath());
+            }
+            try {
+                langLoader = new URLClassLoader(new URL[]{ langFolder.toURI().toURL() });
+            } catch (MalformedURLException e) {
+                debug.log(LogLevel.ERROR, "Error while loading Lang", e);
+            }
+        }).asFuture().thenCompose((previousTask) -> scheduler.global().run(() -> {
+            // Read config
+            List<Serializer<?>> serializers = new ArrayList<>();
+            serializers.add(new BlockSoundSerializer());
+            serializers.add(new BlockBreakSoundSerializer());
+            serializers.add(new BlockParticleSerializer());
+            serializers.add(new BlockBreakParticleSerializer());
+            serializers.add(new PumpkinScopeOverlay.PumpkinCreativeSerializer());
+            serializers.add(new PumpkinScopeOverlay.PumpkinSurvivalSerializer());
 
-                    // Read config
-                    List<Serializer<?>> serializers = new ArrayList<>();
-                    serializers.add(new BlockSoundSerializer());
-                    serializers.add(new BlockBreakSoundSerializer());
-                    serializers.add(new BlockParticleSerializer());
-                    serializers.add(new BlockBreakParticleSerializer());
-                    serializers.add(new PumpkinScopeOverlay.PumpkinCreativeSerializer());
-                    serializers.add(new PumpkinScopeOverlay.PumpkinSurvivalSerializer());
+            List<IValidator> validators = new ArrayList<>();
+            validators.add(new ExplosionEffectSpawner.ExplosionEffectValidator());
 
-                    List<IValidator> validators = new ArrayList<>();
-                    validators.add(new ExplosionEffectSpawner.ExplosionEffectValidator());
+            FileReader reader = new FileReader(debug, serializers, validators);
+            File file = new File(getDataFolder(), "config.yml");
+            config = reader.fillOneFile(file);
+            reader.usePathToSerializersAndValidators(config);
 
-                    FileReader reader = new FileReader(debug, serializers, validators);
-                    File file = new File(getDataFolder(), "config.yml");
-                    config = reader.fillOneFile(file);
-                    reader.usePathToSerializersAndValidators(config);
+            debug.info("Reloading plugin");
+            WeaponMechanics.getProjectileSpawner().addScriptManager(new CosmeticsScriptManager(plugin));
+            registerListeners();
 
-                    debug.info("Reloading plugin");
-                    WeaponMechanics.getProjectilesRunnable().addScriptManager(new CosmeticsScriptManager(plugin));
-                    registerListeners();
-
-                    // Reload packet listeners
-                    ProtocolLibrary.getProtocolManager().removePacketListeners(plugin);
-                    ProtocolLibrary.getProtocolManager().addPacketListener(new CrossbowPacketListener(plugin));
-                });
+            // Reload packet listeners
+            ProtocolLibrary.getProtocolManager().removePacketListeners(plugin);
+            ProtocolLibrary.getProtocolManager().addPacketListener(new CrossbowPacketListener(plugin));
+        }).asFuture());
     }
 
     public Debugger getDebug() {
@@ -258,6 +258,10 @@ public class WeaponMechanicsCosmetics extends JavaPlugin {
 
     public JavaPlugin getPlugin() {
         return plugin;
+    }
+
+    public ServerImplementation getScheduler() {
+        return scheduler;
     }
 
     public static WeaponMechanicsCosmetics getInstance() {

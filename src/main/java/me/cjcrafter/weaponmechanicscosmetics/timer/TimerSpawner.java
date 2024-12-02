@@ -5,10 +5,10 @@
 
 package me.cjcrafter.weaponmechanicscosmetics.timer;
 
+import com.cjcrafter.foliascheduler.ServerImplementation;
 import me.cjcrafter.weaponmechanicscosmetics.WeaponMechanicsCosmetics;
 import me.deecaad.core.events.EntityEquipmentEvent;
 import me.deecaad.core.file.Configuration;
-import me.deecaad.core.utils.ReflectionUtil;
 import me.deecaad.weaponmechanics.WeaponMechanics;
 import me.deecaad.weaponmechanics.weapon.weaponevents.*;
 import org.bukkit.entity.EntityType;
@@ -16,8 +16,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerItemHeldEvent;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -34,12 +32,10 @@ public class TimerSpawner implements Listener {
     public void onEquip(WeaponEquipEvent event) {
         // We have to run this 1 tick later, since otherwise the timer would
         // be cancelled by onDequip(PlayerItemHeldEvent).
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                playTimer(event, ".Show_Time.Weapon_Equip_Delay", ".Info.Weapon_Equip_Delay");
-            }
-        }.runTask(WeaponMechanicsCosmetics.getInstance().getPlugin());
+        ServerImplementation scheduler = WeaponMechanicsCosmetics.getInstance().getScheduler();
+        scheduler.entity(event.getShooter()).run(() -> {
+            playTimer(event, ".Show_Time.Weapon_Equip_Delay", ".Info.Weapon_Equip_Delay");
+        });
     }
 
     @EventHandler (priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -103,7 +99,7 @@ public class TimerSpawner implements Listener {
         if (timer == null)
             return;
 
-        TimerData task = timer.play((Player) event.getShooter(), event.getWeaponStack(), ticks);
+        TimerData task = timer.play((Player) event.getShooter(), event.getWeaponStack().clone(), ticks);
         TimerData old = tasks.put(task.player, task);
         if (old != null)
             old.cancel();

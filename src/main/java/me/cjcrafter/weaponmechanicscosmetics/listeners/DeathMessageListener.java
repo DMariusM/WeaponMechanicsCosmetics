@@ -1,12 +1,10 @@
 package me.cjcrafter.weaponmechanicscosmetics.listeners;
 
+import com.cjcrafter.foliascheduler.util.MinecraftVersions;
 import me.deecaad.core.file.Configuration;
 import me.deecaad.core.placeholder.PlaceholderData;
 import me.deecaad.core.placeholder.PlaceholderMessage;
-import me.deecaad.core.utils.MinecraftVersions;
-import me.deecaad.core.utils.NumberUtil;
 import me.deecaad.core.utils.RandomUtil;
-import me.deecaad.core.utils.ReflectionUtil;
 import me.deecaad.weaponmechanics.WeaponMechanics;
 import me.deecaad.weaponmechanics.weapon.weaponevents.WeaponDamageEntityEvent;
 import net.kyori.adventure.text.Component;
@@ -43,7 +41,7 @@ public class DeathMessageListener implements Listener {
         // Since Spigot does not provide a way to check who killed an entity,
         // we have to hack this shit together.
         Configuration config = WeaponMechanics.getConfigurations();
-        List<String> deathMessages = config.getList(event.getWeaponTitle() + ".Cosmetics.Death_Messages");
+        List<String> deathMessages = config.getObject(event.getWeaponTitle() + ".Cosmetics.Death_Messages", List.class);
         if (!deathMessages.isEmpty())
             killMap.put(event.getVictim(), event);
     }

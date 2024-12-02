@@ -5,11 +5,13 @@
 
 package me.cjcrafter.weaponmechanicscosmetics.scripts;
 
+import com.cjcrafter.foliascheduler.ServerImplementation;
+import com.cjcrafter.foliascheduler.TaskImplementation;
+import com.cryptomorin.xseries.particles.XParticle;
 import me.cjcrafter.weaponmechanicscosmetics.WeaponMechanicsCosmetics;
 import me.deecaad.core.file.Configuration;
 import me.deecaad.core.mechanics.CastData;
 import me.deecaad.core.mechanics.Mechanics;
-import me.deecaad.core.utils.MinecraftVersions;
 import me.deecaad.core.utils.VectorUtil;
 import me.deecaad.weaponmechanics.WeaponMechanics;
 import me.deecaad.weaponmechanics.weapon.projectile.ProjectileScript;
@@ -23,18 +25,14 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
 import java.util.LinkedList;
+import java.util.function.Consumer;
 
 public class ZipScript extends ProjectileScript<WeaponProjectile> {
-
-    private static final Particle REDSTONE = MinecraftVersions.TRAILS_AND_TAILS.get(5).isAtLeast()
-        ? Particle.DUST
-        : Particle.valueOf("REDSTONE");
 
     private double distanceSquared;
     private Mechanics mechanics;
@@ -108,13 +106,6 @@ public class ZipScript extends ProjectileScript<WeaponProjectile> {
                 continue;
 
             boolean closeEnough = a.distanceSquared(point) < distanceSquared;
-
-            //if (debug.canLog(LogLevel.DEBUG)) {
-            //    debugPoint(world, start, Color.BLACK);
-            //    debugPoint(world, stop, Color.WHITE);
-            //    debugRay(world, point, a, closeEnough ? Color.GREEN : Color.RED);
-            //}
-
             if (closeEnough) {
                 CastData cast = new CastData(player, projectile.getWeaponTitle(), projectile.getWeaponStack());
                 cast.setTargetLocation(point.toLocation(world));
@@ -157,16 +148,17 @@ public class ZipScript extends ProjectileScript<WeaponProjectile> {
 
     public void debugPoint(World world, Vector point, Color color) {
         Particle.DustOptions options = new Particle.DustOptions(color, 0.8f);
-        new BukkitRunnable() {
+        ServerImplementation scheduler = WeaponMechanicsCosmetics.getInstance().getScheduler();
+        scheduler.async().runAtFixedRate(new Consumer<>() {
             int count = 15;
             @Override
-            public void run() {
+            public void accept(TaskImplementation<Void> scheduledTask) {
                 if (count-- < 0)
-                    cancel();
+                    scheduledTask.cancel();
 
-                world.spawnParticle(REDSTONE, point.getX(), point.getY(), point.getZ(), 1, options);
+                world.spawnParticle(XParticle.DUST.get(), point.getX(), point.getY(), point.getZ(), 1, options);
             }
-        }.runTaskTimerAsynchronously(WeaponMechanicsCosmetics.getInstance().getPlugin(), 0, 1);
+        }, 0, 1);
     }
 
     public static int floor(double value) {

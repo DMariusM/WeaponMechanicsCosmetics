@@ -43,9 +43,9 @@ dependencies {
     compileOnly("com.cjcrafter:vivecraft:3.0.0")
     compileOnly("com.comphenix.protocol:ProtocolLib:5.1.0")
     compileOnly("com.github.cryptomorin:XSeries:11.0.0")
+    compileOnly("com.cjcrafter:foliascheduler:0.6.0")
 
     implementation("org.bstats:bstats-bukkit:3.0.1")
-    implementation("com.cjcrafter:foliascheduler:0.4.7")
     implementation("org.mariuszgromada.math:MathParser.org-mXparser:5.2.1")
 }
 

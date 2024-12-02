@@ -36,6 +36,6 @@ public class MuzzleFlashSpawner implements Listener {
         entity.show();
 
         ServerImplementation scheduler = WeaponMechanicsCosmetics.getInstance().getScheduler();
-        scheduler.async().runNow(() -> entity.remove());
+        scheduler.async().runDelayed(() -> entity.remove(), 1L);
     }
 }

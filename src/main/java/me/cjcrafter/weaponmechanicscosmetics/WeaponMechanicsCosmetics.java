@@ -6,10 +6,13 @@
 package me.cjcrafter.weaponmechanicscosmetics;
 
 import com.cjcrafter.foliascheduler.FoliaCompatibility;
+import com.cjcrafter.foliascheduler.util.ConstructorInvoker;
 import com.cjcrafter.foliascheduler.util.MinecraftVersions;
 import com.cjcrafter.foliascheduler.ServerImplementation;
 import com.cjcrafter.foliascheduler.TaskImplementation;
-import com.comphenix.protocol.ProtocolLibrary;
+import com.cjcrafter.foliascheduler.util.ReflectionUtil;
+import com.github.retrooper.packetevents.PacketEvents;
+import com.github.retrooper.packetevents.event.PacketListenerPriority;
 import me.cjcrafter.weaponmechanicscosmetics.commands.SkinCommand;
 import me.cjcrafter.weaponmechanicscosmetics.config.BlockBreakParticleSerializer;
 import me.cjcrafter.weaponmechanicscosmetics.config.BlockBreakSoundSerializer;
@@ -26,7 +29,6 @@ import me.deecaad.core.mechanics.targeters.Targeter;
 import me.deecaad.core.utils.Debugger;
 import me.deecaad.core.utils.FileUtil;
 import me.deecaad.core.utils.LogLevel;
-import me.deecaad.core.utils.ReflectionUtil;
 import me.deecaad.weaponmechanics.WeaponMechanics;
 import net.kyori.adventure.text.Component;
 import org.bstats.bukkit.Metrics;
@@ -81,11 +83,20 @@ public class WeaponMechanicsCosmetics extends JavaPlugin {
                 JarSearcher searcher = new JarSearcher(new JarFile(getFile()));
 
                 searcher.findAllSubclasses(Mechanic.class, getClassLoader(), true)
-                        .stream().map(ReflectionUtil::newInstance).forEach(Mechanics.MECHANICS::add);
+                    .stream()
+                    .map(ReflectionUtil::getConstructor)
+                    .map(ConstructorInvoker::newInstance)
+                    .forEach(Mechanics.MECHANICS::add);
                 searcher.findAllSubclasses(Targeter.class, getClassLoader(), true)
-                        .stream().map(ReflectionUtil::newInstance).forEach(Mechanics.TARGETERS::add);
+                    .stream()
+                    .map(ReflectionUtil::getConstructor)
+                    .map(ConstructorInvoker::newInstance)
+                    .forEach(Mechanics.TARGETERS::add);
                 searcher.findAllSubclasses(Condition.class, getClassLoader(), true)
-                        .stream().map(ReflectionUtil::newInstance).forEach(Mechanics.CONDITIONS::add);
+                    .stream()
+                    .map(ReflectionUtil::getConstructor)
+                    .map(ConstructorInvoker::newInstance)
+                    .forEach(Mechanics.CONDITIONS::add);
 
             } catch (IOException ex) {
                 debug.log(LogLevel.ERROR, "Error while searching Jar", ex);
@@ -111,7 +122,11 @@ public class WeaponMechanicsCosmetics extends JavaPlugin {
         scheduler.global().runDelayed(() -> {
             SkinCommand.registerPermissions("Skin");
             SkinCommand.registerPermissions("Hand");
-        }, 2);
+        }, 2L);
+
+        scheduler.global().runDelayed(() -> {
+            PacketEvents.getAPI().getEventManager().registerListener(new CrossbowPacketListener(), PacketListenerPriority.NORMAL);
+        }, 10L);
     }
 
     private void registerListeners() {
@@ -172,10 +187,6 @@ public class WeaponMechanicsCosmetics extends JavaPlugin {
             debug.info("Reloading plugin");
             WeaponMechanics.getProjectileSpawner().addScriptManager(new CosmeticsScriptManager(plugin));
             registerListeners();
-
-            // Reload packet listeners
-            ProtocolLibrary.getProtocolManager().removePacketListeners(plugin);
-            ProtocolLibrary.getProtocolManager().addPacketListener(new CrossbowPacketListener(plugin));
         }).asFuture());
     }
 

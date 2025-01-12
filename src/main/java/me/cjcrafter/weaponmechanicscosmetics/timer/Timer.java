@@ -17,7 +17,6 @@ import me.deecaad.core.file.SerializerException;
 import me.deecaad.core.placeholder.PlaceholderData;
 import me.deecaad.core.placeholder.PlaceholderMessage;
 import me.deecaad.core.utils.NumberUtil;
-import me.deecaad.core.utils.ReflectionUtil;
 import me.deecaad.weaponmechanics.utils.CustomTag;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.bossbar.BossBar;
@@ -28,7 +27,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
-import java.lang.reflect.Constructor;
 import java.text.DecimalFormat;
 import java.util.function.Consumer;
 
@@ -42,14 +40,6 @@ public class Timer implements Serializer<Timer>{
     public static final DecimalFormat ROUND = new DecimalFormat("0.0");
     public static final int DEFAULT_TICK_RATE = 1;
     public static final Title.Times TITLE_TIMES = Title.Times.times(Ticks.duration(0), Ticks.duration(2), Ticks.duration(5));
-
-    private static Constructor<?> packetPlayOutExperienceConstructor;
-
-    static {
-        if (!MinecraftVersions.BUZZY_BEES.isAtLeast()) {
-            packetPlayOutExperienceConstructor = ReflectionUtil.getConstructor(ReflectionUtil.getPacketClass("PacketPlayOutExperience"), float.class, int.class, int.class);
-        }
-    }
 
     private boolean showItemCooldown;
     private PlaceholderMessage actionBar;
@@ -208,22 +198,17 @@ public class Timer implements Serializer<Timer>{
             progress = player.getExp();
 
         progress = NumberUtil.clamp01(progress);
-
-        if (MinecraftVersions.BUZZY_BEES.isAtLeast()) {
-            player.sendExperienceChange(progress, player.getLevel());
-        } else {
-            CompatibilityAPI.getCompatibility().sendPackets(player, ReflectionUtil.newInstance(packetPlayOutExperienceConstructor, progress, player.getTotalExperience(), player.getLevel()));
-        }
+        player.sendExperienceChange(progress, player.getLevel());
     }
 
     @NotNull
     @Override
     public Timer serialize(SerializeData data) throws SerializerException {
 
-        String actionBar = data.of("Action_Bar").getAdventure(null);
-        String actionBarCancelled = data.of("Action_Bar_Cancelled").getAdventure(null);
-        String title = data.of("Title").getAdventure(null);
-        String subTitle = data.of("Subtitle").getAdventure(null);
+        String actionBar = data.of("Action_Bar").getAdventure().orElse(null);
+        String actionBarCancelled = data.of("Action_Bar_Cancelled").getAdventure().orElse(null);
+        String title = data.of("Title").getAdventure().orElse(null);
+        String subTitle = data.of("Subtitle").getAdventure().orElse(null);
 
         // Bossbar stuff... Set to null first, so we can do assertExists ONLY
         // when the admin uses "Boss_Bar"
@@ -232,9 +217,9 @@ public class Timer implements Serializer<Timer>{
         BossBar.Overlay style = null;
 
         if (data.has("Boss_Bar")) {
-            bossBar = data.of("Boss_Bar.Message").assertExists().getAdventure();
-            color = data.of("Boss_Bar.Color").getEnum(BossBar.Color.class, BossBar.Color.WHITE);
-            style = data.of("Boss_Bar.Style").getEnum(BossBar.Overlay.class, BossBar.Overlay.PROGRESS);
+            bossBar = data.of("Boss_Bar.Message").assertExists().getAdventure().get();
+            color = data.of("Boss_Bar.Color").getEnum(BossBar.Color.class).orElse(BossBar.Color.WHITE);
+            style = data.of("Boss_Bar.Style").getEnum(BossBar.Overlay.class).orElse(BossBar.Overlay.PROGRESS);
         }
 
         // Before we serialize bar, lets check to see if any of our messages
@@ -248,10 +233,10 @@ public class Timer implements Serializer<Timer>{
 
         StringBar bar = null;
         if (contains)
-            bar = data.of("Bar").assertExists().serialize(StringBar.class);
+            bar = data.of("Bar").assertExists().serialize(StringBar.class).get();
 
-        boolean showItemCooldown = data.of("Item_Cooldown").getBool(false);
-        boolean showExp = data.of("Exp").getBool(false);
+        boolean showItemCooldown = data.of("Item_Cooldown").getBool().orElse(false);
+        boolean showExp = data.of("Exp").getBool().orElse(false);
 
         return new Timer(showItemCooldown, actionBar, actionBarCancelled, title, subTitle, bossBar, color, style, showExp, bar);
     }
@@ -309,11 +294,11 @@ public class Timer implements Serializer<Timer>{
         @NotNull
         @Override
         public StringBar serialize(SerializeData data) throws SerializerException {
-            String leftColor = data.of("Left_Color").assertExists().getAdventure();
-            String rightColor = data.of("Right_Color").assertExists().getAdventure();
-            String leftSymbol = data.of("Left_Symbol").assertExists().getAdventure();
-            String rightSymbol = data.of("Right_Symbol").getAdventure(leftSymbol);
-            int symbolAmount = data.of("Symbol_Amount").assertExists().assertPositive().getInt();
+            String leftColor = data.of("Left_Color").assertExists().getAdventure().get();
+            String rightColor = data.of("Right_Color").assertExists().getAdventure().get();
+            String leftSymbol = data.of("Left_Symbol").assertExists().getAdventure().get();
+            String rightSymbol = data.of("Right_Symbol").getAdventure().orElse(leftSymbol);
+            int symbolAmount = data.of("Symbol_Amount").assertExists().assertRange(1, null).getInt().getAsInt();
 
             return new StringBar(leftColor, rightColor, leftSymbol, rightSymbol, symbolAmount);
         }

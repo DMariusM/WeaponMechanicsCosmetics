@@ -44,7 +44,7 @@ Block_Sounds:
   Overrides:
     - "diamond_block CustomSound{sound=fx.ricochet, noise=0.01}"
     - "iron_block CustomSound{sound=fx.ricochet, noise=0.01}"
-    - "$glass Sound{sound=block_glass_break, pitch=1.3, noise=0.01}"
+    - "$glass Sound{sound=block.glass.break, pitch=1.3, noise=0.01}"
 
   # Material_Blacklist is used whenever you want a certain block to not make
   # any sound when hit.
@@ -84,7 +84,7 @@ Break_Sounds:
   Type: BREAK
   Default_Randomness: 0.02
   Overrides:
-    - "$glass Sound{sound=BLOCK_GLASS_BREAK, pitch=1.3, noise=0.01}"
+    - "$glass Sound{sound=block.glass.break, pitch=1.3, noise=0.01}"
   Material_Blacklist: []
   Weapon_Blacklist: []
 

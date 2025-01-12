@@ -66,8 +66,8 @@ public class SphereTargeter extends ShapeTargeter {
     @NotNull
     @Override
     public Targeter serialize(SerializeData data) throws SerializerException {
-        int points = data.of("Points").assertExists().getInt();
-        double radius = data.of("Radius").assertExists().getDouble();
+        int points = data.of("Points").assertExists().getInt().getAsInt();
+        double radius = data.of("Radius").assertExists().getDouble().getAsDouble();
 
         return applyParentArgs(data, new SphereTargeter(points, radius));
     }

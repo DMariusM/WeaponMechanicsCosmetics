@@ -7,6 +7,6 @@ in the config.yml file, but most of your time should be spent in the WeaponMecha
 folder. 
 
 Need Help?
-* Check the wiki: https://github.com/WeaponMechanics/WeaponMechanicsCosmeticsWiki/wiki
+* Check the wiki: https://cjcrafter.gitbook.io/weaponmechanicscosmetics
 * Ask in discord: https://discord.gg/ERVgpfg
 * Download the latest version: https://www.spigotmc.org/resources/104539/

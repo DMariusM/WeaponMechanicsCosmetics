@@ -32,10 +32,10 @@ public class TimerValidator implements IValidator {
                 "Firearm_Actions", "Melee_Hit_Delay", "Melee_Miss_Delay");
 
         for (String key : keys) {
-            Timer timer = data.of(key).serialize(Timer.class);
+            Timer timer = data.of(key).serialize(Timer.class).orElse(null);
 
             if (timer != null)
-                configuration.set(data.key + "." + key, timer);
+                configuration.set(data.getKey() + "." + key, timer);
         }
     }
 }

@@ -67,11 +67,8 @@ public class FakeItemMechanic extends Mechanic {
     public Mechanic serialize(SerializeData data) throws SerializerException {
 
         ItemStack item = new ItemSerializer().serialize(data);
-        int time = data.of("Time").getInt(100);
-        VectorSerializer velocity = data.of("Velocity").serialize(VectorSerializer.class);
-
-        if (velocity == null)
-            velocity = VectorSerializer.from(new Vector());
+        int time = data.of("Time").assertRange(1, null).getInt().orElse(100);
+        VectorSerializer velocity = data.of("Velocity").serialize(VectorSerializer.class).orElse(VectorSerializer.from(new Vector()));
 
         return applyParentArgs(data, new FakeItemMechanic(item, velocity, time));
     }

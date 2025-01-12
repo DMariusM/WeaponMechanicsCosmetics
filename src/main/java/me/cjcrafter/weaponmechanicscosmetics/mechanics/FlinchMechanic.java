@@ -1,12 +1,11 @@
 package me.cjcrafter.weaponmechanicscosmetics.mechanics;
 
-import com.cjcrafter.foliascheduler.util.MinecraftVersions;
 import me.deecaad.core.file.SerializeData;
 import me.deecaad.core.file.SerializerException;
 import me.deecaad.core.mechanics.CastData;
 import me.deecaad.core.mechanics.defaultmechanics.Mechanic;
-import me.deecaad.weaponmechanics.compatibility.WeaponCompatibilityAPI;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 public class FlinchMechanic extends Mechanic {
@@ -29,10 +28,11 @@ public class FlinchMechanic extends Mechanic {
         if (target == null)
             return;
 
-        if (showToEveryone)
-            WeaponCompatibilityAPI.getWeaponCompatibility().playHurtAnimation(target);
-        else
-            target.playHurtAnimation(0);
+        if (showToEveryone) {
+            target.playHurtAnimation(0f);
+        } else if (target instanceof Player player) {
+            player.sendHurtAnimation(0f);
+        }
     }
 
     @Override
@@ -43,12 +43,7 @@ public class FlinchMechanic extends Mechanic {
     @NotNull
     @Override
     public Mechanic serialize(SerializeData data) throws SerializerException {
-        boolean showToEveryone = data.of("Show_To_Everyone").getBool(false);
-
-        // ShowToEveryone is forced below 1.19.4, since Spigot only added the
-        // method in 1.19.4. All previous versions must hide it.
-        showToEveryone |= MinecraftVersions.WILD_UPDATE.isBelow();
-
+        boolean showToEveryone = data.of("Show_To_Everyone").getBool().orElse(false);
         return applyParentArgs(data, new FlinchMechanic(showToEveryone));
     }
 }

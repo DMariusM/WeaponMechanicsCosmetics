@@ -1,9 +1,9 @@
 group = "me.cjcrafter"
-version = "3.4.4"
+version = "3.5.0-BETA1"
 
 plugins {
     `java-library`
-    id("com.github.johnrengelman.shadow") version "8.1.1"
+    id("com.gradleup.shadow") version "8.3.5"
     id("net.minecrell.plugin-yml.bukkit") version "0.6.0"
 }
 
@@ -14,7 +14,7 @@ bukkit {
     foliaSupported = true
 
     authors = listOf("CJCrafter", "DeeCaaD")
-    depend = listOf("ProtocolLib", "MechanicsCore", "WeaponMechanics")
+    depend = listOf("packetevents", "MechanicsCore", "WeaponMechanics")
     softDepend = listOf("VivecraftSpigot")
 }
 
@@ -23,27 +23,27 @@ repositories {
 
     maven(url = "https://hub.spigotmc.org/nexus/content/repositories/snapshots/")
     maven(url = "https://repo.maven.apache.org/maven2/")
-    maven(url = "https://jitpack.io")
-    maven(url = "https://repo.aikar.co/content/groups/aikar/")
+    maven(url = "https://repo.codemc.io/repository/maven-releases/")
 }
 
 dependencies {
     compileOnly("org.jetbrains:annotations:24.0.1")
 
-    compileOnly("org.spigotmc:spigot-api:1.20.6-R0.1-SNAPSHOT")
+    compileOnly("org.spigotmc:spigot-api:1.21.4-R0.1-SNAPSHOT")
     testImplementation("org.junit.jupiter:junit-jupiter:5.9.2")
 
-    compileOnly("net.kyori:adventure-api:4.15.0")
-    compileOnly("net.kyori:adventure-platform-bukkit:4.3.1")
-    compileOnly("net.kyori:adventure-text-serializer-legacy:4.15.0")
-    compileOnly("net.kyori:adventure-text-minimessage:4.15.0")
+    compileOnly("net.kyori:adventure-api:4.18.0")
+    compileOnly("net.kyori:adventure-platform-bukkit:4.3.4")
+    compileOnly("net.kyori:adventure-text-serializer-legacy:4.18.0")
+    compileOnly("net.kyori:adventure-text-minimessage:4.18.0")
 
-    compileOnly("com.cjcrafter:mechanicscore:3.4.13-FOLIA")
-    compileOnly("com.cjcrafter:weaponmechanics:3.4.14-FOLIA")
+    compileOnly("com.cjcrafter:mechanicscore:4.0.0-BETA3")
+    compileOnly("com.cjcrafter:weaponmechanics:4.0.0-BETA3")
     compileOnly("com.cjcrafter:vivecraft:3.0.0")
-    compileOnly("com.comphenix.protocol:ProtocolLib:5.1.0")
-    compileOnly("com.github.cryptomorin:XSeries:11.0.0")
-    compileOnly("com.cjcrafter:foliascheduler:0.6.0")
+    compileOnly("com.github.retrooper:packetevents-spigot:2.7.0")
+    compileOnly("com.github.cryptomorin:XSeries:13.0.0")
+    compileOnly("com.cjcrafter:foliascheduler:0.6.3")
+    compileOnly("dev.jorel:commandapi-bukkit-core:9.7.0")
 
     implementation("org.bstats:bstats-bukkit:3.0.1")
     implementation("org.mariuszgromada.math:MathParser.org-mXparser:5.2.1")
@@ -67,6 +67,7 @@ tasks.shadowJar {
         relocate("net.kyori", "me.deecaad.core.lib")
         relocate("com.cryptomorin.xseries", "me.deecaad.core.lib.xseries")
         relocate("com.cjcrafter.foliascheduler", "me.deecaad.core.lib.scheduler")
+        relocate("dev.jorel.commandapi", "me.deecaad.core.lib.commandapi")
     }
 }
 
@@ -79,7 +80,7 @@ java {
 tasks {
     compileJava {
         options.encoding = Charsets.UTF_8.name() // We want UTF-8 for everything
-        options.release.set(16)
+        options.release.set(21)
     }
     javadoc {
         options.encoding = Charsets.UTF_8.name() // We want UTF-8 for everything

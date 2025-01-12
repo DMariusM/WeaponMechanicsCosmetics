@@ -61,9 +61,9 @@ public class BoxTargeter extends ShapeTargeter {
 
     @Override
     public @NotNull Targeter serialize(@NotNull SerializeData data) throws SerializerException {
-        double width = data.of("Width").assertPositive().getDouble(1.0);
-        double height = data.of("Height").assertPositive().getDouble(1.0);
-        double delta = data.of("Distance_Between_Points").assertPositive().getDouble(0.5);
+        double width = data.of("Width").assertRange(0.0, null).getDouble().orElse(1.0);
+        double height = data.of("Height").assertRange(0.0, null).getDouble().orElse(1.0);
+        double delta = data.of("Distance_Between_Points").assertRange(0.0, null).getDouble().orElse(0.5);
 
         if (width == 0)
             throw data.exception("Width", "Width cannot be 0");

@@ -5,9 +5,15 @@
 
 package me.cjcrafter.weaponmechanicscosmetics.commands;
 
+import dev.jorel.commandapi.CommandAPICommand;
+import dev.jorel.commandapi.IStringTooltip;
+import dev.jorel.commandapi.StringTooltip;
+import dev.jorel.commandapi.SuggestionInfo;
+import dev.jorel.commandapi.arguments.ArgumentSuggestions;
+import dev.jorel.commandapi.arguments.StringArgument;
+import dev.jorel.commandapi.arguments.SuggestionProviders;
 import me.cjcrafter.weaponmechanicscosmetics.WeaponMechanicsCosmetics;
 import me.deecaad.core.commands.*;
-import me.deecaad.core.commands.arguments.StringArgumentType;
 import me.deecaad.core.file.Configuration;
 import me.deecaad.weaponmechanics.WeaponMechanics;
 import me.deecaad.weaponmechanics.WeaponMechanicsAPI;
@@ -16,6 +22,7 @@ import me.deecaad.weaponmechanics.weapon.stats.WeaponStat;
 import me.deecaad.weaponmechanics.wrappers.PlayerWrapper;
 import me.deecaad.weaponmechanics.wrappers.StatsData;
 import org.bukkit.Bukkit;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
@@ -31,7 +38,7 @@ import java.util.function.Function;
 
 public class SkinCommand {
 
-    private static Function<CommandData, Tooltip[]> SKIN_SUGGESTIONS(boolean hand) {
+    private static Function<SuggestionInfo<CommandSender>, IStringTooltip[]> SKIN_SUGGESTIONS(boolean hand) {
         return (data) -> {
             PlayerInventory inv = ((Player) data.sender()).getInventory();
             ItemStack weapon = empty(inv.getItemInMainHand()) ? inv.getItemInOffHand() : inv.getItemInMainHand();
@@ -39,7 +46,7 @@ public class SkinCommand {
             SkinSelector skins = WeaponMechanics.getConfigurations().getObject(title + (hand ? ".Hand" : ".Skin"), SkinSelector.class);
 
             if (skins == null)
-                return new Tooltip[]{ Tooltip.of("N/A", title + " cannot have a skin") };
+                return new IStringTooltip[]{ StringTooltip.ofString("N/A", title + " cannot have a skin") };
 
             // When giving player options, they shouldn't reselect a skin they are
             // already using.
@@ -52,9 +59,9 @@ public class SkinCommand {
             }
 
             if (options.isEmpty())
-                return new Tooltip[]{ Tooltip.of("N/A", title + " only has default skin") };
+                return new IStringTooltip[]{ StringTooltip.ofString("N/A", title + " only has default skin") };
 
-            return SuggestionsBuilder.from(options).apply(data);
+            return options.stream().map(option -> StringTooltip.ofString(option, option)).toArray(IStringTooltip[]::new);
         };
     }
 
@@ -90,25 +97,28 @@ public class SkinCommand {
             Bukkit.getPluginManager().addPermission(weapon);
         }
         Bukkit.getPluginManager().addPermission(global);
+
+        // Also add permissions for the /skin and /handskin commands
+        Bukkit.getPluginManager().getPermission("weaponmechanicscosmetics.commands.handskin").setDefault(PermissionDefault.TRUE);
+        Bukkit.getPluginManager().getPermission("weaponmechanicscosmetics.commands.skin").setDefault(PermissionDefault.TRUE);
     }
 
     public static void register() {
-        new CommandBuilder("skin")
-                .withAliases("skins", "weaponskin")
-                .withPermission("weaponmechanicscosmetics.commands.skin", PermissionDefault.TRUE)
-                .withDescription("Change the skin for your weapon")
-                .withArgument(new Argument<>("skin", new StringArgumentType()).replace(SKIN_SUGGESTIONS(false)))
-                .executes(CommandExecutor.player((player, args) -> {
-                    applySkin(player, "Skin", (String) args[0]);
-                })).register();
-
-        new CommandBuilder("handskin")
-                .withPermission("weaponmechanicscosmetics.commands.handskin", PermissionDefault.TRUE)
-                .withDescription("Change the skin for your hand")
-                .withArgument(new Argument<>("skin", new StringArgumentType()).replace(SKIN_SUGGESTIONS(true)))
-                .executes(CommandExecutor.player((player, args) -> {
-                    applySkin(player, "Hand", (String) args[0]);
-                })).register();
+        new CommandAPICommand("skin")
+            .withAliases("skins", "weaponskin")
+            .withPermission("weaponmechanicscosmetics.commands.skin")
+            .withShortDescription("Change the skin for your weapon")
+            .withArguments(new StringArgument("skin").replaceSuggestions(ArgumentSuggestions.stringsWithTooltips(SKIN_SUGGESTIONS(false))))
+            .executesPlayer((player, args) -> {
+                applySkin(player, "Skin", (String) args.get(0));
+            }).register();
+        new CommandAPICommand("handskin")
+            .withPermission("weaponmechanicscosmetics.commands.handskin")
+            .withShortDescription("Change the skin for your hand")
+            .withArguments(new StringArgument("skin").replaceSuggestions(ArgumentSuggestions.stringsWithTooltips(SKIN_SUGGESTIONS(true))))
+            .executesPlayer((player, args) -> {
+                applySkin(player, "Hand", (String) args.get(0));
+            }).register();
     }
 
     public static void applySkin(Player player, String key, String skin) {

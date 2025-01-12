@@ -37,39 +37,39 @@ public class GeneralCosmeticsValidator implements IValidator {
 
     @Override
     public void validate(Configuration configuration, SerializeData data) throws SerializerException {
-        String key = data.key;
+        String key = data.getKey();
 
         // Just check datatype
-        configuration.set(key + ".Muzzle_Flash", data.of("Muzzle_Flash").getBool(false));
-        configuration.set(key + ".Explosion_Effects", data.of("Explosion_Effects").getBool(false));
+        configuration.set(key + ".Muzzle_Flash", data.of("Muzzle_Flash").getBool().orElse(false));
+        configuration.set(key + ".Explosion_Effects", data.of("Explosion_Effects").getBool().orElse(false));
 
-        Mechanics splashMechanics = data.of("Splash_Mechanics").serialize(new Mechanics());
+        Mechanics splashMechanics = data.of("Splash_Mechanics").serialize(new Mechanics()).orElse(null);
         if (splashMechanics != null)
             configuration.set(key + ".Splash_Mechanics", splashMechanics);
 
-        Mechanics blockHitMechanics = data.of("Block_Hit_Mechanics").serialize(new Mechanics());
+        Mechanics blockHitMechanics = data.of("Block_Hit_Mechanics").serialize(new Mechanics()).orElse(null);
         if (blockHitMechanics != null)
             configuration.set(key + ".Block_Hit_Mechanics", blockHitMechanics);
 
         // Value should be less than 8 for good results, but we'll *allow*
         // larger values for experimentation.
-        configuration.set(key + ".Bullet_Zip.Maximum_Distance", data.of("Bullet_Zip.Maximum_Distance").assertRange(0.0, 16.0).getDouble(0.0));
-        Mechanics zipMechanics = data.of("Bullet_Zip.Sounds").serialize(new Mechanics());
+        configuration.set(key + ".Bullet_Zip.Maximum_Distance", data.of("Bullet_Zip.Maximum_Distance").assertRange(0.0, 16.0).getDouble().orElse(0.0));
+        Mechanics zipMechanics = data.of("Bullet_Zip.Sounds").serialize(new Mechanics()).orElse(null);
         configuration.set(key + ".Bullet_Zip.Sounds", zipMechanics);
 
         // Block damage stuff
-        configuration.set(key + ".Block_Damage", data.of("Block_Damage").serialize(BlockDamage.class));
-        configuration.set(key + ".Block_Damage.Ticks_Before_Regenerate", data.of("Block_Damage.Ticks_Before_Regenerate").assertRange(-1, 20 * 60 * 60).getInt(-1));
+        configuration.set(key + ".Block_Damage", data.of("Block_Damage").serialize(BlockDamage.class).orElse(null));
+        configuration.set(key + ".Block_Damage.Ticks_Before_Regenerate", data.of("Block_Damage.Ticks_Before_Regenerate").assertRange(-1, 20 * 60 * 60).getInt().orElse(-1));
 
         // Hit Marker
-        String adventure = data.of("Hit_Marker").getAdventure(null);
+        String adventure = data.of("Hit_Marker").getAdventure().orElse(null);
         if (adventure != null) {
             PlaceholderMessage msg = new PlaceholderMessage(adventure);
             configuration.set(key + ".Hit_Marker", msg);
         }
 
         // Death Message Overrides
-        List<String> deathMessages = data.of("Death_Messages").assertType(List.class).get(List.of());
+        List<String> deathMessages = data.of("Death_Messages").get(List.class).orElse(List.of());
         List<PlaceholderMessage> placeholderMessages = new ArrayList<>(deathMessages.size());
         for (int i = 0; i < deathMessages.size(); i++) {
             String deathMessage = deathMessages.get(i);

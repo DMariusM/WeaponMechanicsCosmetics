@@ -6,6 +6,8 @@ import me.deecaad.core.compatibility.block.BlockCompatibility;
 import me.deecaad.core.file.SerializeData;
 import me.deecaad.core.file.Serializer;
 import me.deecaad.core.file.SerializerException;
+import me.deecaad.core.file.simple.RegistryValueSerializer;
+import me.deecaad.core.file.simple.StringSerializer;
 import me.deecaad.core.mechanics.CastData;
 import me.deecaad.core.mechanics.Mechanics;
 import me.deecaad.core.mechanics.defaultmechanics.Mechanic;
@@ -14,18 +16,21 @@ import me.deecaad.core.utils.RandomUtil;
 import me.deecaad.weaponmechanics.WeaponMechanics;
 import me.deecaad.weaponmechanics.weapon.projectile.weaponprojectile.WeaponProjectile;
 import org.bukkit.*;
+import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
+import org.bukkit.block.BlockType;
 import org.bukkit.material.MaterialData;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class BlockSoundSerializer implements Serializer<BlockSoundSerializer> {
 
-    private BlockCompatibility.SoundType type;
+    private SoundGroupType type;
     private float randomness;
-    private Map<Material, Mechanic> overrides;
-    private Map<Material, Object> materialBlacklist;
+    private Map<BlockType, Mechanic> overrides;
+    private Set<BlockType> materialBlacklist;
     private Set<String> weaponBlacklist;
 
     /**
@@ -34,8 +39,8 @@ public class BlockSoundSerializer implements Serializer<BlockSoundSerializer> {
     public BlockSoundSerializer() {
     }
 
-    public BlockSoundSerializer(BlockCompatibility.SoundType type, float randomness, Map<Material, Mechanic> overrides,
-                                Map<Material, Object> materialBlacklist, Set<String> weaponBlacklist) {
+    public BlockSoundSerializer(SoundGroupType type, float randomness, Map<BlockType, Mechanic> overrides,
+                                Set<BlockType> materialBlacklist, Set<String> weaponBlacklist) {
         this.type = type;
         this.randomness = randomness;
         this.overrides = overrides;
@@ -48,7 +53,7 @@ public class BlockSoundSerializer implements Serializer<BlockSoundSerializer> {
         Location loc = projectile.getLocation().toLocation(world);
 
         // Handle blacklists
-        if (materialBlacklist.containsKey(block.getType()) || weaponBlacklist.contains(projectile.getWeaponTitle()))
+        if (materialBlacklist.contains(block.getType().asBlockType()) || weaponBlacklist.contains(projectile.getWeaponTitle()))
             return;
 
         // Handle sound overrides
@@ -61,11 +66,8 @@ public class BlockSoundSerializer implements Serializer<BlockSoundSerializer> {
         }
 
         // Play default block sound
-        Object data = MinecraftVersions.UPDATE_AQUATIC.isAtLeast()
-            ? block.getBlockData()
-            : new MaterialData(block.getType(), block.getRawData());
-        BlockCompatibility.SoundData sound = CompatibilityAPI.getBlockCompatibility().getBlockSound(data, type);
-        play(loc, sound.sound, sound.volume, sound.pitch, randomness);
+        SoundGroup group = block.getBlockData().getSoundGroup();
+        play(loc, type.getSound(group), group.getVolume(), group.getPitch(), randomness);
     }
 
     public void play(Location loc, String sound, float volume, float pitch, float randomness) {
@@ -83,7 +85,7 @@ public class BlockSoundSerializer implements Serializer<BlockSoundSerializer> {
     public BlockSoundSerializer serialize(SerializeData data) throws SerializerException {
 
         // Let people completely disable the feature
-        boolean enabled = data.of("Enabled").assertExists().getBool();
+        boolean enabled = data.of("Enabled").assertExists().getBool().get();
         if (!enabled) {
             return new BlockSoundSerializer() {
                 @Override
@@ -93,66 +95,59 @@ public class BlockSoundSerializer implements Serializer<BlockSoundSerializer> {
             };
         }
 
-        BlockCompatibility.SoundType type = data.of("Type").assertExists().getEnum(BlockCompatibility.SoundType.class);
-        float defaultRandomness = (float) data.of("Default_Randomness").assertExists().assertRange(0.0, 1.0).getDouble();
+        SoundGroupType type = data.of("Type").assertExists().getEnum(SoundGroupType.class).get();
+        float defaultRandomness = (float) data.of("Default_Randomness").assertExists().assertRange(0.0, 1.0).getDouble().getAsDouble();
 
         // Construct a list of overrides to use in case the default block
         // sounds are not good enough. Also supports playing custom sounds
         // instead of bukkit sounds. This could also be used to replace
         // every block sound, so let's take performance into consideration.
-        Map<Material, Mechanic> overrides = new EnumMap<>(Material.class);
-        List<?> list = data.config.getList(data.key + ".Overrides");
+        Map<BlockType, Mechanic> overrides = new HashMap<>();
+        List<?> list = data.of("Overrides").get(List.class).orElse(List.of());
         for (int i = 0; i < list.size(); i++) {
             String str = list.get(i).toString();
             int split = str.indexOf(" ");
 
             if (split == -1)
-                throw data.listException("Overrides", i, "Override format should be: <Material> <SoundMechanic>", SerializerException.forValue(str));
+                throw data.listException("Overrides", i, "Override format should be: <Material> <SoundMechanic>",
+                    "Found value: " + str);
 
             // Extract and parse the data from the string
             String materialStr = str.substring(0, split);
-            List<Material> materials = EnumUtil.parseEnums(Material.class, materialStr);
+            List<BlockType> materials = new RegistryValueSerializer<>(BlockType.class, true).deserialize(materialStr, data.ofList("Overrides").getLocation(i));
             String mechanicStr = str.substring(split + 1);
             Mechanic mechanic = new Mechanics().serializeOne(data, mechanicStr);
 
             // Fill the overrides map
-            for (Material mat : materials)
+            for (BlockType mat : materials)
                 overrides.put(mat, mechanic);
         }
 
         // Construct a list of materials that shouldn't have any effects.
         // We use a map since EnumMap is very fast, and there is no EnumSet
         // equivalent.
-        Map<Material, Object> materialBlacklist = new EnumMap<>(Material.class);
-        List<String[]> temp = data.ofList("Material_Blacklist")
-                .addArgument(Material.class, true)
-                .assertExists().assertList().get();
+        Set<BlockType> materialBlacklist = new HashSet<>();
+        List<List<Optional<Object>>> temp = data.ofList("Material_Blacklist")
+            .addArgument(new RegistryValueSerializer<>(BlockType.class, true))
+            .assertExists().assertList();
 
-        for (String[] split : temp) {
-            List<Material> materials = EnumUtil.parseEnums(Material.class, split[0]);
+        for (List<Optional<Object>> split : temp) {
+            List<BlockType> materials = (List<BlockType>) split.get(0).get();
 
-            for (Material mat : materials)
-                materialBlacklist.put(mat, null);
+            materialBlacklist.addAll(materials);
         }
 
         // Construct a list of weapons that should not use the block
         // effects. We check each weapon to make sure it exists in
         // WeaponMechanics.
-        Set<String> weaponBlacklist = new HashSet<>();
-        temp = data.ofList("Weapon_Blacklist")
-                .addArgument(String.class, true, true)
-                .assertExists().assertList().get();
-
-        List<String> weaponOptions = WeaponMechanics.getWeaponHandler().getInfoHandler().getSortedWeaponList();
-        for (int i = 0; i < temp.size(); i++) {
-            String[] split = temp.get(i);
-
-            // TODO cannot check weapons yet since they haven't been serialized!
-            //if (!weaponOptions.contains(split[0]))
-            //    throw new SerializerOptionsException(this, "Weapon", weaponOptions, split[0], data.ofList("Weapon_Blacklist").getLocation(i));
-
-            weaponBlacklist.add(split[0]);
-        }
+        Set<String> weaponBlacklist = data.ofList("Weapon_Blacklist")
+            .addArgument(new StringSerializer())
+            .requireAllPreviousArgs()
+            .assertExists()
+            .assertList()
+            .stream()
+            .map(split -> split.get(0).get().toString().trim())
+            .collect(Collectors.toSet());
 
         return new BlockSoundSerializer(type, defaultRandomness, overrides, materialBlacklist, weaponBlacklist);
     }

@@ -44,7 +44,7 @@ public class WardenDisturbanceMechanic extends Mechanic {
     @NotNull
     @Override
     public Mechanic serialize(SerializeData data) throws SerializerException {
-        double range = data.of("Range").assertPositive().getDouble(16.0);
+        double range = data.of("Range").assertRange(0.0, null).getDouble().orElse(16.0);
         return applyParentArgs(data, new WardenDisturbanceMechanic(range));
     }
 }

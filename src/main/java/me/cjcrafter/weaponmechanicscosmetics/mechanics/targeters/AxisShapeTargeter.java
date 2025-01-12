@@ -12,7 +12,7 @@ public abstract class AxisShapeTargeter extends ShapeTargeter {
     @Override
     protected Targeter applyParentArgs(SerializeData data, Targeter targeter) throws SerializerException {
         AxisShapeTargeter axisShape = (AxisShapeTargeter) targeter;
-        axisShape.axis = data.of("Axis").serialize(VectorSerializer.class);
+        axisShape.axis = data.of("Axis").serialize(VectorSerializer.class).orElse(null);
         return super.applyParentArgs(data, targeter);
     }
 }

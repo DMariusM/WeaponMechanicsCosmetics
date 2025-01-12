@@ -5,20 +5,17 @@
 
 package me.cjcrafter.weaponmechanicscosmetics.scripts;
 
-import com.cjcrafter.foliascheduler.util.MinecraftVersions;
 import com.cryptomorin.xseries.particles.XParticle;
 import me.cjcrafter.weaponmechanicscosmetics.WeaponMechanicsCosmetics;
-import me.deecaad.core.compatibility.CompatibilityAPI;
-import me.deecaad.core.compatibility.block.BlockCompatibility;
 import me.deecaad.core.file.Configuration;
 import me.deecaad.weaponmechanics.weapon.projectile.AProjectile;
 import me.deecaad.weaponmechanics.weapon.projectile.ProjectileScript;
 import org.bukkit.Location;
 import org.bukkit.Particle;
+import org.bukkit.SoundGroup;
 import org.bukkit.World;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.EntityType;
-import org.bukkit.material.MaterialData;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 
@@ -29,7 +26,7 @@ import org.jetbrains.annotations.NotNull;
  */
 public class FallingBlockScript extends ProjectileScript<AProjectile> {
 
-    private Object data; // either BlockData (1.13+) or MaterialData (1.12-)
+    private BlockData data;
 
     public FallingBlockScript(@NotNull Plugin owner, @NotNull AProjectile projectile) {
         super(owner, projectile);
@@ -37,19 +34,14 @@ public class FallingBlockScript extends ProjectileScript<AProjectile> {
         if (projectile.getDisguise() == null || projectile.getDisguise().getType() != EntityType.FALLING_BLOCK)
             throw new IllegalArgumentException("Tried to attach to " + projectile + " when it doesn't have falling block");
 
-        data = projectile.getDisguise().getData();
+        data = (BlockData) projectile.getDisguise().getData();
     }
 
-    public Object getData() {
+    public BlockData getData() {
         return data;
     }
 
-    public void setData(Object data) {
-        if (MinecraftVersions.UPDATE_AQUATIC.isAtLeast() && !(data instanceof BlockData))
-            throw new RuntimeException("Invalid type: " + data);
-        if (MinecraftVersions.UPDATE_AQUATIC.isBelow() && !(data instanceof MaterialData))
-            throw new RuntimeException("Invalid type: " + data);
-
+    public void setData(BlockData data) {
         this.data = data;
     }
 
@@ -81,8 +73,8 @@ public class FallingBlockScript extends ProjectileScript<AProjectile> {
         }
 
         if (playSound) {
-            BlockCompatibility.SoundData sound = CompatibilityAPI.getBlockCompatibility().getBlockSound(data, BlockCompatibility.SoundType.BREAK);
-            world.playSound(location, sound.sound, sound.volume, sound.pitch);
+            SoundGroup group = data.getSoundGroup();
+            world.playSound(location, group.getBreakSound(), group.getVolume(), group.getPitch());
         }
     }
 }

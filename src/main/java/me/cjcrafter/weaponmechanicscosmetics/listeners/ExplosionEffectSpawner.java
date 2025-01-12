@@ -12,6 +12,7 @@ import me.deecaad.core.file.Configuration;
 import me.deecaad.core.file.IValidator;
 import me.deecaad.core.file.SerializeData;
 import me.deecaad.core.file.SerializerException;
+import me.deecaad.core.file.simple.StringSerializer;
 import me.deecaad.core.utils.RandomUtil;
 import me.deecaad.weaponmechanics.WeaponMechanics;
 import me.deecaad.weaponmechanics.weapon.weaponevents.ProjectileExplodeEvent;
@@ -27,6 +28,7 @@ import org.bukkit.util.Vector;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class ExplosionEffectSpawner implements Listener {
 
@@ -82,26 +84,19 @@ public class ExplosionEffectSpawner implements Listener {
 
             // Just check that type/range is proper, no need to set anything
             data.of("Explosion_Particle_Density").assertExists().assertRange(0.0, 1.0).getDouble();
-            data.of("Explosion_Particle_Spread").assertExists().assertPositive().getDouble();
+            data.of("Explosion_Particle_Spread").assertExists().assertRange(0.0, null).getDouble();
             data.of("Smoke_Particle_Density").assertExists().assertRange(0.0, 1.0).getDouble();
 
             // Construct a list of weapons that should not use the explosion
             // effects, and check to make sure each weapon actually exists.
-            Set<String> weaponBlacklist = new HashSet<>();
-            List<String[]> temp = data.ofList("Weapon_Blacklist")
-                    .addArgument(String.class, true, true)
-                    .assertExists().assertList().get();
-
-            List<String> weaponOptions = WeaponMechanics.getWeaponHandler().getInfoHandler().getSortedWeaponList();
-            for (int i = 0; i < temp.size(); i++) {
-                String[] split = temp.get(i);
-
-                // TODO cannot check weapons yet since they haven't been serialized!
-                //if (!weaponOptions.contains(split[0]))
-                //    throw new SerializerOptionsException(getKeyword(), "Weapon", weaponOptions, split[0], data.ofList("Weapon_Blacklist").getLocation(i));
-
-                weaponBlacklist.add(split[0]);
-            }
+            Set<String> weaponBlacklist = data.ofList("Weapon_Blacklist")
+                .addArgument(new StringSerializer())
+                .requireAllPreviousArgs()
+                .assertExists()
+                .assertList()
+                .stream()
+                .map(split -> split.get(0).get().toString())
+                .collect(Collectors.toSet());
 
             configuration.set("Explosion_Effects.Weapon_Blacklist", weaponBlacklist);
         }

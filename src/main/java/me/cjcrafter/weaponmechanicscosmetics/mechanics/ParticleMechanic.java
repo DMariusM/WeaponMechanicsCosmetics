@@ -18,6 +18,7 @@ import me.deecaad.core.mechanics.conditions.Condition;
 import me.deecaad.core.mechanics.defaultmechanics.Mechanic;
 import me.deecaad.core.mechanics.targeters.Targeter;
 import org.bukkit.*;
+import org.bukkit.block.BlockType;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BlockDataMeta;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -26,6 +27,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.OptionalInt;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -117,33 +119,24 @@ public class ParticleMechanic extends Mechanic {
         // Big thanks to Esophose who compiled all of that information for
         // anybody to use.
 
-        Particle particle = data.of("Particle").assertExists().getParticle(null);
-        int count = data.of("Count").assertPositive().getInt(-1);
+        Particle particle = data.of("Particle").assertExists().getParticle().get();
+        OptionalInt count = data.of("Count").assertRange(0, null).getInt();
         double extra = 0.0;
         VectorSerializer offset = VectorSerializer.from(new Vector());
         Object options = null;
-        boolean force = data.of("Always_Show").getBool(true);
+        boolean force = data.of("Always_Show").getBool().orElse(true);
 
         // TODO Actually, using multiple packets we can fix this
         if (data.has("Velocity") && data.has("Noise"))
             throw data.exception(null, "Cannot use both 'Velocity' and 'Noise' at the same time!");
 
-        ItemStack item = null;
-        if (data.has("Material_Data")) {
-            try {
-                item = data.of("Material_Data").assertExists().getImplied(new ItemSerializer());
-            } catch (ClassCastException ex) {
-                item = new ItemStack(data.of("Material_Data").assertExists().getEnum(Material.class));
-            }
-        }
-
         XParticle xParticle = XParticle.of(particle);
         switch (xParticle) {
             // Takes 2 colors, and a size scalar
             case DUST_COLOR_TRANSITION -> {
-                Color color = data.of("Color").assertExists().serialize(new ColorSerializer()).getColor();
-                Color fade = data.of("Fade_Color").assertExists().serialize(new ColorSerializer()).getColor();
-                float size = (float) data.of("Size").assertPositive().getDouble(1.0);
+                Color color = data.of("Color").assertExists().serialize(new ColorSerializer()).get();
+                Color fade = data.of("Fade_Color").assertExists().serialize(new ColorSerializer()).get();
+                float size = (float) data.of("Size").assertRange(0.0, null).getDouble().orElse(1.0);
                 noVelocity(particle, data);
                 noBlock(particle, data);
                 offset = parseVector(data, "Noise");
@@ -153,8 +146,8 @@ public class ParticleMechanic extends Mechanic {
 
             // Takes 1 color, and a size scalar
             case DUST -> {
-                Color color = data.of("Color").assertExists().serialize(new ColorSerializer()).getColor();
-                float size = (float) data.of("Size").assertPositive().getDouble(1.0);
+                Color color = data.of("Color").assertExists().serialize(new ColorSerializer()).get();
+                float size = (float) data.of("Size").assertRange(0.0, null).getDouble().orElse(1.0);
                 noVelocity(particle, data);
                 noFade(particle, data);
                 noBlock(particle, data);
@@ -165,7 +158,7 @@ public class ParticleMechanic extends Mechanic {
 
             // Takes a color, but stores it in the offset vector.
             case ENTITY_EFFECT -> {
-                Color color = data.of("Color").assertExists().serialize(new ColorSerializer()).getColor();
+                Color color = data.of("Color").assertExists().serialize(new ColorSerializer()).get();
                 if (data.has("Count"))
                     throw data.exception("Count", "'" + ENTITY_EFFECT.get() + "' cannot use the 'Count' argument!", "Consider using '" + DUST.get() + "' particles instead.");
                 if (data.has("Noise"))
@@ -174,7 +167,7 @@ public class ParticleMechanic extends Mechanic {
                 noFade(particle, data);
                 noBlock(particle, data);
 
-                count = 0;
+                count = OptionalInt.of(0);
                 extra = 1.0;
                 offset = VectorSerializer.from(new Vector(color.getRed() / 255.0, color.getGreen() / 255.0, color.getBlue() / 255.0));
             }
@@ -185,12 +178,7 @@ public class ParticleMechanic extends Mechanic {
                 noColor(particle, data);
                 noFade(particle, data);
                 offset = parseVector(data, "Noise");
-                options = item;
-
-                if (item == null) {
-                    throw data.exception("Material_Data", "When using an item particle, you must specify an item!",
-                        "For example, try using 'materialData=STONE'");
-                }
+                options = data.of("Material_Data").assertExists().serialize(new ItemSerializer()).get();
             }
 
             case BLOCK, FALLING_DUST, BLOCK_MARKER, DUST_PILLAR -> {
@@ -199,25 +187,8 @@ public class ParticleMechanic extends Mechanic {
                 noFade(particle, data);
                 offset = parseVector(data, "Noise");
 
-                if (item == null) {
-                    throw data.exception("Material_Data", "When using a block particle, you must specify a block!",
-                        "For example, try using 'materialData=STONE'");
-                }
-
-                if (MinecraftVersions.UPDATE_AQUATIC.isAtLeast()) {
-                    ItemMeta meta = item.getItemMeta();
-                    if (!(meta instanceof BlockDataMeta blockMeta)) {
-                        throw data.exception("Material_Data", "When using a block particle, the material must be a block!",
-                            "You used '" + item.getType() + "' which is not a block!",
-                            "For example, try using 'materialData=STONE'");
-                    }
-                    if (blockMeta.hasBlockData())
-                        options = blockMeta.getBlockData(item.getType());
-                    else
-                        options = item.getType().createBlockData();
-                } else {
-                    options = item.getData();
-                }
+                BlockType blockType = data.of("Material_Data").assertExists().getBukkitRegistry(BlockType.class).get();
+                options = blockType.createBlockData();
             }
 
             // All of these particles can be directional by setting count=0.
@@ -234,19 +205,19 @@ public class ParticleMechanic extends Mechanic {
 
                 // When the user doesn't define a count, we will define it for
                 // them. 0 for velocity, 1 for offset.
-                if (count == -1) {
+                if (count.isEmpty()) {
                     if (data.has("Velocity"))
-                        count = 0;
+                        count = OptionalInt.of(0);
                     else
-                        count = 1;
+                        count = OptionalInt.of(1);
                 }
 
                 // When the user defines
-                if (count == 0 && data.has("Noise"))
+                if (count.getAsInt() == 0 && data.has("Noise"))
                     throw data.exception("Noise", "Cannot use 'Noise' when 'Count=0'. Count must be 1 or higher!");
-                if (count != 0 && data.has("Velocity"))
-                    throw data.exception("Velocity", "Cannot use 'Velocity' when 'Count\u22600'. Count must be 0!");
-                if (count == 0) {
+                if (count.getAsInt() != 0 && data.has("Velocity"))
+                    throw data.exception("Velocity", "Cannot use 'Velocity' when 'Count≠0'. Count must be 0!");
+                if (count.getAsInt() == 0) {
                     offset = parseVector(data, "Velocity");
                     extra = -11;
                 } else {
@@ -259,7 +230,7 @@ public class ParticleMechanic extends Mechanic {
                 noBlock(particle, data);
                 noColor(particle, data);
                 noFade(particle, data);
-                if (count == 0)
+                if (count.isPresent() && count.getAsInt() == 0)
                     throw data.exception("Count", "Cannot use Count=0 for '" + particle + "'");
                 offset = parseVector(data, "Noise");
             }
@@ -267,13 +238,13 @@ public class ParticleMechanic extends Mechanic {
 
         // When the user didn't specify count and the plugin couldn't
         // automatically determine a count, we should set it to 1.
-        if (count == -1)
-            count = 1;
+        if (count.isEmpty())
+            count = OptionalInt.of(1);
 
-        Targeter viewers = data.of("Viewers").getRegistry(Mechanics.TARGETERS, null);
+        Targeter viewers = data.of("Viewers").getRegistry(Mechanics.TARGETERS).orElse(null);
         List<Condition> viewerConditions = data.of("Viewer_Conditions").getRegistryList(Mechanics.CONDITIONS);
 
-        return applyParentArgs(data, new ParticleMechanic(particle, count, extra, offset, options, force, viewers, viewerConditions));
+        return applyParentArgs(data, new ParticleMechanic(particle, count.getAsInt(), extra, offset, options, force, viewers, viewerConditions));
     }
 
     private void noVelocity(Particle particle, SerializeData data) throws SerializerException {
@@ -329,9 +300,6 @@ public class ParticleMechanic extends Mechanic {
     }
 
     private VectorSerializer parseVector(SerializeData data, String relative) throws SerializerException {
-        if (!data.has(relative))
-            return VectorSerializer.from(new Vector());
-
-        return data.of(relative).serialize(VectorSerializer.class);
+        return data.of(relative).serialize(VectorSerializer.class).orElse(VectorSerializer.from(new Vector()));
     }
 }

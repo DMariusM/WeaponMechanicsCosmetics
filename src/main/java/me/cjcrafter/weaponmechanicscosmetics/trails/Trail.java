@@ -5,18 +5,17 @@
 
 package me.cjcrafter.weaponmechanicscosmetics.trails;
 
+import me.cjcrafter.weaponmechanicscosmetics.WeaponMechanicsCosmeticsRegistry;
 import me.cjcrafter.weaponmechanicscosmetics.mechanics.ParticleMechanic;
+import me.cjcrafter.weaponmechanicscosmetics.trails.shape.Line;
 import me.cjcrafter.weaponmechanicscosmetics.trails.shape.Shape;
-import me.cjcrafter.weaponmechanicscosmetics.trails.shape.ShapeFactory;
 import me.deecaad.core.file.SerializeData;
 import me.deecaad.core.file.Serializer;
 import me.deecaad.core.file.SerializerException;
 import me.deecaad.core.mechanics.Mechanics;
 import me.deecaad.core.mechanics.defaultmechanics.Mechanic;
 import me.deecaad.core.mechanics.targeters.SourceTargeter;
-import me.deecaad.core.utils.NumberUtil;
 import me.deecaad.core.utils.RandomUtil;
-import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -100,11 +99,11 @@ public class Trail implements Serializer<Trail>, Cloneable {
     @Override
     public Trail serialize(SerializeData data) throws SerializerException {
 
-        double delta = data.of("Distance_Between_Particles").assertExists().assertPositive().getDouble();
-        int skipUpdates = (int) Math.round(data.of("Hide_Trail_For").assertPositive().getDouble(0.5) / delta);
-        ListChooser selector = data.of("Particle_Chooser").getEnum(ListChooser.class, ListChooser.LOOP);
+        double delta = data.of("Distance_Between_Particles").assertExists().assertRange(0.001, null).getDouble().getAsDouble();
+        int skipUpdates = (int) Math.round(data.of("Hide_Trail_For").assertRange(0.0, null).getDouble().orElse(0.5) / delta);
+        ListChooser selector = data.of("Particle_Chooser").getEnum(ListChooser.class).orElse(ListChooser.LOOP);
 
-        List<Mechanic> temp = data.of("Particles").serialize(Mechanics.class).getMechanics();
+        List<Mechanic> temp = data.of("Particles").assertExists().serialize(Mechanics.class).get().getMechanics();
         List<ParticleMechanic> particles = new ArrayList<>(temp.size());
         for (int i = 0; i < temp.size(); i++) {
             if (!(temp.get(i) instanceof ParticleMechanic particle))
@@ -117,20 +116,9 @@ public class Trail implements Serializer<Trail>, Cloneable {
             particles.add(particle);
         }
 
-        String shapeInput = data.of("Shape").get("LINE").trim().toUpperCase(Locale.ROOT);
-        ConfigurationSection shapeConfig = data.of("Shape_Data").assertType(ConfigurationSection.class).assertExists(!shapeInput.equalsIgnoreCase("LINE")).get(null);
-
-        Map<String, Object> shapeData = shapeConfig == null ? new HashMap<>() : shapeConfig.getValues(false);
-
-        Shape shape;
-        try {
-            shape = ShapeFactory.getInstance().get(shapeInput, shapeData);
-        } catch (SerializerException e) {
-            e.setLocation(data.of("Shape_Data").getLocation());
-            throw e;
-        }
-
-        return new Trail(delta, skipUpdates, selector, particles, shape);
+        Shape shapeType = data.of("Shape").getBukkitRegistry(Shape.class, WeaponMechanicsCosmeticsRegistry.TRAIL_SHAPES).orElse(new Line());
+        Shape finalShape = data.of("Shape_Data").serialize(shapeType).orElse(new Line());
+        return new Trail(delta, skipUpdates, selector, particles, finalShape);
     }
 
     @Override

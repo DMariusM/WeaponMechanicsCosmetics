@@ -6,29 +6,32 @@ import me.cjcrafter.weaponmechanicscosmetics.mechanics.ParticleMechanic;
 import me.deecaad.core.file.SerializeData;
 import me.deecaad.core.file.Serializer;
 import me.deecaad.core.file.SerializerException;
+import me.deecaad.core.file.simple.RegistryValueSerializer;
+import me.deecaad.core.file.simple.StringSerializer;
 import me.deecaad.core.mechanics.Mechanics;
 import me.deecaad.core.mechanics.defaultmechanics.Mechanic;
 import me.deecaad.core.utils.EnumUtil;
 import me.deecaad.core.utils.RandomUtil;
-import me.deecaad.weaponmechanics.WeaponMechanics;
 import me.deecaad.weaponmechanics.weapon.projectile.weaponprojectile.WeaponProjectile;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.BlockState;
+import org.bukkit.block.BlockType;
 import org.bukkit.material.MaterialData;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class BlockParticleSerializer implements Serializer<BlockParticleSerializer> {
 
     private int amount;
     private double spread;
     private Map<Material, ParticleMechanic> overrides;
-    private Map<Material, Object> materialBlacklist;
+    private Set<BlockType> materialBlacklist;
     private Set<String> weaponBlacklist;
 
     /**
@@ -38,7 +41,7 @@ public class BlockParticleSerializer implements Serializer<BlockParticleSerializ
     }
 
     public BlockParticleSerializer(int amount, double spread, Map<Material, ParticleMechanic> overrides,
-                                   Map<Material, Object> materialBlacklist, Set<String> weaponBlacklist) {
+                                   Set<BlockType> materialBlacklist, Set<String> weaponBlacklist) {
         this.amount = amount;
         this.spread = spread;
         this.overrides = overrides;
@@ -50,7 +53,7 @@ public class BlockParticleSerializer implements Serializer<BlockParticleSerializ
         World world = projectile.getWorld();
 
         // Handle blacklists
-        if (materialBlacklist.containsKey(block.getType()) || weaponBlacklist.contains(projectile.getWeaponTitle()))
+        if (materialBlacklist.contains(block.getType()) || weaponBlacklist.contains(projectile.getWeaponTitle()))
             return;
 
         int amount = this.amount;
@@ -103,7 +106,7 @@ public class BlockParticleSerializer implements Serializer<BlockParticleSerializ
     public BlockParticleSerializer serialize(SerializeData data) throws SerializerException {
 
         // Let people completely disable the feature
-        boolean enabled = data.of("Enabled").assertExists().getBool();
+        boolean enabled = data.of("Enabled").assertExists().getBool().get();
         if (!enabled) {
             return new BlockParticleSerializer() {
                 @Override
@@ -113,20 +116,20 @@ public class BlockParticleSerializer implements Serializer<BlockParticleSerializ
             };
         }
 
-        int amount = data.of("Amount").assertExists().assertPositive().getInt();
-        double spread = data.of("Spread").assertExists().assertPositive().getDouble();
+        int amount = data.of("Amount").assertExists().assertRange(0, null).getInt().getAsInt();
+        double spread = data.of("Spread").assertExists().assertRange(0.0, null).getDouble().getAsDouble();
 
         // Construct a list of overrides, so you can increase/decrease particles
         // per block. This could also be used to customize every block, so let's
         // take performance into consideration.
         Map<Material, ParticleMechanic> overrides = new EnumMap<>(Material.class);
-        List<?> list = data.config.getList(data.key + ".Overrides");
+        List<?> list = data.of("Overrides").get(List.class).orElse(List.of());
         for (int i = 0; i < list.size(); i++) {
             String str = list.get(i).toString();
             int split = str.indexOf(" ");
 
             if (split == -1)
-                throw data.listException("Overrides", i, "Override format should be: <Material> <SoundMechanic>", SerializerException.forValue(str));
+                throw data.listException("Overrides", i, "Override format should be: <Material> <SoundMechanic>", "For value: " + str);
 
             // Extract and parse the data from the string
             String materialStr = str.substring(0, split);
@@ -145,36 +148,29 @@ public class BlockParticleSerializer implements Serializer<BlockParticleSerializ
         // Construct a list of materials that shouldn't have any effects.
         // We use a map since EnumMap is very fast, and there is no EnumSet
         // equivalent.
-        Map<Material, Object> materialBlacklist = new EnumMap<>(Material.class);
-        List<String[]> temp = data.ofList("Material_Blacklist")
-                .addArgument(Material.class, true)
-                .assertExists().assertList().get();
+        Set<BlockType> materialBlacklist = new HashSet<>();
+        List<List<Optional<Object>>> temp = data.ofList("Material_Blacklist")
+            .addArgument(new RegistryValueSerializer<>(BlockType.class, true))
+            .assertExists()
+            .assertList();
 
-        for (String[] split : temp) {
-            List<Material> materials = EnumUtil.parseEnums(Material.class, split[0]);
+        for (List<Optional<Object>> split : temp) {
+            List<BlockType> materials = (List<BlockType>) split.get(0).get();
 
-            for (Material mat : materials)
-                materialBlacklist.put(mat, null);
+            for (BlockType mat : materials)
+                materialBlacklist.add(mat);
         }
 
         // Construct a list of weapons that should not use the block
         // effects. We check each weapon to make sure it exists in
         // WeaponMechanics.
-        Set<String> weaponBlacklist = new HashSet<>();
-        temp = data.ofList("Weapon_Blacklist")
-                .addArgument(String.class, true, true)
-                .assertExists().assertList().get();
-
-        List<String> weaponOptions = WeaponMechanics.getWeaponHandler().getInfoHandler().getSortedWeaponList();
-        for (int i = 0; i < temp.size(); i++) {
-            String[] split = temp.get(i);
-
-            // TODO cannot check weapons yet since they haven't been serialized!
-            //if (!weaponOptions.contains(split[0]))
-            //    throw new SerializerOptionsException(this, "Weapon", weaponOptions, split[0], data.ofList("Weapon_Blacklist").getLocation(i));
-
-            weaponBlacklist.add(split[0]);
-        }
+        Set<String> weaponBlacklist = data.ofList("Weapon_Blacklist")
+            .addArgument(new StringSerializer())
+            .assertExists()
+            .assertList()
+            .stream()
+            .map(split -> split.get(0).get().toString())
+            .collect(Collectors.toSet());
 
         return new BlockParticleSerializer(amount, spread, overrides, materialBlacklist, weaponBlacklist);
     }

@@ -86,13 +86,13 @@ public class BlockDamageScript extends ProjectileScript<WeaponProjectile> {
             return;
 
         // Play effects from config.yml
-        if (data.isBroken() && damage.getBreakMode(state.getType()) == BlockDamage.BreakMode.BREAK) {
+        if (data.isBroken() && damage.getBreakMode(state.getType().asBlockType()) == BlockDamage.BreakMode.BREAK) {
             sounds.play(projectile, state);
             particles.play(projectile, state, null, null);
         }
 
         if (regenDelay != -1) {
-            if (damage.getBreakMode(state.getType()) == BlockDamage.BreakMode.BREAK && data.isBroken()) {
+            if (damage.getBreakMode(state.getType().asBlockType()) == BlockDamage.BreakMode.BREAK && data.isBroken()) {
                 ServerImplementation scheduler = WeaponMechanicsCosmetics.getInstance().getScheduler();
                 scheduler.region(state.getLocation()).runDelayed(() -> {
                     data.regenerate();

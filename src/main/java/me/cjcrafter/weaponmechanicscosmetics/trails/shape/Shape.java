@@ -5,12 +5,15 @@
 
 package me.cjcrafter.weaponmechanicscosmetics.trails.shape;
 
+import me.deecaad.core.file.Serializer;
+import org.bukkit.Keyed;
+
 import java.util.List;
 
 /**
  * Represents a 2D shape that can be drawn out over time.
  */
-public interface Shape {
+public interface Shape extends Keyed, Serializer<Shape> {
 
     /**
      * Returns a list of points in 2D space. These points are offset by the

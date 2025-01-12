@@ -19,6 +19,12 @@ public abstract class FunctionShape implements Shape {
     private int points;
     private int loops;
 
+    /**
+     * Default constructor for serializer.
+     */
+    public FunctionShape() {
+    }
+
     public FunctionShape(int points, int loops) {
         if (loops < 1)
             throw new IllegalArgumentException("Loops should be at least 1");

@@ -79,5 +79,10 @@ public class GeneralCosmeticsValidator implements IValidator {
         }
 
         configuration.set(key + ".Death_Messages", placeholderMessages);
+
+        if (data.has("Crossbow")) {
+            throw data.exception("Crossbow", "The crossbow feature is no longer supported. crossbow.json and whatnot are all old",
+                    "Instead, use the new Third_Person_Pose feature to configure poses for your weapons");
+        }
     }
 }

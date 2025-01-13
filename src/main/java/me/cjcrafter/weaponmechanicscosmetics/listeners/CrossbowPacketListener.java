@@ -7,7 +7,6 @@ import com.github.retrooper.packetevents.protocol.component.ComponentTypes;
 import com.github.retrooper.packetevents.protocol.component.builtin.item.ItemConsumable;
 import com.github.retrooper.packetevents.protocol.entity.data.EntityData;
 import com.github.retrooper.packetevents.protocol.entity.data.EntityDataTypes;
-import com.github.retrooper.packetevents.protocol.item.ItemStack;
 import com.github.retrooper.packetevents.protocol.nbt.NBTCompound;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.protocol.player.Equipment;
@@ -23,6 +22,9 @@ import me.deecaad.weaponmechanics.wrappers.HandData;
 import me.deecaad.weaponmechanics.wrappers.PlayerWrapper;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Listener;
+import org.bukkit.plugin.Plugin;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Iterator;
@@ -34,7 +36,10 @@ import java.util.List;
  * configured crossbow, we should replace the item with the crossbow. This way,
  * the player's arms stick up and appear to be "aiming"
  */
-public class CrossbowPacketListener implements PacketListener {
+public class CrossbowPacketListener implements Listener, PacketListener {
+
+    public CrossbowPacketListener(@NotNull Plugin plugin) {
+    }
 
     @Override
     public void onPacketSend(PacketSendEvent event) {
@@ -43,7 +48,6 @@ public class CrossbowPacketListener implements PacketListener {
         } else if (event.getPacketType() == PacketType.Play.Server.ENTITY_EQUIPMENT) {
             handleEntityEquipment(event);
         }
-
     }
 
     private void handleEntityEquipment(PacketSendEvent event) {
@@ -188,7 +192,7 @@ public class CrossbowPacketListener implements PacketListener {
         WeaponMechanics.getInstance().getFoliaScheduler().async().runDelayed(() -> {
             int activeMask = isActive ? 0b01 : 0b00;
             int handMask = isMainhand ? 0b00 : 0b10;
-            EntityData eatData = new EntityData(8, EntityDataTypes.BYTE, activeMask | handMask);
+            EntityData eatData = new EntityData(8, EntityDataTypes.BYTE, (byte) (activeMask | handMask));
             WrapperPlayServerEntityMetadata metadataPacket = new WrapperPlayServerEntityMetadata(-shooterId, List.of(eatData));
 
             PacketEvents.getAPI().getPlayerManager().sendPacket(receiver, metadataPacket);

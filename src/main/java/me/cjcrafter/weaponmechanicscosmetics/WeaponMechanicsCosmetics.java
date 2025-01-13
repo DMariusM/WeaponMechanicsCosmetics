@@ -125,7 +125,7 @@ public class WeaponMechanicsCosmetics extends JavaPlugin {
         }, 2L);
 
         scheduler.global().runDelayed(() -> {
-            PacketEvents.getAPI().getEventManager().registerListener(new CrossbowPacketListener(), PacketListenerPriority.NORMAL);
+            PacketEvents.getAPI().getEventManager().registerListener(new CrossbowPacketListener(this), PacketListenerPriority.NORMAL);
         }, 10L);
     }
 

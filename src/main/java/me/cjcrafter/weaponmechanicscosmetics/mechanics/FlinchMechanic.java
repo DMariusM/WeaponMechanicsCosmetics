@@ -11,6 +11,7 @@ import org.jetbrains.annotations.NotNull;
 public class FlinchMechanic extends Mechanic {
 
     private boolean showToEveryone;
+    private float angle;
 
     /**
      * Default constructor for serializer
@@ -18,8 +19,9 @@ public class FlinchMechanic extends Mechanic {
     public FlinchMechanic() {
     }
 
-    public FlinchMechanic(boolean showToEveryone) {
+    public FlinchMechanic(boolean showToEveryone, float angle) {
         this.showToEveryone = showToEveryone;
+        this.angle = angle;
     }
 
     @Override
@@ -29,9 +31,9 @@ public class FlinchMechanic extends Mechanic {
             return;
 
         if (showToEveryone) {
-            target.playHurtAnimation(0f);
+            target.playHurtAnimation(angle);
         } else if (target instanceof Player player) {
-            player.sendHurtAnimation(0f);
+            player.sendHurtAnimation(angle);
         }
     }
 
@@ -44,6 +46,7 @@ public class FlinchMechanic extends Mechanic {
     @Override
     public Mechanic serialize(SerializeData data) throws SerializerException {
         boolean showToEveryone = data.of("Show_To_Everyone").getBool().orElse(false);
-        return applyParentArgs(data, new FlinchMechanic(showToEveryone));
+        float angle = (float) data.of("Angle").getDouble().orElse(0);
+        return applyParentArgs(data, new FlinchMechanic(showToEveryone, angle));
     }
 }

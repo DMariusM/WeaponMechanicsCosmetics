@@ -8,9 +8,11 @@ import me.deecaad.core.file.Serializer;
 import me.deecaad.core.file.SerializerException;
 import me.deecaad.core.file.simple.RegistryValueSerializer;
 import me.deecaad.core.file.simple.StringSerializer;
+import me.deecaad.core.mechanics.CastData;
 import me.deecaad.core.mechanics.Mechanics;
 import me.deecaad.core.mechanics.defaultmechanics.Mechanic;
 import me.deecaad.core.utils.EnumUtil;
+import me.deecaad.core.utils.Quaternion;
 import me.deecaad.core.utils.RandomUtil;
 import me.deecaad.weaponmechanics.weapon.projectile.weaponprojectile.WeaponProjectile;
 import org.bukkit.Location;
@@ -27,6 +29,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class BlockParticleSerializer implements Serializer<BlockParticleSerializer> {
+
+    private static final Vector UP = new Vector(0, 1, 0);
 
     private int amount;
     private double spread;
@@ -64,20 +68,19 @@ public class BlockParticleSerializer implements Serializer<BlockParticleSerializ
         if (override != null && projectile.getShooter() != null) {
             if (hitLocation == null)
                 hitLocation = new Vector(block.getX() + 0.5, block.getY() + 0.5, block.getZ() + 0.5);
-            override.display(block.getWorld(), hitLocation.getX(), hitLocation.getY(), hitLocation.getZ(), normal);
+            CastData cast = new CastData(projectile.getShooter(), projectile.getWeaponTitle(), projectile.getWeaponStack());
+            cast.setTargetLocation(hitLocation.toLocation(world));
+            Quaternion localRotation = Quaternion.lookAt(normal, UP);
+            override.display(cast, localRotation);
             return;
         }
-
-        Object data = MinecraftVersions.UPDATE_AQUATIC.isAtLeast()
-            ? block.getBlockData()
-            : new MaterialData(block.getType(), block.getRawData());
 
         // When there is no precise hit/normal, assume the block has been broken.
         // In this case, we want to spawn particles in all directions from the
         // center fo the block.
         if (hitLocation == null && normal == null) {
             Location spawnLoc = block.getLocation().add(0.5, 0.5, 0.5);
-            world.spawnParticle(XParticle.BLOCK.get(), spawnLoc, amount, spread, spread, spread, data);
+            world.spawnParticle(XParticle.BLOCK.get(), spawnLoc, amount, spread, spread, spread, block.getBlockData());
         }
 
         // We need both...
@@ -91,7 +94,7 @@ public class BlockParticleSerializer implements Serializer<BlockParticleSerializ
             Location spawnLoc = hitLocation.toLocation(world);
             for (int i = 0; i < amount; i++) {
                 Vector direction = RandomUtil.onUnitSphere().multiply(spread).add(normal);
-                world.spawnParticle(XParticle.BLOCK.get(), spawnLoc, 0, direction.getX(), direction.getY(), direction.getZ(), data);
+                world.spawnParticle(XParticle.BLOCK.get(), spawnLoc, 0, direction.getX(), direction.getY(), direction.getZ(), block.getBlockData());
             }
         }
     }

@@ -7,11 +7,13 @@ package me.cjcrafter.weaponmechanicscosmetics.trails;
 
 import me.cjcrafter.weaponmechanicscosmetics.mechanics.ParticleMechanic;
 import me.cjcrafter.weaponmechanicscosmetics.trails.shape.Vec2;
+import me.deecaad.core.mechanics.CastData;
 import me.deecaad.core.utils.VectorUtil;
 import me.deecaad.weaponmechanics.WeaponMechanics;
 import me.deecaad.weaponmechanics.weapon.projectile.AProjectile;
 import me.deecaad.weaponmechanics.weapon.projectile.ProjectileScript;
 import me.deecaad.weaponmechanics.weapon.projectile.weaponprojectile.WeaponProjectile;
+import org.bukkit.Location;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
@@ -27,16 +29,14 @@ import java.util.List;
 public class TrailScript extends ProjectileScript<AProjectile> {
 
     private Trail trail;
+    private CastData cast;
     private double spillOverDistance;
     private int updates;
 
     public TrailScript(@NotNull Plugin owner, @NotNull WeaponProjectile projectile) {
-        this(owner, projectile, WeaponMechanics.getConfigurations().getObject(projectile.getWeaponTitle() + ".Trail", Trail.class));
-    }
-
-    public TrailScript(@NotNull Plugin owner, @NotNull AProjectile projectile, Trail trail) {
         super(owner, projectile);
-        this.trail = trail;
+        this.trail = WeaponMechanics.getConfigurations().getObject(projectile.getWeaponTitle() + ".Trail", Trail.class);
+        this.cast = new CastData(projectile.getShooter(), projectile.getWeaponTitle(), projectile.getWeaponStack());
     }
 
     public Trail getTrail() {
@@ -96,7 +96,8 @@ public class TrailScript extends ProjectileScript<AProjectile> {
                 double y = current.getY() + point.x * a.getY() + point.y * b.getY();
                 double z = current.getZ() + point.x * a.getZ() + point.y * b.getZ();
 
-                particle.display(projectile.getWorld(), x, y, z, normal);
+                cast.setTargetLocation(new Location(cast.getSourceWorld(), x, y, z));
+                particle.display(cast, null);
             }
 
             current.add(direction);

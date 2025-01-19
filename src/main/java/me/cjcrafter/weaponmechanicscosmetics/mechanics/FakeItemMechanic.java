@@ -5,10 +5,15 @@ import me.deecaad.core.compatibility.CompatibilityAPI;
 import me.deecaad.core.compatibility.entity.FakeEntity;
 import me.deecaad.core.file.SerializeData;
 import me.deecaad.core.file.SerializerException;
+import me.deecaad.core.file.serializers.AnyVectorProvider;
 import me.deecaad.core.file.serializers.ItemSerializer;
+import me.deecaad.core.file.serializers.VectorProvider;
 import me.deecaad.core.file.serializers.VectorSerializer;
 import me.deecaad.core.mechanics.CastData;
 import me.deecaad.core.mechanics.defaultmechanics.Mechanic;
+import me.deecaad.core.utils.EntityTransform;
+import me.deecaad.core.utils.ImmutableVector;
+import me.deecaad.core.utils.Quaternion;
 import org.bukkit.Location;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
@@ -17,7 +22,7 @@ import org.jetbrains.annotations.NotNull;
 public class FakeItemMechanic extends Mechanic {
 
     private ItemStack item;
-    private VectorSerializer velocity;
+    private VectorProvider velocity;
     private int time;
 
     /**
@@ -26,22 +31,10 @@ public class FakeItemMechanic extends Mechanic {
     public FakeItemMechanic() {
     }
 
-    public FakeItemMechanic(ItemStack item, VectorSerializer velocity, int time) {
+    public FakeItemMechanic(ItemStack item, VectorProvider velocity, int time) {
         this.item = item;
         this.velocity = velocity;
         this.time = time;
-    }
-
-    public ItemStack getItem() {
-        return item;
-    }
-
-    public VectorSerializer getVelocity() {
-        return velocity;
-    }
-
-    public int getTime() {
-        return time;
     }
 
     @Override
@@ -49,7 +42,10 @@ public class FakeItemMechanic extends Mechanic {
         Location location = cast.hasTargetLocation() ? cast.getTargetLocation() : cast.getTarget().getEyeLocation();
 
         FakeEntity entity = CompatibilityAPI.getEntityCompatibility().generateFakeEntity(location, item);
-        entity.setMotion(velocity.getVector(cast.getTarget()).multiply(1.0 / 20.0));
+        EntityTransform localTransform = cast.getTarget() == null ? null : new EntityTransform(cast.getTarget());
+        Quaternion localRotation = localTransform == null ? null : localTransform.getLocalRotation();
+
+        entity.setMotion(velocity.provide(localRotation).multiply(1.0 / 20.0));
         entity.show();
 
         // We do not need to consume this task since it only serves to delete
@@ -62,13 +58,13 @@ public class FakeItemMechanic extends Mechanic {
         return "Fake_Item";
     }
 
-    @NotNull
     @Override
-    public Mechanic serialize(SerializeData data) throws SerializerException {
+    public @NotNull Mechanic serialize(@NotNull SerializeData data) throws SerializerException {
 
         ItemStack item = new ItemSerializer().serialize(data);
         int time = data.of("Time").assertRange(1, null).getInt().orElse(100);
-        VectorSerializer velocity = data.of("Velocity").serialize(VectorSerializer.class).orElse(VectorSerializer.from(new Vector()));
+        VectorProvider zero = new AnyVectorProvider(false, new ImmutableVector());
+        VectorProvider velocity = data.of("Velocity").serialize(VectorSerializer.class).orElse(zero);
 
         return applyParentArgs(data, new FakeItemMechanic(item, velocity, time));
     }

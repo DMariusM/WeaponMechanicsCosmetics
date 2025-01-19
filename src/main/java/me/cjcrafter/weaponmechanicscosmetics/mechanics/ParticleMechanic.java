@@ -5,27 +5,30 @@
 
 package me.cjcrafter.weaponmechanicscosmetics.mechanics;
 
-import com.cjcrafter.foliascheduler.util.MinecraftVersions;
 import com.cryptomorin.xseries.particles.XParticle;
 import me.deecaad.core.file.SerializeData;
 import me.deecaad.core.file.SerializerException;
+import me.deecaad.core.file.serializers.AnyVectorProvider;
 import me.deecaad.core.file.serializers.ColorSerializer;
 import me.deecaad.core.file.serializers.ItemSerializer;
+import me.deecaad.core.file.serializers.VectorProvider;
 import me.deecaad.core.file.serializers.VectorSerializer;
 import me.deecaad.core.mechanics.CastData;
 import me.deecaad.core.mechanics.Mechanics;
 import me.deecaad.core.mechanics.conditions.Condition;
 import me.deecaad.core.mechanics.defaultmechanics.Mechanic;
 import me.deecaad.core.mechanics.targeters.Targeter;
+import me.deecaad.core.utils.EntityTransform;
+import me.deecaad.core.utils.ImmutableVector;
+import me.deecaad.core.utils.Quaternion;
 import org.bukkit.*;
 import org.bukkit.block.BlockType;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.BlockDataMeta;
-import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.OptionalInt;
 import java.util.stream.Collectors;
@@ -38,7 +41,7 @@ public class ParticleMechanic extends Mechanic {
     private Particle particle;
     private int count;
     private double extra;
-    private VectorSerializer offset; // sometimes velocity
+    private VectorProvider offset; // sometimes velocity
     private Object options;
     private boolean force;
 
@@ -51,7 +54,7 @@ public class ParticleMechanic extends Mechanic {
     public ParticleMechanic() {
     }
 
-    public ParticleMechanic(Particle particle, int count, double extra, VectorSerializer offset, Object options,
+    public ParticleMechanic(Particle particle, int count, double extra, VectorProvider offset, Object options,
                             boolean force, Targeter viewers, List<Condition> viewerConditions) {
         this.particle = particle;
         this.count = count;
@@ -64,40 +67,43 @@ public class ParticleMechanic extends Mechanic {
         this.viewerConditions = viewerConditions;
     }
 
-    public void display(Location location) {
-        display(location.getWorld(), location.getX(), location.getY(), location.getZ(), null);
-    }
-
-    public void display(CastData castData) {
+    public void display(@NotNull CastData castData, @Nullable Quaternion localRotation) {
         Location location = castData.getTargetLocation();
-        Vector direction = castData.getTarget() == null ? null : castData.getTarget().getLocation().getDirection();
-        display(location.getWorld(), location.getX(), location.getY(), location.getZ(), direction);
-    }
+        World world = location.getWorld();
 
-    public void display(World world, Vector position) {
-        display(world, position.getX(), position.getY(), position.getZ(), null);
-    }
+        if (localRotation == null) {
+            EntityTransform localTransform = castData.getTarget() == null ? null : new EntityTransform(castData.getSource());
+            localRotation = localTransform == null ? null : localTransform.getLocalRotation();
+        }
 
-    public void display(World world, double x, double y, double z) {
-        display(world, x, y, z, null);
-    }
-
-    public void display(World world, double x, double y, double z, @Nullable Vector relative) {
-        if (world == null)
-            throw new IllegalArgumentException("World cannot be null");
-
-        Vector offset = this.offset.getVector(relative);
+        Vector offset = this.offset.provide(localRotation);
         double extra = this.extra == -11 ? offset.length() / 20 : this.extra;
 
-        if (MinecraftVersions.UPDATE_AQUATIC.isAtLeast())
-            world.spawnParticle(particle, x, y, z, count, offset.getX(), offset.getY(), offset.getZ(), extra, options, force);
-        else
-            world.spawnParticle(particle, x, y, z, count, offset.getX(), offset.getY(), offset.getZ(), extra, options);
+        if (viewers == null) {
+            world.spawnParticle(particle, location.getX(), location.getY(), location.getZ(), count, offset.getX(), offset.getY(), offset.getZ(), extra, options, force);
+            return;
+        }
+
+        Iterator<CastData> targets = viewers.getTargets(castData);
+        outer : while (targets.hasNext()) {
+            CastData viewer = targets.next();
+
+            // Only players can see particles
+            if (!(viewer.getTarget() instanceof Player player))
+                continue;
+
+            for (Condition condition : viewerConditions) {
+                if (!condition.isAllowed(viewer))
+                    continue outer;
+            }
+
+            player.spawnParticle(particle, location.getX(), location.getY(), location.getZ(), count, offset.getX(), offset.getY(), offset.getZ(), extra, options, force);
+        }
     }
 
     @Override
     protected void use0(CastData cast) {
-        display(cast);
+        display(cast, null);
     }
 
     @Override
@@ -122,7 +128,7 @@ public class ParticleMechanic extends Mechanic {
         Particle particle = data.of("Particle").assertExists().getParticle().get();
         OptionalInt count = data.of("Count").assertRange(0, null).getInt();
         double extra = 0.0;
-        VectorSerializer offset = VectorSerializer.from(new Vector());
+        VectorProvider offset;
         Object options = null;
         boolean force = data.of("Always_Show").getBool().orElse(true);
 
@@ -169,7 +175,7 @@ public class ParticleMechanic extends Mechanic {
 
                 count = OptionalInt.of(0);
                 extra = 1.0;
-                offset = VectorSerializer.from(new Vector(color.getRed() / 255.0, color.getGreen() / 255.0, color.getBlue() / 255.0));
+                offset = new AnyVectorProvider(false, new ImmutableVector(color.getRed() / 255.0, color.getGreen() / 255.0, color.getBlue() / 255.0));
             }
 
             // Takes an ItemStack
@@ -295,11 +301,12 @@ public class ParticleMechanic extends Mechanic {
     private void noFade(Particle particle, SerializeData data) throws SerializerException {
         if (data.has("Fade_Color")) {
             throw data.exception("Fade_Color", "'" + particle + "' cannot use the 'Fade_Color' argument",
-                    "Only 'DUST_COLOR_TRANSITION'(1.17+) can use 'Fade_Color'");
+                    "Only 'DUST_COLOR_TRANSITION' can use 'Fade_Color'");
         }
     }
 
-    private VectorSerializer parseVector(SerializeData data, String relative) throws SerializerException {
-        return data.of(relative).serialize(VectorSerializer.class).orElse(VectorSerializer.from(new Vector()));
+    private @NotNull VectorProvider parseVector(SerializeData data, String relative) throws SerializerException {
+        VectorProvider zero = new AnyVectorProvider(false, new ImmutableVector());
+        return data.of(relative).serialize(VectorSerializer.class).orElse(zero);
     }
 }

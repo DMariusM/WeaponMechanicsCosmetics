@@ -1,5 +1,5 @@
 group = "me.cjcrafter"
-version = "4.0.0"
+version = "4.0.2"
 
 plugins {
     `java-library`
@@ -37,8 +37,8 @@ dependencies {
     compileOnly("net.kyori:adventure-text-serializer-legacy:4.18.0")
     compileOnly("net.kyori:adventure-text-minimessage:4.18.0")
 
-    compileOnly("com.cjcrafter:mechanicscore:4.0.0-BETA3")
-    compileOnly("com.cjcrafter:weaponmechanics:4.0.0-BETA3")
+    compileOnly("com.cjcrafter:mechanicscore:4.0.2")
+    compileOnly("com.cjcrafter:weaponmechanics:4.0.3")
     compileOnly("com.cjcrafter:vivecraft:3.0.0")
     compileOnly("com.github.retrooper:packetevents-spigot:2.7.0")
     compileOnly("com.github.cryptomorin:XSeries:13.0.0")

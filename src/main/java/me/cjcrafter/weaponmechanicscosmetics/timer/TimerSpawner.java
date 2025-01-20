@@ -11,20 +11,23 @@ import me.deecaad.core.events.EntityEquipmentEvent;
 import me.deecaad.core.file.Configuration;
 import me.deecaad.weaponmechanics.WeaponMechanics;
 import me.deecaad.weaponmechanics.weapon.weaponevents.*;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class TimerSpawner implements Listener {
 
+    private final Set<Player> playersReloading;
     private final Map<Player, TimerData> tasks;
 
     public TimerSpawner() {
+        playersReloading = new HashSet<>();
         tasks = new HashMap<>();
     }
 
@@ -91,7 +94,7 @@ public class TimerSpawner implements Listener {
      * @param ticks     The time, in ticks, to play the timer.
      */
     private void playTimer(WeaponEvent event, String timerPath, int ticks) {
-        if (event.getShooter().getType() != EntityType.PLAYER)
+        if (!(event.getShooter() instanceof Player player))
             return;
 
         Configuration config = WeaponMechanics.getConfigurations();
@@ -99,7 +102,16 @@ public class TimerSpawner implements Listener {
         if (timer == null)
             return;
 
-        TimerData task = timer.play((Player) event.getShooter(), event.getWeaponStack().clone(), ticks);
+        // Keep track of when we add a reload task, so we don't override it
+        if (event instanceof WeaponReloadEvent) {
+            playersReloading.add(player);
+        } else if (playersReloading.contains(player)) {
+            // If the player is reloading, we don't want to override the reload
+            // task with a different task.
+            return;
+        }
+
+        TimerData task = timer.play(player, event.getWeaponStack().clone(), ticks);
         TimerData old = tasks.put(task.player, task);
         if (old != null)
             old.cancel();
@@ -114,10 +126,10 @@ public class TimerSpawner implements Listener {
 
     @EventHandler
     public void onReloadCancel(WeaponReloadCancelEvent event) {
-        if (event.getEntity().getType() != EntityType.PLAYER)
+        if (!(event.getShooter() instanceof Player player))
             return;
 
-        Player player = (Player) event.getEntity();
+        playersReloading.remove(player);
         TimerData task = tasks.get(player);
         if (task == null)
             return;
@@ -127,15 +139,21 @@ public class TimerSpawner implements Listener {
 
     @EventHandler
     public void onReloadComplete(WeaponReloadCompleteEvent event) {
-        tasks.remove(event.getEntity());
+        if (!(event.getShooter() instanceof Player player))
+            return;
+
+        playersReloading.remove(player);
+        tasks.remove(player);
     }
 
     @EventHandler
     public void onDequip(EntityEquipmentEvent event) {
-        if (!event.isDequipping() || event.isArmor() || event.getEntityType() != EntityType.PLAYER)
+        if (!event.isDequipping() || event.isArmor())
+            return;
+        if (!(event.getEntity() instanceof Player player))
             return;
 
-        Player player = (Player) event.getEntity();
+        playersReloading.remove(player);
         TimerData task = tasks.remove(player);
         if (task == null)
             return;

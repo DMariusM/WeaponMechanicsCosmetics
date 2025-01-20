@@ -51,7 +51,7 @@ public class TimerSpawner implements Listener {
         playTimer(event, ".Show_Time.Melee_Miss_Delay", event.getMeleeMissDelay());
     }
 
-    @EventHandler (priority = EventPriority.MONITOR)
+    @EventHandler (priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onReload(WeaponReloadEvent event) {
         playTimer(event, ".Show_Time.Reload", event.getReloadCompleteTime());
     }

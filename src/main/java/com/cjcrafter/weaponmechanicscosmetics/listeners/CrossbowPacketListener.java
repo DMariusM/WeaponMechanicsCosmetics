@@ -84,7 +84,7 @@ public class CrossbowPacketListener implements Listener, PacketListener {
             // Determine which pose the gun should be in
             boolean isMainhand = equipment.getSlot() == EquipmentSlot.MAIN_HAND;
             HandData handData = playerWrapper.getHandData(isMainhand);
-            ItemConsumable.Animation type;
+            ThirdPersonPose.PoseOverride type;
             if (handData.hasRunningFirearmAction())
                 type = poses.getFirearmActionPose();
             else if (handData.isReloading())
@@ -94,25 +94,30 @@ public class CrossbowPacketListener implements Listener, PacketListener {
             else
                 type = poses.getDefaultPose();
 
-            // No need to change the item if we have no pose
-            if (type == ItemConsumable.Animation.NONE) {
+            // No need to change the item if we have no pose/override
+            if (type.pose() == ItemConsumable.Animation.NONE && type.overrideItem() == null) {
                 scheduleItemUsePacket(receiver, equipmentPacket.getEntityId(), false, isMainhand);
                 continue;
             }
+
+            if (type.overrideItem() != null)
+                item = type.overrideItem();
 
             // Set the components to make the weapon "consumable" (yes, into food).
             // We can then send the "USE ITEM" packet to make the shooter hold the
             // weapon in the correct pose.
             ItemConsumable consumable = new ItemConsumable(
                 Float.MAX_VALUE, // a really long time, so the player never eats the item
-                type,
+                type.pose(),
                 Sounds.ITEM_CROSSBOW_QUICK_CHARGE_1,  // something quiet, should never be heard since consume time is high
                 false, // no particles
                 List.of() // no effects
             );
             item.setComponent(ComponentTypes.CONSUMABLE, consumable);
-            shouldUpdatePacket = true;
 
+            equipment.setItem(item);
+
+            shouldUpdatePacket = true;
             scheduleItemUsePacket(receiver, equipmentPacket.getEntityId(), true, isMainhand);
         }
 

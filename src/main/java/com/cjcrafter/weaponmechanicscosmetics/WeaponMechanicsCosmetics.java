@@ -51,7 +51,7 @@ public class WeaponMechanicsCosmetics extends MechanicsPlugin {
     private @NotNull ClassLoader langLoader;
 
     public WeaponMechanicsCosmetics() {
-        super(null, Style.style(NamedTextColor.GOLD), Style.style(NamedTextColor.GRAY), 15790);
+        super(Style.style(NamedTextColor.GOLD), Style.style(NamedTextColor.GRAY), 15790);
     }
 
     @Override
@@ -197,7 +197,7 @@ public class WeaponMechanicsCosmetics extends MechanicsPlugin {
         }
 
         Component component = MiniMessage.miniMessage().deserialize(temp.toString());
-        getAdventure().sender(sender).sendMessage(component);
+        sender.sendMessage(component);
     }
 
     public static WeaponMechanicsCosmetics getInstance() {

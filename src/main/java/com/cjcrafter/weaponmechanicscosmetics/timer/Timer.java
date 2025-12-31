@@ -128,7 +128,6 @@ public class Timer implements Serializer<Timer>{
      * @param totalTicks How many ticks the timer was expected to run for.
      */
     public void cancel(Player player, ItemStack weapon, int ticks, int totalTicks) {
-        Audience audience = WeaponMechanicsCosmetics.getInstance().getAdventure().player(player);
 
         // Remove any cooldown if the player still has one (*should*
         // only happen when the event is cancelled).
@@ -146,18 +145,17 @@ public class Timer implements Serializer<Timer>{
 
         // If the event was cancelled BEFORE it was completed...
         if (ticks < totalTicks && actionBarCancelled != null) {
-            audience.sendActionBar(actionBarCancelled.replaceAndDeserialize(data));
+            player.sendActionBar(actionBarCancelled.replaceAndDeserialize(data));
         }
     }
 
     public void send(Player player, ItemStack weapon, int ticks, int totalTicks) {
-        Audience audience = WeaponMechanicsCosmetics.getInstance().getAdventure().player(player);
         PlaceholderData data = PlaceholderData.of(player, weapon, CustomTag.WEAPON_TITLE.getString(weapon), null);
         data.placeholders().put("bar", bar == null ? "N/A" : bar.evaluate(ticks, totalTicks));
         data.placeholders().put("time", ROUND.format((totalTicks - ticks) / 20.0));
 
         if (actionBar != null)
-            audience.sendActionBar(actionBar.replaceAndDeserialize(data));
+            player.sendActionBar(actionBar.replaceAndDeserialize(data));
 
         // Handle showing the title. The title disappears on its own, we don't
         // need to handle its removal.
@@ -165,7 +163,7 @@ public class Timer implements Serializer<Timer>{
             Component adventureTitle = title == null ? Component.empty() : title.replaceAndDeserialize(data);
             Component adventureSubtitle = subtitle == null ? Component.empty() : subtitle.replaceAndDeserialize(data);
             Title titleComponent = Title.title(adventureTitle, adventureSubtitle, TITLE_TIMES);
-            audience.showTitle(titleComponent);
+            player.showTitle(titleComponent);
         }
 
         // Handle showing the bossbar. Since the bossbar doesn't disappear on
@@ -173,9 +171,9 @@ public class Timer implements Serializer<Timer>{
         float progress = NumberUtil.clamp01((float) ticks / totalTicks);
         if (bossBar != null) {
             BossBar bossComponent = BossBar.bossBar(bossBar.replaceAndDeserialize(data), progress, color, style);
-            audience.showBossBar(bossComponent);
+            player.showBossBar(bossComponent);
             ServerImplementation scheduler = WeaponMechanicsCosmetics.getInstance().getFoliaScheduler();
-            scheduler.async().runDelayed(() -> audience.hideBossBar(bossComponent), 1);
+            scheduler.async().runDelayed(() -> player.hideBossBar(bossComponent), 1);
         }
 
         // Handle showing experience

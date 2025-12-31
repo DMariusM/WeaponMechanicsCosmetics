@@ -1,51 +1,51 @@
-group = "me.cjcrafter"
-version = "4.1.0"
+import xyz.jpenilla.resourcefactory.paper.PaperPluginYaml
+
+group = "com.cjcrafter"
+version = "4.2.0"
 
 plugins {
     `java-library`
     id("com.gradleup.shadow") version "8.3.5"
-    id("xyz.jpenilla.resource-factory-bukkit-convention") version "1.2.0"
+    id("xyz.jpenilla.resource-factory-paper-convention") version "1.3.1"
 }
 
-bukkitPluginYaml {
+paperPluginYaml {
     main = "com.cjcrafter.weaponmechanicscosmetics.WeaponMechanicsCosmetics"
     name = "WeaponMechanicsCosmetics"
-    apiVersion = "1.13"
+    apiVersion = "1.21"
     foliaSupported = true
 
     authors = listOf("CJCrafter", "DeeCaaD")
-    depend = listOf("packetevents", "MechanicsCore", "WeaponMechanics")
-    softDepend = listOf("VivecraftSpigot")
+    dependencies {
+        server("packetevents", required = true, load = PaperPluginYaml.Load.BEFORE)
+        server("MechanicsCore", required = true, load = PaperPluginYaml.Load.BEFORE)
+        server("WeaponMechanics", required = true, load = PaperPluginYaml.Load.BEFORE)
+        server("VivecraftSpigot", required = false)
+    }
 }
 
 repositories {
     mavenCentral()
-    maven(url = "https://hub.spigotmc.org/nexus/content/repositories/snapshots/")
+    maven(url = "https://central.sonatype.com/repository/maven-snapshots/") // MechanicsCore Snapshots
+    maven(url = "https://repo.papermc.io/repository/maven-public/") // Paper
     maven(url = "https://repo.maven.apache.org/maven2/")
     maven(url = "https://repo.codemc.io/repository/maven-releases/")
-    maven(url = "https://repo.jeff-media.com/public/") // SpigotUpdateChecker
 }
 
 dependencies {
     compileOnly("org.jetbrains:annotations:24.0.1")
 
-    compileOnly("org.spigotmc:spigot-api:1.21.4-R0.1-SNAPSHOT")
+    compileOnly("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
     testImplementation("org.junit.jupiter:junit-jupiter:5.9.2")
 
-    compileOnly("net.kyori:adventure-api:4.18.0")
-    compileOnly("net.kyori:adventure-platform-bukkit:4.3.4")
-    compileOnly("net.kyori:adventure-text-serializer-legacy:4.18.0")
-    compileOnly("net.kyori:adventure-text-minimessage:4.18.0")
-
-    compileOnly("com.cjcrafter:mechanicscore:4.1.5")
-    compileOnly("com.cjcrafter:weaponmechanics:4.1.5")
+    compileOnly("com.cjcrafter:mechanicscore:4.2.0-SNAPSHOT")
+    compileOnly("com.cjcrafter:weaponmechanics:4.2.0-SNAPSHOT")
     compileOnly("com.cjcrafter:vivecraft:3.0.0")
     compileOnly("com.github.retrooper:packetevents-spigot:2.8.0")
     compileOnly("com.github.cryptomorin:XSeries:13.3.1")
-    compileOnly("com.cjcrafter:foliascheduler:0.6.3")
-    compileOnly("dev.jorel:commandapi-bukkit-core:9.7.0")
+    compileOnly("com.cjcrafter:foliascheduler:0.7.5")
+    compileOnly("dev.jorel:commandapi-paper-core:11.1.0")
     compileOnly("org.bstats:bstats-bukkit:3.0.1")
-    compileOnly("com.jeff_media:SpigotUpdateChecker:3.0.4")
 
     implementation("org.mariuszgromada.math:MathParser.org-mXparser:5.2.1")
 }
@@ -55,8 +55,6 @@ tasks.shadowJar {
 
     relocate("org.mariuszgromada.math", "com.cjcrafter.weaponmechanicscosmetics.lib.math")
     relocate("org.bstats", "me.deecaad.core.lib.bstats")
-    relocate("net.kyori", "me.deecaad.core.lib.kyori")
-    relocate("com.jeff_media.updatechecker", "me.deecaad.core.lib.updatechecker")
     relocate("com.cryptomorin.xseries", "me.deecaad.core.lib.xseries")
     relocate("com.cjcrafter.foliascheduler", "me.deecaad.core.lib.scheduler")
     relocate("dev.jorel.commandapi", "me.deecaad.core.lib.commandapi")

@@ -51,12 +51,14 @@ public class BlockSoundSerializer implements Serializer<BlockSoundSerializer> {
         World world = projectile.getWorld();
         Location loc = projectile.getLocation().toLocation(world);
 
+        BlockType blockType = block.getType().asBlockType();
+
         // Handle blacklists
-        if (materialBlacklist.contains(block.getType().asBlockType()) || weaponBlacklist.contains(projectile.getWeaponTitle()))
+        if (blockType == null || materialBlacklist.contains(blockType) || weaponBlacklist.contains(projectile.getWeaponTitle()))
             return;
 
         // Handle sound overrides
-        Mechanic override = overrides.get(block.getType());
+        Mechanic override = overrides.get(blockType);
         if (override != null && projectile.getShooter() != null) {
             CastData cast = new CastData(projectile.getShooter(), projectile.getWeaponTitle(), projectile.getWeaponStack());
             cast.setTargetLocation(loc);

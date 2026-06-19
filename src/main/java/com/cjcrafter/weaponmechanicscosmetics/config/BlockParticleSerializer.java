@@ -17,8 +17,8 @@ import me.deecaad.core.mechanics.MechanicManager;
 import me.deecaad.core.mechanics.Mechanics;
 import me.deecaad.core.mechanics.defaultmechanics.Mechanic;
 import me.deecaad.core.utils.EnumUtil;
-import me.deecaad.core.utils.Quaternion;
 import me.deecaad.core.utils.RandomUtil;
+import me.deecaad.core.utils.Transform;
 import me.deecaad.weaponmechanics.weapon.projectile.weaponprojectile.WeaponProjectile;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -27,6 +27,7 @@ import org.bukkit.block.BlockState;
 import org.bukkit.block.BlockType;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
+import org.joml.Quaterniond;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -60,14 +61,14 @@ public class BlockParticleSerializer implements Serializer<BlockParticleSerializ
     public void play(WeaponProjectile projectile, BlockState block, @Nullable Vector hitLocation, @Nullable Vector normal) {
         World world = projectile.getWorld();
 
+        BlockType blockType = block.getType().asBlockType();
+
         // Handle blacklists
-        if (materialBlacklist.contains(block.getType().asBlockType()) || weaponBlacklist.contains(projectile.getWeaponTitle()))
+        if (blockType == null || materialBlacklist.contains(blockType) || weaponBlacklist.contains(projectile.getWeaponTitle()))
             return;
 
         int amount = this.amount;
         double spread = this.spread;
-
-        Vector safeUp = UP;
 
         // Handle overrides
         ParticleMechanic override = overrides.get(block.getType());
@@ -79,29 +80,23 @@ public class BlockParticleSerializer implements Serializer<BlockParticleSerializ
 
             if (dir == null || dir.lengthSquared() == 0.0) {
                 dir = projectile.getNormalizedMotion();
-                if (dir == null || dir.lengthSquared() == 0.0) {
+                if (dir == null || dir.lengthSquared() == 0.0)
                     dir = new Vector(0, 0, 1); // last resort fallback
-                }
             }
 
             dir = dir.clone().normalize();
-
-            // If dir is (almost) parallel to UP, choose a different up vector to avoid degeneracy
-            if (Math.abs(dir.dot(UP)) > 0.999) {
-                safeUp = new Vector(1, 0, 0);
-            }
+            Vector safeUp = Math.abs(dir.dot(UP)) > 0.999 ? new Vector(1, 0, 0) : UP.clone();
 
             CastData cast = new CastData(projectile.getShooter(), projectile.getWeaponTitle(), projectile.getWeaponStack());
             cast.setTargetLocation(hitLocation.toLocation(world));
-
-            Quaternion localRotation = Quaternion.lookAt(dir, safeUp);
+            Quaterniond localRotation = Transform.lookAt(dir, safeUp);
             override.display(cast, localRotation);
             return;
         }
 
         // When there is no precise hit/normal, assume the block has been broken.
         // In this case, we want to spawn particles in all directions from the
-        // center fo the block.
+        // center of the block.
         if (hitLocation == null && normal == null) {
             Location spawnLoc = block.getLocation().add(0.5, 0.5, 0.5);
             world.spawnParticle(XParticle.BLOCK.get(), spawnLoc, amount, spread, spread, spread, block.getBlockData());
@@ -173,8 +168,6 @@ public class BlockParticleSerializer implements Serializer<BlockParticleSerializ
         }
 
         // Construct a list of materials that shouldn't have any effects.
-        // We use a map since EnumMap is very fast, and there is no EnumSet
-        // equivalent.
         Set<BlockType> materialBlacklist = new HashSet<>();
         List<List<Optional<Object>>> temp = data.ofList("Material_Blacklist")
             .addArgument(new RegistryValueSerializer<>(BlockType.class, true))

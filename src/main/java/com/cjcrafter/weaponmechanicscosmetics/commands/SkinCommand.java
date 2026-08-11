@@ -26,7 +26,7 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.permissions.Permission;
-import org.bukkit.permissions.PermissionDefault;
+import org.bukkit.plugin.PluginManager;
 
 import java.util.Locale;
 import java.util.Map;
@@ -67,16 +67,16 @@ public class SkinCommand {
         String keyLower = key.toLowerCase(Locale.ROOT);
         Configuration config = WeaponMechanics.getInstance().getWeaponConfigurations();
 
-        Permission global = new Permission("weaponmechanics." + keyLower + ".*");
-        global.setDescription("Ability to use all " + key + "s for any weapon");
+        Permission global = getOrRegisterPermission("weaponmechanics." + keyLower + ".*");
+        global.setDescription("Permission for all " + key + " skins");
 
         for (String weaponTitle : WeaponMechanics.getInstance().getWeaponHandler().getInfoHandler().getSortedWeaponList()) {
             SkinSelector skins = config.getObject(weaponTitle + "." + key, SkinSelector.class);
             if (skins == null)
                 continue;
 
-            Permission weapon = new Permission("weaponmechanics." + keyLower + "." + weaponTitle + ".*");
-            weapon.setDescription("Ability to use all " + key + "s for " + weaponTitle);
+            Permission weapon = getOrRegisterPermission("weaponmechanics." + keyLower + "." + weaponTitle + ".*");
+            weapon.setDescription("Permission for all " + key + " skins for " + weaponTitle);
 
             for (String skin : skins.getCustomSkins()) {
 
@@ -84,17 +84,14 @@ public class SkinCommand {
                 if ("default".equalsIgnoreCase(skin))
                     continue;
 
-                Permission permission = new Permission("weaponmechanics." + keyLower + "." + weaponTitle + "." + skin);
-                permission.setDescription("Ability to use the " + skin + " " + key + " for " + weaponTitle);
+                Permission permission = getOrRegisterPermission("weaponmechanics." + keyLower + "." + weaponTitle + "." + skin);
+                permission.setDescription("Permission for " + skin + " " + key + " skin for " + weaponTitle);
                 permission.addParent(global, true);
                 permission.addParent(weapon, true);
-                Bukkit.getPluginManager().addPermission(permission);
 
-                WeaponMechanicsCosmetics.getInstance().getDebugger().fine("Registered: " + permission);
+                WeaponMechanicsCosmetics.getInstance().getDebugger().fine("Registered permission " + permission);
             }
-            Bukkit.getPluginManager().addPermission(weapon);
         }
-        Bukkit.getPluginManager().addPermission(global);
     }
 
     public static void register() {
@@ -157,6 +154,18 @@ public class SkinCommand {
         stats.set(title, key.equals("Hand") ? WeaponStat.HAND_SKIN : WeaponStat.SKIN, skin);
         WeaponMechanicsCosmetics.getInstance().sendLang(player, "skin-success", variables);
         WeaponMechanics.getInstance().getWeaponHandler().getSkinHandler().tryUse(wrapper, title, weapon, mainHand ? EquipmentSlot.HAND : EquipmentSlot.OFF_HAND);
+    }
+
+    private static Permission getOrRegisterPermission(String node) {
+        PluginManager pluginManager = Bukkit.getPluginManager();
+
+        Permission permission = pluginManager.getPermission(node);
+        if (permission == null) {
+            permission = new Permission(node);
+            pluginManager.addPermission(permission);
+        }
+
+        return permission;
     }
 
     private static boolean empty(ItemStack item) {
